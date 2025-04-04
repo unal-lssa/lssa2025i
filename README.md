@@ -1,6 +1,5 @@
 # lssa2025i
 
-[2029443]
 
 **Large-Scale Software Architecture**
 
