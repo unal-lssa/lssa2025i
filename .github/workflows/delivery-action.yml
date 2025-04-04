@@ -3,7 +3,6 @@ name: Validate Push Time
 on:
   pull_request:
 
-
 jobs:
   check-deadline:
     runs-on: ubuntu-latest
@@ -12,17 +11,18 @@ jobs:
         id: time
         run: |
           echo "current_date=$(TZ=America/Bogota date +%Y-%m-%d)" >> $GITHUB_ENV
-          echo "current_hour=$(TZ=America/Bogota date +%H)" >> $GITHUB_ENV
+          echo "current_time=$(TZ=America/Bogota date +%H:%M)" >> $GITHUB_ENV
 
       - name: Validate push deadline
         run: |
           deadline_date="2025-04-05"
-          deadline_hour=23
+          deadline_time="23:59"
 
-          if [[ "$current_date" > "$deadline_date" ]] || ([[ "$current_date" == "$deadline_date" ]] && [[ "$current_hour" -ge "$deadline_hour" ]]); then
-            echo "❌ Push bloqueado. La fecha límite fue el 05 de abril de 2025 a las 11 PM Bogotá."
+          if [[ "$current_date" > "$deadline_date" ]] || 
+             ([[ "$current_date" == "$deadline_date" ]] && [[ "$current_time" > "$deadline_time" ]]); then
+            echo "❌ Push bloqueado. La fecha límite fue el sábado 05 de abril de 2025 a las 11:59 PM (hora Bogotá)."
             exit 1
           fi
         env:
           current_date: ${{ env.current_date }}
-          current_hour: ${{ env.current_hour }}
+          current_time: ${{ env.current_time }}
