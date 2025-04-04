@@ -15,14 +15,23 @@ jobs:
 
       - name: Validate push deadline
         run: |
-          deadline_date="2025-04-03"
-          deadline_time="14:00"
+          deadline_1_date="2025-04-05"
+          deadline_1_time="23:59"
+          deadline_2_date="2025-04-11"
+          deadline_2_time="23:59"
 
-          if [[ "$current_date" > "$deadline_date" ]] || 
-             ([[ "$current_date" == "$deadline_date" ]] && [[ "$current_time" > "$deadline_time" ]]); then
-            echo "❌ Push bloqueado. La fecha límite fue el jueves 03 de abril de 2025 a las 2:00 PM (hora Bogotá)."
+          if [[ "$current_date" > "$deadline_1_date" ]] || 
+             ([[ "$current_date" == "$deadline_1_date" ]] && [[ "$current_time" > "$deadline_1_time" ]]); then
+            echo "❌ Push bloqueado. La primera fecha límite fue el sábado 05 de abril de 2025 a las 11:59 PM (hora Bogotá)."
+            exit 1
+          fi
+
+          if [[ "$current_date" > "$deadline_2_date" ]] || 
+             ([[ "$current_date" == "$deadline_2_date" ]] && [[ "$current_time" > "$deadline_2_time" ]]); then
+            echo "❌ Push bloqueado. La segunda fecha límite fue el viernes 11 de abril de 2025 a las 11:59 PM (hora Bogotá)."
             exit 1
           fi
         env:
           current_date: ${{ env.current_date }}
           current_time: ${{ env.current_time }}
+
