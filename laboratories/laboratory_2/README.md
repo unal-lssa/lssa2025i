@@ -15,7 +15,7 @@ A computer with [Docker](https://docs.docker.com/engine/install/) installed.
 
 ### 3.1. Metamodeling
 
-**a.** Create a **arch.tx** file in order to define the grammar of a Domain-Specific Language (DSL):
+**a.** Create an **arch.tx** file in order to define the grammar of a Domain-Specific Language (DSL):
 
 ```tx
 Model:
