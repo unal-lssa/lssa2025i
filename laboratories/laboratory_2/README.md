@@ -390,7 +390,7 @@ SELECT * FROM systems;
 * The deliverable must be submitted via GitHub ([lssa2025i](https://github.com/unal-lssa/lssa2025i) repository).
 * Steps:
   - Use the branch corresponding to your team (team1, team2, ...).
-  - In the folder [laboratories/laboratory_2](), create a **X.md** file (where X = your identity document number), which must include the **deliverable**:
+  - In the folder [laboratories/laboratory_2](), create an **X** folder (where X = your identity document number), which must include the **deliverable**:
     + README.md with the full name.
     + *arch.tx*, *metamodel.py*, *transformations.py*, *model.arch*, *generation.py* and *Dockerfile* files.
 
