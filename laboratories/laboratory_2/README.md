@@ -383,7 +383,7 @@ SELECT * FROM systems;
 ### 4.1. Deliverable
 
 * Full name.
-* The same program with the following improvement: support of a new component type (**load balancer**). **Modify** the *arch.tx*, *metamodel.py*, *transformations.py*, and *model.arch* files; and **keep** the same *generation.py* and *Dockerfile* files.
+* The same program with the following improvement: support of a new component type (**load balancer**). **Modify** the *arch.tx*, *transformations.py*, and *model.arch* files; and **keep** the same *metamodel.py*, *generation.py* and *Dockerfile* files.
 
 ### 4.2. Submission Format
 
