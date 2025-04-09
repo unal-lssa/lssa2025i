@@ -21,12 +21,12 @@ For this laboratory, I changed the `arch.tx`, `transformations.py` and `model.ar
 
 
 ## Evidence
-[Frontend with two elements created](images/fe.png)
+![Frontend with two elements created](images/fe.png)
 
 This screenshot shows a frontend service working as before, where two elements were created
 
 
-[Docker Compose logs](images/dc.png)
+![Docker Compose logs](images/dc.png)
 
 This screenshot shows logs for the requests made from frontend to the load_balancer and then to the backend.
 
