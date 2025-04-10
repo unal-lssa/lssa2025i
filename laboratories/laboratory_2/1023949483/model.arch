@@ -1,0 +1,11 @@
+architecture:
+
+    component frontend lssa_fe
+    
+    load_balancer lssa_lb targets [lssa_be]
+
+    component backend lssa_be
+    component database lssa_db
+
+    connector http lssa_fe -> lssa_lb
+    connector db_connector lssa_be -> lssa_db
