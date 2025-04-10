@@ -1,0 +1,27 @@
+# Usamos la imagen base de Node.js 18
+FROM node:18
+
+# Establecemos el directorio de trabajo dentro del contenedor
+WORKDIR /app
+
+# Copiamos los archivos del proyecto al contenedor
+COPY . .
+
+# Instalamos las dependencias necesarias
+RUN apt-get update && \
+    apt-get install -y openssh-server net-tools lsof nano && \
+    npm install -g nodemon
+
+# Configuramos el servicio SSH
+RUN mkdir /var/run/sshd && \
+    echo 'root:root' | chpasswd && \
+    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+    sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+
+# Exponemos los puertos necesarios
+EXPOSE 2222 22
+
+RUN npm install
+
+# Iniciamos el servicio SSH y la aplicación Node.js
+CMD service ssh start && nodemon app.js

@@ -1,0 +1,4 @@
+  {container_name}:  
+    build: {build}
+    ports:
+      - {port}
