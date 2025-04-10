@@ -1,0 +1,8 @@
+  {container_name}:  
+    build: {build}
+    environment:
+      - INSTANCE_ID={name_instance} 
+    ports:
+      - {port}
+    depends_on:
+      {depends}
