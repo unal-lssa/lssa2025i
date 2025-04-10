@@ -1,70 +1,3 @@
- Large-Scale Software Architecture
-# Laboratory 2 - Modeling
-
-## 1. Objective
-
-The objective of this lab is to apply the Model-Driven Software Engineering (MDE) paradigm in order to automate the generation of the skeleton of a software system from an architectural perspective. Students will create a computer program to define a DSL-based metamodel, define a set of transformation rules, define a model (as a metamodel instance) and execute the generation process.
-
-*DSL: Domain-Specific Language.*
-
-## 2. Prerequisites
-
-A computer with [Docker](https://docs.docker.com/engine/install/) installed.
-
-## 3. Instructions
-
-### 3.1. Metamodeling
-
-**a.** Create an **arch.tx** file in order to define the grammar of a Domain-Specific Language (DSL):
-
-```tx
-Model:
-    'architecture' ':'
-        elements*=Element
-;
-
-Element:
-    Component | Connector
-;
-
-Component:
-    'component' type=ComponentType name=ID
-;
-
-Connector:
-    'connector' type=ConnectorType from=[Component] '->' to=[Component]
-;
-
-ComponentType:
-    'frontend' | 'backend' | 'database'
-;
-
-ConnectorType:
-    'http' | 'db_connector'
-;
-```
-
-**b.** Create a **metamodel.py** file in order to create the metamodel from the DSL grammar:
-
-```python
-import os
-
-from textx import metamodel_from_file
-
-def create_metamodel():
-    grammar = os.path.join(os.path.dirname(__file__), 'arch.tx')
-    return metamodel_from_file(grammar)
-```
-
-### 3.2. Transformations
-
-Create a **transformations.py** file in order to automatically generate the skeleton of the system to be modeled:
-
-* A MySQL **database** component.
-* A Python **backend** component.
-* A JavaScript **frontend** component.
-
-```python
 import os, textwrap
 
 def generate_database(name):
@@ -140,7 +73,6 @@ def generate_backend(name, database):
             CMD ["python", "app.py"]
             """
         ))
-
 
 def generate_frontend(name, backend):
     
@@ -241,6 +173,15 @@ def generate_docker_compose(components):
                 f.write(f"      - ./{name}/init.sql:/docker-entrypoint-initdb.d/init.sql\n")
                 f.write("    ports:\n")
                 f.write("      - '3306:3306'\n")
+            
+            # New logic to include load balancer in the docker compose file
+            elif ctype == "load_balancer":
+                f.write(f"    build: ./{name}\n")
+                f.write(f"    ports:\n      - '{port}:80'\n")
+                f.write("    depends_on:\n")
+                for bname, btype in components.items():
+                    if btype == "backend":
+                        f.write(f"      - {bname}\n")
             else:
                 f.write(f"    build: ./{name}\n")
                 f.write(f"    ports:\n      - '{port}:80'\n")
@@ -249,151 +190,67 @@ def generate_docker_compose(components):
 
         f.write("\nnetworks:\n  default:\n    driver: bridge\n")
 
+# New function to generate a nginx load balancer
+def generate_load_balancer(name, backend_names):
+    if not backend_names:
+        print(f"⚠️ Skipping load balancer '{name}' — no targets defined.")
+        return
+
+    path = f'skeleton/{name}'
+    os.makedirs(path, exist_ok=True)
+
+    with open(os.path.join(path, 'nginx.conf'), 'w') as f:
+        upstream = "\n".join([f"        server {b}:80;" for b in backend_names])
+        f.write(textwrap.dedent(f"""
+            events {{}}
+            http {{
+                upstream backend_cluster {{
+                    {upstream}
+                }}
+                server {{
+                    listen 80;
+                    location / {{
+                        proxy_pass http://backend_cluster;
+                    }}
+                }}
+            }}
+        """))
+
+    with open(os.path.join(path, 'Dockerfile'), 'w') as f:
+        f.write(textwrap.dedent(f"""
+            FROM nginx:alpine
+            COPY nginx.conf /etc/nginx/nginx.conf
+        """))
 
 def apply_transformations(model):
-
     components = {}
     backend_name = None
     database_name = None
 
-    for e in model.elements:
-        if e.__class__.__name__ == 'Component':
-            if e.type == 'backend':
-                backend_name = e.name
-            elif e.type == 'database':
-                database_name = e.name
-
+    # Collect metadata
     for e in model.elements:
         if e.__class__.__name__ == 'Component':
             components[e.name] = e.type
+            if e.type == 'backend' and not backend_name:
+                backend_name = e.name
+            elif e.type == 'database' and not database_name:
+                database_name = e.name
+        elif e.__class__.__name__ == 'LoadBalancer':
+            components[e.name] = 'load_balancer'
+            load_balancer_name = e.name
+
+    # Generate components
+    for e in model.elements:
+        if e.__class__.__name__ == 'Component':
             if e.type == 'database':
                 generate_database(e.name)
-            if e.type == 'backend':
+            elif e.type == 'backend':
                 generate_backend(e.name, database=database_name)
             elif e.type == 'frontend':
-                generate_frontend(e.name, backend=backend_name)
+                # Use the load balancer as backend
+                generate_frontend(e.name, backend=load_balancer_name)
+        elif e.__class__.__name__ == 'LoadBalancer':
+            backends = [k for k, v in components.items() if v == 'backend']
+            generate_load_balancer(e.name, backend_names=backends)
 
     generate_docker_compose(components)
-```
-
-### 3.3. Modeling
-
-Create a **model.arch** file in order to model the skeleton of the system to be modeled.
-
-```arch
-architecture:
-
-    component frontend lssa_fe
-    component backend lssa_be
-    component database lssa_db
-
-    connector http lssa_fe -> lssa_be
-    connector db_connector lssa_be -> lssa_db
-```
-
-### 3.4. Generation
-
-Create a **generation.py** file in order to generate the skeleton of the system to be modeled.
-˚
-```python
-from metamodel import create_metamodel
-from transformations import apply_transformations
-
-if __name__ == '__main__':
-    
-    metamodel = create_metamodel()
-    model = metamodel.model_from_file('model.arch')
-    apply_transformations(model)
-```
-
-### 3.5. Testing
-
-**a.** Create a **Dockerfile** file to specify the requirements to execute the program.
-
-```Dockerfile
-FROM python:3.11-slim
-
-WORKDIR /app
-
-COPY . .
-
-RUN pip install --no-cache-dir textX mysql-connector-python flask
-
-CMD ["python", "generation.py"]
-```
-
-**b.** Create a *Docker image* from the *Dockerfile* file.
-
-```bash
-docker build -t lssa-lab2 .
-```
-
-**c.** Create a *Docker container* to execute the program and generate the modeled software system.
-
-```bash
-docker run --rm -v "$PWD:/app" lssa-lab2
-```
-
-After running the above command, a directory called skeleton should be created.
-
-**d.** Enter to the */skeleton* directory.
-
-**e.** Execute the generated skeleton of the modeled software system.
-
-```bash
-docker-compose up --build
-```
-
-**f.** Verify the executed containers (*skeleton-lssa_db-1*, *skeleton-lssa_be-1* and *skeleton-lssa_fe-1*):
-
-```bash
-docker ps -a
-```
-
-**g.** Open the frontend component in a web browser: `http://localhost:8001`.
-
-**h.** Create a new element (system) using the user interface.
-
-**i.** Check the new element in the database component:
-
-```bash
-docker exec -it skeleton-lssa_db-1 sh
-```
-
-```bash
-mysql -u root -p
-```
-
-Password = *root*
-
-```mysql
-SHOW DATABASES;
-```
-
-```mysql
-USE lssa_db;
-```
-
-```mysql
-SELECT * FROM systems;
-```
-
-## 4. Delivery
-
-### 4.1. Deliverable
-
-* Full name.
-* The same program with the following improvement: support of a new component type (**load balancer**). **Modify** the *arch.tx*, *transformations.py*, and *model.arch* files; and **keep** the same *metamodel.py*, *generation.py* and *Dockerfile* files.
-
-### 4.2. Submission Format
-
-* The deliverable must be submitted via GitHub ([lssa2025i](https://github.com/unal-lssa/lssa2025i) repository).
-* Steps:
-  - Use the branch corresponding to your team (team1, team2, ...).
-  - In the folder [laboratories/laboratory_2](), create an **X** folder (where X = your identity document number), which must include the **deliverable**:
-    + README.md with the full name.
-    + *arch.tx*, *metamodel.py*, *transformations.py*, *model.arch*, *generation.py* and *Dockerfile* files.
-
-### 4.3. Delivery Deadline
-
-Saturday, April 12, 2025, before 23h59.
