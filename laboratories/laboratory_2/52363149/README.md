@@ -1,6 +1,6 @@
 **Nancy Vianeth Vera Rodiguez**
 
-### Cambios realizados**
+### Cambios realizados
 
 #### En el modelo
 * Se crearon 2 nuevos backend, para contar con 3 backend en total
