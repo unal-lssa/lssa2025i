@@ -6,7 +6,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const BACKEND_URL = 'http://lssa_be:80';
+const BACKEND_URL = 'http://lssa_lb:80';
 
 app.get('/', async (req, res) => {
     try {
