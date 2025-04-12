@@ -26,11 +26,11 @@ def generate_backend(name,database):
 
             app = Flask(__name__)
                                 
-            @app.route('/systems', methods=['POST'])
+            @app.route('/create', methods=['POST'])
             def create():
                 data = request.json
                 conn = mysql.connector.connect(
-                    host='{database}'
+                    host='{database}',
                     user='root',
                     password='root',
                     database='{database}'
@@ -44,7 +44,7 @@ def generate_backend(name,database):
             @app.route('/systems', methods=['GET'])
             def get_systems():
                 conn = mysql.connector.connect(
-                    host='{database}'
+                    host='{database}',
                     user='root',
                     password='root',
                     database='{database}'
@@ -137,8 +137,7 @@ def generate_frontend(name,backend):
             await axios.post(`${{BACKEND_URL}}/create`, {{ name }});
             res.redirect('/');
             }});
-            app.listen(80, () => console.log("Frontend running on port
-            80"));
+            app.listen(80, () => console.log("Frontend running on port 80"));
             """
         ))
 
@@ -151,6 +150,7 @@ def generate_docker_compose(components):
 
         f.write("services:\n") 
         db = None
+        backend = None
 
         for i, (name, ctype) in enumerate(sorted_components.items()):
             port = 8000 + i
@@ -159,19 +159,52 @@ def generate_docker_compose(components):
                 db = name
                 f.write(f"    image: mysql:8\n")
                 f.write(f"    environment:\n")
-                f.write(f"      - MYSQL_ROOT_PASSWORD: root\n")
-                f.write(f"       - MYSQL_DATABASE: {name}\n")
+                f.write(f"      - MYSQL_ROOT_PASSWORD=root\n")
+                f.write(f"      - MYSQL_DATABASE={name}\n")
                 f.write(f"    volumes:\n")
-                f.write(f" - ./{name}/init.sql:/docker-entrypoint-initdb.d/init.sql\n")
+                f.write(f"      - ./{name}/init.sql:/docker-entrypoint-initdb.d/init.sql\n")
 
-                f.write(" ports:\n")
-                f.write(" - '3306:3306'\n")
+                f.write("    ports:\n")
+                f.write("       - '3306:3306'\n")
             else:
-                f.write(f" build: ./{name}\n")
-                f.write(f" ports:\n - '{port}:80'\n")
+                f.write(f"      build: ./{name}\n")
+                f.write(f"      ports:\n        - '{port}:80'\n")
                 if ctype== "backend":
-                    f.write(f" depends_on:\n - {db}\n")
-            f.write("\nnetworks:\n default:\n driver: bridge\n")
+                    backend = name
+                    f.write(f"      depends_on:\n           - {db}\n")
+                if ctype == "loadbalancer":
+                    f.write(f"      depends_on:\n           - {backend}\n")
+        f.write("\nnetworks:\n      default:\n          driver: bridge\n")
+
+def generate_loadbalancer(name, backend):
+    path = f'skeleton/{name}'
+    os.makedirs(path, exist_ok=True)
+
+    with open(os.path.join(path, 'Dockerfile'), 'w') as f:
+        f.write(textwrap.dedent("""
+            FROM nginx:latest
+            COPY nginx.conf /etc/nginx/nginx.conf
+            """
+        ))
+
+    with open(os.path.join(path, 'nginx.conf'), 'w') as f:
+        f.write(textwrap.dedent(f"""
+            events {{
+                worker_connections 1024;
+            }}
+            http {{
+                upstream backend {{
+                    server {backend}:80;
+                }}
+                server {{
+                    listen 80;
+                    location / {{ 
+                        proxy_pass http://backend; 
+                    }}
+                }}
+            }}
+            """
+        ))
 
 def apply_transformations(model):
     components = {}
@@ -194,6 +227,8 @@ def apply_transformations(model):
                 generate_backend(e.name, database=database_name)
             elif e.type == 'frontend':
                 generate_frontend(e.name, backend=backend_name)
+            elif e.type == 'loadbalancer':
+                generate_loadbalancer(e.name, backend=backend_name)
     generate_docker_compose(components)
 
     

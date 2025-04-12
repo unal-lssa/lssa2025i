@@ -12,7 +12,7 @@ Connector:
 'connector' type=ConnectorType from=[Component] '->' to=[Component]
 ;
 ComponentType:
-'frontend' | 'backend' | 'database'
+'frontend' | 'backend' | 'database' | 'loadbalancer'
 ;
 ConnectorType:
 'http' | 'db_connector'
