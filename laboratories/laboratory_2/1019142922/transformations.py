@@ -1,12 +1,23 @@
 import os
+from pathlib import Path
 import textwrap
+
+PROJECT_BASE = Path.cwd() / "skeleton"
+
+
+def _make_component_dir(component_name: str, project_base: Path = PROJECT_BASE) -> Path:
+    """Create the location for a given component"""
+
+    path = project_base / component_name
+    path.mkdir(parents=True, exist_ok=True)
+
+    return path
 
 
 def generate_database(name):
-    path = f"skeleton/{name}"
-    os.makedirs(path, exist_ok=True)
+    path = _make_component_dir(name)
 
-    with open(os.path.join(path, "init.sql"), "w") as f:
+    with (path / "init.sql").open("w") as f:
         f.write(
             textwrap.dedent(
                 """
@@ -20,10 +31,9 @@ def generate_database(name):
 
 
 def generate_backend(name, database):
-    path = f"skeleton/{name}"
-    os.makedirs(path, exist_ok=True)
+    path = _make_component_dir(name)
 
-    with open(os.path.join(path, "app.py"), "w") as f:
+    with (path / "app.py").open("w") as f:
         f.write(
             textwrap.dedent(f"""
             from flask import Flask, request, jsonify
@@ -71,7 +81,7 @@ def generate_backend(name, database):
         """)
         )
 
-    with open(os.path.join(path, "Dockerfile"), "w") as f:
+    with (path / "Dockerfile").open("w") as f:
         f.write(
             textwrap.dedent("""
                 FROM python:3.11-slim
@@ -87,10 +97,9 @@ def generate_backend(name, database):
 
 
 def generate_frontend(name, backend):
-    path = f"skeleton/{name}"
-    os.makedirs(path, exist_ok=True)
+    path = _make_component_dir(name)
 
-    with open(os.path.join(path, "package.json"), "w") as f:
+    with (path / "package.json").open("w") as f:
         f.write(
             textwrap.dedent("""
                 {
@@ -105,7 +114,7 @@ def generate_frontend(name, backend):
             """)
         )
 
-    with open(os.path.join(path, "Dockerfile"), "w") as f:
+    with (path / "Dockerfile").open("w") as f:
         f.write(
             textwrap.dedent("""
                 FROM node:18
@@ -118,7 +127,7 @@ def generate_frontend(name, backend):
             """)
         )
 
-    with open(os.path.join(path, "app.js"), "w") as f:
+    with (path / "app.js").open("w") as f:
         f.write(
             textwrap.dedent(f"""
                 const express = require('express');
@@ -169,10 +178,9 @@ def generate_frontend(name, backend):
 
 
 def generate_docker_compose(components):
-    path = "skeleton/"
-    os.makedirs(path, exist_ok=True)
+    path = _make_component_dir("")
 
-    with open(os.path.join(path, "docker-compose.yml"), "w") as f:
+    with (path / "docker-compose.yml").open("w") as f:
         sorted_components = dict(
             sorted(
                 components.items(), key=lambda item: 0 if item[1] == "database" else 1
