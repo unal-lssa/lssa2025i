@@ -3,7 +3,7 @@
 
 ## 1. Objective
 
-The objective of this lab is to apply the Model-Driven Software Engineering (MDE) paradigm in order to automate the generation of the sekeleton of a software system from an architectural perspective. Students will create a computer program to define a DSL-based metamodel, define a set of transformation rules, define a model (as a metamodel instance) and execute the generation process.
+The objective of this lab is to apply the Model-Driven Software Engineering (MDE) paradigm in order to automate the generation of the skeleton of a software system from an architectural perspective. Students will create a computer program to define a DSL-based metamodel, define a set of transformation rules, define a model (as a metamodel instance) and execute the generation process.
 
 *DSL: Domain-Specific Language.*
 
@@ -308,13 +308,27 @@ if __name__ == '__main__':
 
 ### 3.5. Testing
 
-**a.** Create a *Docker image* to specify the requirements to execute the program.
+**a.** Create a **Dockerfile** file to specify the requirements to execute the program.
+
+```Dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY . .
+
+RUN pip install --no-cache-dir textX mysql-connector-python flask
+
+CMD ["python", "generation.py"]
+```
+
+**b.** Create a *Docker image* from the *Dockerfile* file.
 
 ```bash
 docker build -t lssa-lab2 .
 ```
 
-**b.** Create a *Docker container* to execute the program and generate the modeled software system.
+**c.** Create a *Docker container* to execute the program and generate the modeled software system.
 
 ```bash
 docker run --rm -v "$PWD:/app" lssa-lab2
@@ -322,25 +336,25 @@ docker run --rm -v "$PWD:/app" lssa-lab2
 
 After running the above command, a directory called skeleton should be created.
 
-**c.** Enter to the */skeleton* directory.
+**d.** Enter to the */skeleton* directory.
 
-**d.** Execute the generated skeleton of the modeled software system.
+**e.** Execute the generated skeleton of the modeled software system.
 
 ```bash
 docker-compose up --build
 ```
 
-**e.** Verify the executed containers (*skeleton-lssa_db-1*, *skeleton-lssa_be-1* and *skeleton-lssa_fe-1*):
+**f.** Verify the executed containers (*skeleton-lssa_db-1*, *skeleton-lssa_be-1* and *skeleton-lssa_fe-1*):
 
 ```bash
 docker ps -a
 ```
 
-**f.** Open the frontend component in a web browser: `http://localhost:8001`.
+**g.** Open the frontend component in a web browser: `http://localhost:8001`.
 
-**g.** Create a new element (system) using the user interface.
+**h.** Create a new element (system) using the user interface.
 
-**h.** Check the new element in the database component:
+**i.** Check the new element in the database component:
 
 ```bash
 docker exec -it skeleton-lssa_db-1 sh
@@ -369,14 +383,14 @@ SELECT * FROM systems;
 ### 4.1. Deliverable
 
 * Full name.
-* The same program with the following improvement: support of a new component type (**load balancer**). **Modify** the *arch.tx*, *metamodel.py*, *transformations.py*, and *model.arch* files; and **keep** the same *generation.py* and *Dockerfile* files.
+* The same program with the following improvement: support of a new component type (**load balancer**). **Modify** the *arch.tx*, *transformations.py*, and *model.arch* files; and **keep** the same *metamodel.py*, *generation.py* and *Dockerfile* files.
 
 ### 4.2. Submission Format
 
 * The deliverable must be submitted via GitHub ([lssa2025i](https://github.com/unal-lssa/lssa2025i) repository).
 * Steps:
   - Use the branch corresponding to your team (team1, team2, ...).
-  - In the folder [laboratories/laboratory_2](), create a **X.md** file (where X = your identity document number), which must include the **deliverable**:
+  - In the folder [laboratories/laboratory_2](), create an **X** folder (where X = your identity document number), which must include the **deliverable**:
     + README.md with the full name.
     + *arch.tx*, *metamodel.py*, *transformations.py*, *model.arch*, *generation.py* and *Dockerfile* files.
 
