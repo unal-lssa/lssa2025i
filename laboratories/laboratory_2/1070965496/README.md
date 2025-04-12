@@ -2,7 +2,9 @@
 
 **Nombre completo**: Juan David Ramírez Ávila
 
+
 **Asignatura**: Arquitectura de Software a Gran Escala
+
 
 **Fecha de entrega**: 12 de abril de 2025
 
