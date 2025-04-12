@@ -22,5 +22,17 @@ services:
       - lssa_be2
   lssa_be1:
     build: ./lssa_be1
+    ports:
+      - '8003:80'
+    depends_on:
+      - lssa_db
+    environment:
+      - INSTANCE_NUM=1
   lssa_be2:
-    build: ./lssa_be2
+    build: ./lssa_be1
+    ports:
+      - '8004:80'
+    depends_on:
+      - lssa_db
+    environment:
+      - INSTANCE_NUM=2

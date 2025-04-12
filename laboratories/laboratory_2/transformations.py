@@ -13,7 +13,6 @@ def generate_database(name):
         """
     ))
         
-
 def generate_backend(name, database):
     path =f'skeleton/{name}'
     os.makedirs(path, exist_ok=True)
@@ -160,11 +159,14 @@ def generate_loadbalancer(name, backends):
             events {{}}
             http {{
                 upstream backend {{
-                    {''.join(f'server {backend}:80;' for backend in backends)}
+                    {''.join(f'server {backend}:80 max_fails=3 fail_timeout=30s;' for backend in backends)}
                 }}
                 
                 server {{
                     listen 80;
+                    proxy_connect_timeout 5s;
+                    proxy_send_timeout 10s;
+                    proxy_read_timeout 30s;
                     
                     location / {{
                         proxy_pass http://backend;
@@ -181,55 +183,20 @@ def generate_loadbalancer(name, backends):
             CMD ["nginx", "-g", "daemon off;"]
         """))
 
-# def generate_docker_compose(components):
-#     path = 'skeleton/'
-#     os.makedirs(path, exist_ok=True)
-
-#     with open(os.path.join(path, 'docker-compose.yml'), 'w') as f:
-#         sorted_components = dict(sorted(components.items(), key=lambda item: 0 if item[1] == "database" else 1))
-
-#         f.write("version: '3.8'\n\nservices:\n")
-
-#         db_name = None
-#         for i, (name, ctype) in enumerate(sorted_components.items()):
-#             port = 8000 + i
-#             f.write(f"  {name}:\n")
-            
-#             if ctype == "database":
-#                 db_name = name  
-#                 f.write("    image: mysql:8\n")
-#                 f.write("    environment:\n")
-#                 f.write("      - MYSQL_ROOT_PASSWORD=root\n")
-#                 f.write(f"      - MYSQL_DATABASE={name}\n")
-#                 f.write("    volumes:\n")
-#                 f.write(f"      - ./{name}/init.sql:/docker-entrypoint-initdb.d/init.sql\n")
-#                 f.write("    ports:\n")
-#                 f.write("      - '3306:3306'\n")
-#             else:
-#                 f.write(f"    build: ./{name}\n")
-#                 f.write("    ports:\n")
-#                 f.write(f"      - '{port}:80'\n")
-#                 if ctype == "backend" and db_name:
-#                     f.write("    depends_on:\n")
-#                     f.write(f"      - {db_name}\n")
-
-#         f.write("\nnetworks:\n  default:\n    driver: bridge\n")
-
-
 def generate_docker_compose(components):
     path = f'skeleton/'
     os.makedirs(path, exist_ok=True)
 
     with open(os.path.join(path, 'docker-compose.yml'), 'w') as f:
-        # Ordenamos: database primero, luego backends, luego loadbalancer, luego frontend
         sorted_components = sorted(components.items(), key=lambda item: 
             0 if item[1] == "database" else 
-            1 if item[1] == "backend" else 
+            1 if item[1] == "frontend" else 
             2 if item[1] == "loadBalancer" else 
             3)
         
         f.write("services:\n")
         db = None
+        backend_count = 0
         
         for i, (name, ctype) in enumerate(sorted_components):
             port = 8000 + i
@@ -253,10 +220,17 @@ def generate_docker_compose(components):
                 f.write("    depends_on:\n")
                 for backend in [n for n, t in components.items() if t == "backend"]:
                     f.write(f"      - {backend}\n")
-            else:  # frontend o backend
+            elif ctype == 'backend':
+                backend_count += 1
+                f.write(f"    build: ./lssa_be1\n")
+                f.write(f"    ports:\n      - '{port}:80'\n")
+                f.write("    depends_on:\n")
+                f.write(f"      - {db}\n")
+                f.write("    environment:\n")
+                f.write(f"      - INSTANCE_NUM={backend_count}\n")
+            else: 
                 f.write(f"    build: ./{name}\n")
-                if ctype == "frontend":
-                    f.write(f"    ports:\n      - '{port}:80'\n")
+                f.write(f"    ports:\n      - '{port}:80'\n")
                     
 def apply_transformations(model):
     components = {}
@@ -279,7 +253,7 @@ def apply_transformations(model):
             components[e.name] = e.type
             if e.type == 'database':
                 generate_database(e.name)
-            if e.type == 'backend':
+            if e.type == 'backend' and not os.path.exists('skeleton/lssa_be1'):
                 generate_backend(e.name, database=database_name)
             elif e.type == 'frontend':
                 generate_frontend(e.name, backend=loadbalancer_name)
