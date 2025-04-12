@@ -8,15 +8,23 @@ Element:
 ;
 
 Component:
-    'component' type=ComponentType name=ID
+    LoadBalancer | StandardComponent
+;
+
+StandardComponent:
+    'component' type=StandardComponentType name=ID
+;
+
+LoadBalancer:
+    'component' 'loadbalancer' name=ID instanceCount=INT target=[Component]
+;
+
+StandardComponentType:
+    'frontend' | 'backend' | 'database'
 ;
 
 Connector:
     'connector' type=ConnectorType from=[Component] '->' to=[Component]
-;
-
-ComponentType:
-    'frontend' | 'backend' | 'database'
 ;
 
 ConnectorType:
