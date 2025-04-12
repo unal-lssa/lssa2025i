@@ -21,6 +21,7 @@ def create():
     conn.commit()
     cursor.close()
     conn.close()
+    print("Petition attended by lssa_be2")
     return jsonify(status="created")
 
 @app.route('/systems')
