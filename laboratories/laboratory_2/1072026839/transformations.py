@@ -71,7 +71,7 @@ def generate_backend(name, database):
             """
         ))
 
-def generate_frontend(name, backend):
+def generate_frontend(name, load_balancer):
     path = f'skeleton/{name}'
     os.makedirs(path, exist_ok=True)
 
@@ -109,12 +109,12 @@ def generate_frontend(name, backend):
             app.use(express.json());
             app.use(express.urlencoded({{ extended: true }}));
 
-            const BACKEND_URL = 'http://{backend}:80';
+            const LOAD_BALANCER_URL = 'http://{load_balancer}:80';
 
             app.get('/', async (req, res) => {{
             try {{
                 const response = await
-                axios.get(`${{BACKEND_URL}}/systems`);
+                axios.get(`${{LOAD_BALANCER_URL}}/systems`);
                 const systems = response.data.systems;
                 let list = systems.map(([id, name]) => `<li>${{name}}</li>`).join('');
                 res.send(`
@@ -130,13 +130,13 @@ def generate_frontend(name, backend):
                 </html>
                 `);
             }} catch (err) {{
-                res.status(500).send("Error contacting backend");
+                res.status(500).send("Error contacting load balancer");
             }}
             }});
 
             app.post('/create', async (req, res) => {{
                 const name = req.body.name;
-                await axios.post(`${{BACKEND_URL}}/create`, {{ name }});
+                await axios.post(`${{LOAD_BALANCER_URL}}/create`, {{ name }});
                 res.redirect('/');
             }});
 
@@ -144,6 +144,68 @@ def generate_frontend(name, backend):
             """
         ))
         
+def generate_load_balancer(name, backend):
+    path = f'skeleton/{name}'
+    os.makedirs(path, exist_ok=True)
+
+    with open(os.path.join(path, 'nginx.conf'), 'w') as f:
+        f.write(textwrap.dedent(f"""
+            user nginx;
+            worker_processes 1;
+            
+            error_log /var/log/nginx/error.log warn;
+            pid /var/run/nginx.pid;
+                                
+            events {{
+                worker_connections 1024;
+            }}
+                                
+            http {{
+                include /etc/nginx/mime.types;
+                default_type application/octet-stream;
+                                
+                log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                              '$status $body_bytes_sent "$http_referer" '
+                              '"$http_user_agent" "$http_x_forwarded_for"';
+                                
+                access_log /var/log/nginx/access.log main;
+                                
+                sendfile on;
+                keepalive_timeout 65;
+                                
+                upstream backend_servers {{
+                    server {backend}:80;
+                }}
+
+                server {{
+                    listen 80;
+                    
+                    location / {{
+                        proxy_pass http://backend_servers;
+                        proxy_set_header Host $host;
+                        proxy_set_header X-Real-IP $remote_addr;
+                        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                        proxy_set_header X-Forwarded-Proto $scheme;
+                    }}
+                }}
+            }}
+            """
+        ))
+
+    with open(os.path.join(path, 'Dockerfile'), 'w') as f:
+        f.write(textwrap.dedent("""
+            FROM nginx:1.21-alpine
+            
+            COPY nginx.conf /etc/nginx/nginx.conf
+            
+            EXPOSE 80
+            
+            CMD ["nginx", "-g", "daemon off;"]
+            """
+        ))
+
+
+
 def generate_docker_compose(components):
     path = f'skeleton/'
     os.makedirs(path, exist_ok=True)
@@ -153,13 +215,13 @@ def generate_docker_compose(components):
 
         f.write("services:\n")
 
-        db = None
+        component = None
 
         for i, (name, ctype) in enumerate(sorted_components.items()):
             port = 8000 + i
             f.write(f"  {name}:\n")
             if ctype == "database":
-                db = name
+                component = name
                 f.write("    image: mysql:8\n")
                 f.write("    environment:\n")
                 f.write("      - MYSQL_ROOT_PASSWORD=root\n")
@@ -173,14 +235,16 @@ def generate_docker_compose(components):
             else:
                 f.write(f"    build: ./{name}\n")
                 f.write(f"    ports:\n      - '{port}:80'\n")
-                if ctype== "backend":
-                    f.write(f"    depends_on:\n      - {db}\n")
+                if ctype == "backend" or ctype == "load_balancer":
+                    f.write(f"    depends_on:\n      - {component}\n")
+
         f.write("\nnetworks:\n  default:\n    driver: bridge\n")
 
 def apply_transformations(model):
     components = {}
     backend_name = None
     database_name = None
+    load_balancer_name = None
 
     for e in model.elements:
         if e.__class__.__name__ == 'Component':
@@ -188,6 +252,8 @@ def apply_transformations(model):
                 backend_name = e.name
             elif e.type == 'database':
                 database_name = e.name
+            elif e.type == 'load_balancer':
+                load_balancer_name = e.name
     
     for e in model.elements:
         if e.__class__.__name__ == 'Component':
@@ -197,6 +263,8 @@ def apply_transformations(model):
             if e.type == 'backend':
                 generate_backend(e.name, database=database_name)
             elif e.type == 'frontend':
-                generate_frontend(e.name, backend=backend_name)
+                generate_frontend(e.name, load_balancer=load_balancer_name)
+            elif e.type == 'load_balancer':
+                generate_load_balancer(e.name, backend=backend_name)
     
     generate_docker_compose(components)

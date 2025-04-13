@@ -16,7 +16,7 @@ Connector:
 ;
 
 ComponentType:
-    'database' | 'backend' | 'frontend'
+    'database' | 'backend' | 'frontend' | 'load_balancer'
 ;
 
 ConnectorType:
