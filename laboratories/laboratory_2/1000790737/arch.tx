@@ -1,6 +1,5 @@
 Model:
-    'architecture' ':'
-        elements*=Element
+    'architecture' ':' elements*=Element
 ;
 
 Element:
@@ -16,9 +15,14 @@ Connector:
 ;
 
 ComponentType:
-    'frontend' | 'backend' | 'database' | 'load_balancer'
+    'frontend' | BackendType | 'database' | 'load_balancer'
 ;
 
 ConnectorType:
     'http' | 'db_connector'
 ;
+
+BackendType:
+    'backend' ('instances' '=' instances=INT)
+;
+

@@ -21,9 +21,7 @@ def generate_backend(name, database):
         f.write(textwrap.dedent(f"""
             from flask import Flask, request, jsonify
             import mysql.connector
-
             app = Flask(__name__)
-
             @app.route('/create', methods=['POST'])
             def create():
                 data = request.json
@@ -39,7 +37,6 @@ def generate_backend(name, database):
                 cursor.close()
                 conn.close()
                 return jsonify(status="created")
-
             @app.route('/systems')
             def get_systems():
                 conn = mysql.connector.connect(
@@ -54,12 +51,10 @@ def generate_backend(name, database):
                 cursor.close()
                 conn.close()
                 return jsonify(systems=rows)
-
             if __name__ == '__main__':
                 app.run(host='0.0.0.0', port=80)
             """
         ))
-
     with open(os.path.join(path, 'Dockerfile'), 'w') as f:
         f.write(textwrap.dedent("""
             FROM python:3.11-slim
@@ -145,58 +140,53 @@ def generate_frontend(name, backend):
             """
         ))
 
-def generate_load_balancer(name, backend_name, total_backends):
+
+def generate_load_balancer(name, backend_names):
     path = f'skeleton/{name}'
     os.makedirs(path, exist_ok=True)
     port = 80
-    servers = ["server " + backend_name + f"-{i + 1}" + f":{port};\n\t" for i in range(total_backends)]
+    servers = [f"server {backend}:80;\n\t" for backend in backend_names]
+    servers[0] = "\t" + servers[0]  # add tab for the first server
 
     with open(os.path.join(path, 'nginx.conf'), 'w') as f:
-        f.write(textwrap.dedent(f"""
-            upstream backend {{
-                {''.join(servers)}
-            }}
+        f.write(textwrap.dedent(f"""upstream backend {{
+{''.join(servers)}
+}}
 
-            server {{
-                listen {port};
+server {{
+    listen {port};
 
-                include /etc/nginx/mime.types;
+    include /etc/nginx/mime.types;
 
-                location / {{
-                    proxy_pass http://backend;
-                }}
-            }}
-            """
+    location / {{
+        proxy_pass http://backend;
+    }}
+}}
+"""
         ))
 
     with open(os.path.join(path, 'Dockerfile'), 'w') as f:
-        f.write(textwrap.dedent("""
-            FROM nginx:stable-alpine
+        f.write(textwrap.dedent("""FROM nginx:stable-alpine
 
-            COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-            CMD ["nginx", "-g", "daemon off;"]
-            """
+CMD ["nginx", "-g", "daemon off;"]
+"""
         ))
     return True
+
 
 def generate_docker_compose(components):
     path = 'skeleton/'
     os.makedirs(path, exist_ok=True)
-
     with open(os.path.join(path, 'docker-compose.yml'), 'w') as f:
-        sorted_components = dict(sorted(components.items(), key=lambda item: 0 if item[1] == "database" else 1))
+        sorted_components = dict(sorted(components.items(), key=lambda item: 0 if item[1] == "database" else (1 if item[1] == "frontend" else (2 if item[1] != "load_balancer" else 999))))
 
         f.write("services:\n")
-
         db = None
-        backend_instances_created = 0
+
         for i, (name, ctype) in enumerate(sorted_components.items()):
             port = 8000 + i
-            if ctype == "backend":
-                backend_instances_created += 1
-                name = f"{name}-{backend_instances_created}"
-
             f.write(f"  {name}:\n")
             if ctype == "database":
                 db = name
@@ -207,13 +197,16 @@ def generate_docker_compose(components):
                 f.write("    volumes:\n")
                 f.write(f"      - ./{name}/init.sql:/docker-entrypoint-initdb.d/init.sql\n")
                 f.write("    ports:\n")
-                f.write("      - '127.0.0.1:3306:3306'\n")
+                f.write("      - '3306:3306'\n")
+            elif ctype == "BackendType":
+                folder_name = name.split('-')[0]
+                f.write(f"    build: ./{folder_name}\n")
+                f.write(f"    ports:\n      - '{port}:80'\n")
+                f.write(f"    depends_on:\n      - {db}\n")
             else:
                 f.write(f"    build: ./{name}\n")
                 f.write(f"    ports:\n      - '{port}:80'\n")
-                if ctype == "backend":
-                    f.write(f"    depends_on:\n      - {db}\n")
-                elif ctype == "load_balancer":
+                if ctype == "load_balancer":
                     f.write(f"    depends_on:\n      - {db}\n")
 
         f.write("\nnetworks:\n  default:\n    driver: bridge\n")
@@ -224,31 +217,38 @@ def apply_transformations(model):
     backend_name = None
     database_name = None
     target_frontend = None
-    backend_instances = 0
+    backend_instances = {}
 
     for e in model.elements:
         if e.__class__.__name__ == 'Component':
-            if e.type == 'backend':
+            if e.type.__class__.__name__ == 'BackendType':
                 backend_name = e.name
-                backend_instances += 1
+                backend_lang_instance = e.type # This is the BackendType instance
+                backend_instances[e.name] = backend_lang_instance.instances if hasattr(backend_lang_instance, 'instances') else 1
                 target_frontend = e.name if target_frontend is None else target_frontend
             elif e.type == 'database':
                 database_name = e.name
             elif e.type == 'load_balancer':
                 target_frontend = e.name
 
-    backend_instances_created = backend_instances if backend_instances > 0 else 1
+    nginx_servers = []
     for e in model.elements:
         if e.__class__.__name__ == 'Component':
-            components[e.name] = e.type
+            if e.type.__class__.__name__ == 'BackendType':
+                for i in range(backend_instances[e.name]):
+                    component_name = f"{e.name}-{i + 1}"
+                    components[component_name] = "BackendType"
+                    nginx_servers.append(component_name)
+            else:
+                components[e.name] = e.type
+
             if e.type == 'database':
                 generate_database(database_name)
-            if e.type == 'backend':
-                instance_name = f"{backend_name}-{backend_instances_created}"
-                generate_backend(instance_name, database=database_name)
+            if e.type.__class__.__name__ == 'BackendType':
+                generate_backend(backend_name, database=database_name)
             elif e.type == 'frontend':
                 generate_frontend(e.name, backend=target_frontend)
             elif e.type == 'load_balancer':
-                generate_load_balancer(e.name, backend_name=backend_name, total_backends=backend_instances)
+                generate_load_balancer(e.name, nginx_servers)
 
     generate_docker_compose(components)

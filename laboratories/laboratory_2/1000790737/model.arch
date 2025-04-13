@@ -1,6 +1,6 @@
 architecture:
     component frontend lssa_fe
-    component backend lssa_be
+    component backend instances=3 lssa_be
     component database lssa_db
     component load_balancer lssa_lb
 
