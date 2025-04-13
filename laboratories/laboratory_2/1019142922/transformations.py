@@ -89,7 +89,8 @@ def generate_docker_compose(components):
     with (path / "docker-compose.yml").open("w") as f:
         sorted_components = dict(
             sorted(
-                components.items(), key=lambda item: 0 if item[1] == "database" else 1
+                components.items(),
+                key=lambda item: 0 if item[1].type == "database" else 1,
             )
         )
 
@@ -97,8 +98,9 @@ def generate_docker_compose(components):
 
         db = None
 
-        for i, (name, ctype) in enumerate(sorted_components.items()):
+        for i, (name, element) in enumerate(sorted_components.items()):
             port = 8000 + i
+            ctype = element.type
             f.write(f"\n  {name}:\n")
 
             if ctype == "database":
@@ -128,7 +130,7 @@ def generate_docker_compose(components):
                 if ctype == "backend":
                     f.write(f"    depends_on:\n      - {db}\n")
                     f.write("    deploy:\n")
-                    f.write("      replicas: 1\n")
+                    f.write(f"      replicas: {element.replicas}\n")
 
         f.write("\nnetworks:\n  default:\n    driver: bridge\n")
 
@@ -150,7 +152,7 @@ def apply_transformations(model):
 
     for e in model.elements:
         if e.__class__.__name__ == "Component":
-            components[e.name] = e.type
+            components[e.name] = e
             if e.type == "database":
                 generate_database(e.name)
             elif e.type == "backend":
