@@ -4,9 +4,9 @@
 
 ## Work description:
 
-In order to allow a new load balancer componnet to be created and deployed by the proposed model-driven-architecture backbone, the following has been done:
+In order to allow a new load balancer component to be created and deployed by the proposed model-driven-architecture backbone, the following has been done:
 
-Include new load_balancer component definition to DSL-defined allowed syntax. 
+Included new load_balancer component definition to DSL-defined allowed syntax. 
 
 ```tx
 Model:
