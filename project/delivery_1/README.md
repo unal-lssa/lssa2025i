@@ -31,7 +31,7 @@ The objective of the first delivery of the project is to architecturally design 
 * Steps:
   - Use the branch corresponding to your team (team1, team2, ...).
   - In the folder [project/delivery_1](), create an **X** folder (where X = the name of the system), which must include the **deliverable**:
-    + README.md with the full names of the team members and the decription of the elements.
+    + README.md with the full names of the team members and the description of the elements.
     + Associated files.
 
 ### 4.3. Delivery Deadline
