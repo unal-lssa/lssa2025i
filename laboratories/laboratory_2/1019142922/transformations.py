@@ -1,8 +1,7 @@
-import os
 from pathlib import Path
-import textwrap
 
 PROJECT_BASE = Path.cwd() / "skeleton"
+TEMPLATES_BASE = Path(__file__).parent / "templates"
 
 
 def _make_component_dir(component_name: str, project_base: Path = PROJECT_BASE) -> Path:
@@ -14,167 +13,64 @@ def _make_component_dir(component_name: str, project_base: Path = PROJECT_BASE) 
     return path
 
 
-def generate_database(name):
+def _copy_template(
+    template_path: Path, target_path: Path, params: dict | None = None
+) -> None:
+    """
+    Make a copy of the files in a template directory to the target location and replace
+    the parameters in templates.
+    """
+
+    for template in template_path.iterdir():
+        with template.open("r") as template_file:
+            content = template_file.read()
+
+        if params is not None:
+            for param, value in params.items():
+                content = content.replace(f"{{{{{param}}}}}", value)
+
+        with (target_path / template.name).open("w") as target_file:
+            target_file.write(content)
+
+
+def generate_templated_component(
+    name: str, template_name: str, params: dict = None
+) -> None:
+    """Generate a templated component
+
+    A templated component is that for which the only logic in generating is
+    copying the files of a template and replacing some params in the templates.
+    """
+
     path = _make_component_dir(name)
 
-    with (path / "init.sql").open("w") as f:
-        f.write(
-            textwrap.dedent(
-                """
-                    CREATE TABLE IF NOT EXISTS systems (
-                        id INT AUTO_INCREMENT PRIMARY KEY,
-                        name VARCHAR(255)
-                    );
-                """
-            )
-        )
+    _copy_template(
+        template_path=TEMPLATES_BASE / template_name, target_path=path, params=params
+    )
+
+
+def generate_database(name):
+    generate_templated_component(name, "database")
 
 
 def generate_backend(name, database):
-    path = _make_component_dir(name)
-
-    with (path / "app.py").open("w") as f:
-        f.write(
-            textwrap.dedent(f"""
-            from flask import Flask, request, jsonify
-
-            import mysql.connector
-
-            app = Flask(__name__)
-
-            @app.route('/create', methods=['POST'])
-            def create():
-                data = request.json
-
-                conn = mysql.connector.connect(
-                    host='{database}',
-                    user='root',
-                    password='root',
-                    database='{database}',
-                )
-                cursor = conn.cursor()
-                cursor.execute("INSERT INTO systems (name) VALUES (%s)", (data['name'],))
-                conn.commit()
-                cursor.close()
-                conn.close()
-
-                return jsonify(status="created")
-
-            @app.route('/systems')
-            def get_systems():
-                conn = mysql.connector.connect(
-                    host='{database}',
-                    user='root',
-                    password='root',
-                    database='{database}',
-                )
-                cursor = conn.cursor()
-                cursor.execute("SELECT * FROM systems")
-                rows = cursor.fetchall()
-                cursor.close()
-                conn.close()
-
-                return jsonify(systems=rows)
-
-            if __name__ == '__main__':
-                app.run(host='0.0.0.0', port=80)
-        """)
-        )
-
-    with (path / "Dockerfile").open("w") as f:
-        f.write(
-            textwrap.dedent("""
-                FROM python:3.11-slim
-
-                WORKDIR /app
-                COPY . .
-
-                RUN pip install flask mysql-connector-python
-
-                CMD ["python", "app.py"]
-            """)
-        )
+    generate_templated_component(
+        name,
+        "backend",
+        params={
+            "database": database,
+        },
+    )
 
 
 def generate_frontend(name, backend):
-    path = _make_component_dir(name)
-
-    with (path / "package.json").open("w") as f:
-        f.write(
-            textwrap.dedent("""
-                {
-                    "name": "frontend",
-                    "version": "1.0.0",
-                    "main": "app.js",
-                    "dependencies": {
-                        "express": "^4.18.2",
-                        "axios": "^1.6.7"
-                    }
-                }
-            """)
-        )
-
-    with (path / "Dockerfile").open("w") as f:
-        f.write(
-            textwrap.dedent("""
-                FROM node:18
-
-                WORKDIR /app
-                COPY . .
-                RUN npm install
-
-                CMD ["node", "app.js"]
-            """)
-        )
-
-    with (path / "app.js").open("w") as f:
-        f.write(
-            textwrap.dedent(f"""
-                const express = require('express');
-                const axios = require('axios');
-
-                const app = express();
-
-                app.use(express.json());
-                app.use(express.urlencoded({{ extended: true }}));
-
-                const BACKEND_URL = 'http://{backend}:80';
-
-                app.get('/', async (req, res) => {{
-                    try {{
-                        const response = await
-                        axios.get(`${{BACKEND_URL}}/systems`);
-                        const systems = response.data.systems;
-                        let list = systems.map(([id, name]) => `<li>${{name}}
-                                               </li>`).join('');
-                        res.send(`
-                             <html>
-                                 <body>
-                                     <h1>Frontend</h1>
-
-                                     <form method="POST" action="/create">
-                                         <input name="name" />
-                                         <button type="submit">Create</button>
-                                     </form>
-
-                                     <ul>${{list}}</ul>
-                                 </body>
-                             </html>
-                         `);
-                    }} catch (err) {{
-                        res.status(500).send("Error contacting backend");
-                    }}
-                }});
-
-                app.post('/create', async (req, res) => {{
-                    const name = req.body.name;
-                    await axios.post(`${{BACKEND_URL}}/create`, {{ name }});
-                    res.redirect('/');
-                }});
-
-                app.listen(80, () => console.log("Frontend running on port 80"));
-            """)
-        )
+    generate_templated_component(
+        name,
+        "frontend",
+        params={
+            "backend": backend,
+        },
+    )
 
 
 def generate_docker_compose(components):
@@ -207,6 +103,9 @@ def generate_docker_compose(components):
                 )
                 f.write("    ports:\n")
                 f.write("      - '3306:3306'\n")
+
+            elif ctype == "load_balancer":
+                pass
 
             else:
                 f.write(f"    build: ./{name}\n")
