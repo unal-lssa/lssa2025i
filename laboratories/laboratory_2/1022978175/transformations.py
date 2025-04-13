@@ -249,7 +249,7 @@ def generate_docker_compose(components):
                 if ctype== "frontend":
                     fe = name
                 if ctype== "load_balancer":
-                    f.write(f"    ports:\n      - '8084:8084'\n")
+                    f.write(f"      - '8084:8084'\n")
                     f.write(f"    depends_on:\n      - {fe}\n")
                     f.write(f"    restart: unless-stopped\n")
 
