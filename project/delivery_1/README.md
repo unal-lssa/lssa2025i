@@ -22,8 +22,8 @@ The objective of the first delivery of the project is to architecturally design 
 
 ### 4.1. Deliverable
 
-* Description of the process.
-* Associated files that support the process.
+* Description of each one of the following elements: software system context, metamodel, transformation rules, model, skeleton and prototype. Additionaly, the file must include the instructions (commands) for executing the process.
+* Associated files for executing the process: metamodel, transformation rules, model and others (e.g. configuration files for deployment).
 
 ### 4.2. Submission Format
 
@@ -31,8 +31,8 @@ The objective of the first delivery of the project is to architecturally design 
 * Steps:
   - Use the branch corresponding to your team (team1, team2, ...).
   - In the folder [project/delivery_1](), create an **X** folder (where X = the name of the system), which must include the **deliverable**:
-    + README.md with the full names of the team members and the decription of each one of the following elements: software system context, metamodel, transformation rules, model, skeleton and prototype. Additionaly, the file must include the instructions (commands) for executing the process.
-    + Associated files for executing the process: metamodel, trasnformation rules, model and others (e.g. configuration files for deployment).
+    + README.md with the full names of the team members and the decription of the elements.
+    + Associated files.
 
 ### 4.3. Delivery Deadline
 
