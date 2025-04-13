@@ -251,7 +251,7 @@ def generate_docker_compose(components):
                 if ctype== "load_balancer":
                     f.write(f"    ports:\n      - '8084:8084'\n")
                     f.write(f"    depends_on:\n      - {fe}\n")
-                    f.write(f"    restart: unless-stoped\n")
+                    f.write(f"    restart: unless-stopped\n")
 
         f.write("\nnetworks:\n  default:\n    driver: bridge\n")
 
