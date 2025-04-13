@@ -35,5 +35,3 @@ The objective of the first delivery of the project is to architecturally design 
     + Associated files.
 
 ### 4.3. Delivery Deadline
-
-Saturday, April 26, 2025, before 23h59.
