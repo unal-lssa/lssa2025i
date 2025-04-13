@@ -144,7 +144,73 @@ def generate_frontend(name, backend):
             res.redirect('/');
             }});
 
+            app.get('/health', async (req, res) => {{
+                res.status(200).send("Healthcheck OK!");
+            }});
+
             app.listen(80, () => console.log("Frontend running on port 80"));
+            """
+        ))
+
+def generate_load_balancer(name, frontend):
+    
+    path = f'skeleton/{name}'
+    os.makedirs(path, exist_ok=True)
+
+    with open(os.path.join(path, 'Dockerfile'), 'w') as f:
+        f.write(textwrap.dedent("""
+            FROM haproxy:2.8-alpine
+
+            COPY haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
+
+            EXPOSE 80 8404
+
+            # Health check
+            HEALTHCHECK --interval=5s --timeout=3s CMD wget --no-verbose --tries=1 --spider http://localhost:8404/stats || exit 1
+            """
+        ))
+
+    with open(os.path.join(path, 'haproxy.cfg'), 'w') as f:
+        f.write(textwrap.dedent(f"""
+            global
+                log stdout format raw local0
+                maxconn 4096
+                user haproxy
+                group haproxy
+
+            defaults
+                log     global
+                mode    http
+                option  httplog
+                option  dontlognull
+                retries 3
+                timeout connect 5s
+                timeout client  30s
+                timeout server  30s
+                timeout http-request 10s
+
+            # Stats page
+            listen stats
+                bind *:8404
+                stats enable
+                stats uri /stats
+                stats refresh 10s
+                stats admin if TRUE
+
+            # Frontend configuration
+            frontend http_front
+                bind *:80
+                default_backend web_servers
+                
+                # Add request headers
+                http-request set-header X-Forwarded-Proto http
+
+            # Backend configuration for web servers
+            backend web_servers
+                balance roundrobin
+                option httpchk GET /health
+                http-check expect status 200
+                server {frontend} {frontend}:80 check
             """
         ))
 
@@ -160,6 +226,7 @@ def generate_docker_compose(components):
         f.write("services:\n")
 
         db = None
+        fe = None
 
         for i, (name, ctype) in enumerate(sorted_components.items()):
             port = 8000 + i
@@ -179,6 +246,12 @@ def generate_docker_compose(components):
                 f.write(f"    ports:\n      - '{port}:80'\n")
                 if ctype== "backend":
                     f.write(f"    depends_on:\n      - {db}\n")
+                if ctype== "frontend":
+                    fe = name
+                if ctype== "load_balancer":
+                    f.write(f"    ports:\n      - '8084:8084'\n")
+                    f.write(f"    depends_on:\n      - {fe}\n")
+                    f.write(f"    restart: unless-stoped\n")
 
         f.write("\nnetworks:\n  default:\n    driver: bridge\n")
 
@@ -188,11 +261,14 @@ def apply_transformations(model):
     components = {}
     backend_name = None
     database_name = None
+    frontend_name = None
 
     for e in model.elements:
         if e.__class__.__name__ == 'Component':
             if e.type == 'backend':
                 backend_name = e.name
+            elif e.type == 'frontend':
+                frontend_name = e.name
             elif e.type == 'database':
                 database_name = e.name
 
@@ -204,6 +280,8 @@ def apply_transformations(model):
             if e.type == 'backend':
                 generate_backend(e.name, database=database_name)
             elif e.type == 'frontend':
-                generate_frontend(e.name, backend=backend_name)
+                generate_frontend(e.name, frontend=backend_name)
+            elif e.type == 'load_balancer':
+                generate_load_balancer(e.name, frontend=frontend_name)
 
     generate_docker_compose(components)
