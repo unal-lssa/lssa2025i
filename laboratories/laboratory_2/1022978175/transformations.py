@@ -279,9 +279,9 @@ def apply_transformations(model):
                 generate_database(e.name)
             if e.type == 'backend':
                 generate_backend(e.name, database=database_name)
-            elif e.type == 'frontend':
-                generate_frontend(e.name, frontend=backend_name)
-            elif e.type == 'load_balancer':
+            if e.type == 'frontend':
+                generate_frontend(e.name, backend=backend_name)
+            if e.type == 'load_balancer':
                 generate_load_balancer(e.name, frontend=frontend_name)
 
     generate_docker_compose(components)
