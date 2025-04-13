@@ -73,6 +73,16 @@ def generate_frontend(name, backend):
     )
 
 
+def generate_load_balancer(name, backend):
+    generate_templated_component(
+        name,
+        "load_balancer",
+        params={
+            "backend": backend,
+        },
+    )
+
+
 def generate_docker_compose(components):
     path = _make_component_dir("")
 
@@ -105,7 +115,11 @@ def generate_docker_compose(components):
                 f.write("      - '3306:3306'\n")
 
             elif ctype == "load_balancer":
-                pass
+                f.write("    image: nginx:latest\n")
+                f.write("    volumes:\n")
+                f.write(f"      - ./{name}/nginx.conf:/etc/nginx/nginx.conf\n")
+                f.write("    ports:\n")
+                f.write(f"      - '{port}:80'\n")
 
             else:
                 f.write(f"    build: ./{name}\n")
@@ -113,6 +127,8 @@ def generate_docker_compose(components):
 
                 if ctype == "backend":
                     f.write(f"    depends_on:\n      - {db}\n")
+                    f.write("    deploy:\n")
+                    f.write("      replicas: 1\n")
 
         f.write("\nnetworks:\n  default:\n    driver: bridge\n")
 
@@ -121,6 +137,7 @@ def apply_transformations(model):
     components = {}
     backend_name = None
     database_name = None
+    load_balancer_name = None
 
     for e in model.elements:
         if e.__class__.__name__ == "Component":
@@ -128,6 +145,8 @@ def apply_transformations(model):
                 backend_name = e.name
             elif e.type == "database":
                 database_name = e.name
+            elif e.type == "load_balancer":
+                load_balancer_name = e.name
 
     for e in model.elements:
         if e.__class__.__name__ == "Component":
@@ -137,6 +156,8 @@ def apply_transformations(model):
             elif e.type == "backend":
                 generate_backend(e.name, database=database_name)
             elif e.type == "frontend":
-                generate_frontend(e.name, backend=backend_name)
+                generate_frontend(e.name, backend=load_balancer_name)
+            elif e.type == "load_balancer":
+                generate_load_balancer(e.name, backend=backend_name)
 
     generate_docker_compose(components)
