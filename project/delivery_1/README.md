@@ -22,7 +22,7 @@ The objective of the first delivery of the project is to architecturally design 
 
 ### 4.1. Deliverable
 
-* Description of each one of the following elements: software system context, metamodel, transformation rules, model, skeleton and prototype. Additionaly, the file must include the instructions (commands) for executing the process.
+* Description of each one of the following elements: software system context, metamodel, transformation rules, model, skeleton and prototype. Additionally, the file must include the instructions (commands) for executing the process.
 * Associated files for executing the process: metamodel, transformation rules, model and others (e.g. configuration files for deployment).
 
 ### 4.2. Submission Format
@@ -35,3 +35,5 @@ The objective of the first delivery of the project is to architecturally design 
     + Associated files.
 
 ### 4.3. Delivery Deadline
+
+Saturday, April 26, 2025, before 23h59.
