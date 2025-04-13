@@ -233,7 +233,7 @@ def generate_docker_compose(components):
             f.write(f"  {name}:\n")
             if ctype == "database":
                 db = name
-                f.write("    image: mysql:8.0.26\n")
+                f.write("    image: mysql:8\n")
                 f.write("    environment:\n")
                 f.write("      - MYSQL_ROOT_PASSWORD=root\n")
                 f.write(f"      - MYSQL_DATABASE={name}\n")
