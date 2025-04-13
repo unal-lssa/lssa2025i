@@ -22,8 +22,8 @@ The objective of the first delivery of the project is to architecturally design 
 
 ### 4.1. Deliverable
 
-* Full name.
-* The same program with the following improvement: support of a new component type (**load balancer**). **Modify** the *arch.tx*, *transformations.py*, and *model.arch* files; and **keep** the same *metamodel.py*, *generation.py* and *Dockerfile* files.
+* Description of the process.
+* Associated files that support the process.
 
 ### 4.2. Submission Format
 
