@@ -1,4 +1,4 @@
-# Project: Delivery 1
+# Project - Delivery 1
 
 ## 1. Objective
 
