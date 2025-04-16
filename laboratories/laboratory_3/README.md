@@ -229,6 +229,6 @@ These measures, when applied at the design stage (Secure by Design), provide sig
     + README.md with the full name and steps for executing the exercise.
     + Related files to execute.
 
-### 4.3. Delivery Deadline
+### 5.3. Delivery Deadline
 
 Friday, April 25, 2025, before 23h59.
