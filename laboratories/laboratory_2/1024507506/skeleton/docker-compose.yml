@@ -1,0 +1,37 @@
+services:
+  lssa_db:
+    image: mysql:8
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=lssa_db
+    volumes:
+      - ./lssa_db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - '3306:3306'
+  lssa_fe:
+    build: ./lssa_fe
+    ports:
+      - '8001:80'
+  lssa_be1:
+    build: ./lssa_be
+    ports:
+      - '8002:80'
+    depends_on:
+      - lssa_db
+  lssa_be2:
+    build: ./lssa_be
+    ports:
+      - '8003:80'
+    depends_on:
+      - lssa_db
+  lssa_lb:
+    build: ./lssa_lb
+    ports:
+      - '8004:80'
+    depends_on:
+      - lssa_be1
+      - lssa_be2
+
+networks:
+  default:
+    driver: bridge
