@@ -1,4 +1,5 @@
 import os, textwrap
+import shutil
 
 def generate_database(name):
 
@@ -17,6 +18,7 @@ def generate_database(name):
 def generate_backend(name, database):
 
     path = f'skeleton/{name}'
+    
     os.makedirs(path, exist_ok=True)
 
     with open(os.path.join(path, 'app.py'), 'w') as f:
@@ -147,6 +149,41 @@ def generate_frontend(name, backend):
             app.listen(80, () => console.log("Frontend running on port 80"));
             """
         ))
+        
+def generate_load_balancer(name, targets):
+    path = f'skeleton/{name}'
+    os.makedirs(path, exist_ok=True)
+
+    with open(os.path.join(path, 'Dockerfile'), 'w') as f:
+        f.write(textwrap.dedent("""
+            FROM node:18
+            WORKDIR /app
+            COPY . .
+            RUN npm install express http-proxy
+            CMD ["node", "app.js"]
+        """))
+
+    with open(os.path.join(path, 'app.js'), 'w') as f:
+        targets_str = ", ".join([f"'{t}'" for t in targets])
+        f.write(textwrap.dedent(f"""
+            const express = require('express');
+            const httpProxy = require('http-proxy');
+            const app = express();
+            const proxy = httpProxy.createProxyServer({{}});
+            const targets = [{targets_str}].map(host => `http://${{host}}:80`);
+            let index = 0;
+
+            app.use((req, res) => {{
+                const target = targets[index % targets.length];
+                index++;
+                proxy.web(req, res, {{ target }});
+            }});
+
+            app.listen(80, () => console.log("Load balancer running on port 80"));
+        """))
+
+    
+    
 
 def generate_docker_compose(components):
 
@@ -163,9 +200,9 @@ def generate_docker_compose(components):
 
         for i, (name, ctype) in enumerate(sorted_components.items()):
             port = 8000 + i
-            f.write(f"  {name}:\n")
             if ctype == "database":
                 db = name
+                f.write(f"  {name}:\n")
                 f.write("    image: mysql:8\n")
                 f.write("    environment:\n")
                 f.write("      - MYSQL_ROOT_PASSWORD=root\n")
@@ -174,11 +211,29 @@ def generate_docker_compose(components):
                 f.write(f"      - ./{name}/init.sql:/docker-entrypoint-initdb.d/init.sql\n")
                 f.write("    ports:\n")
                 f.write("      - '3306:3306'\n")
-            else:
+            elif ctype == "backend":
+                for suffix in ['1', '2']:
+                    instance_name = f"{name}{suffix}"
+                    f.write(f"  {instance_name}:\n")
+                    f.write(f"    build: ./{name}\n")
+                    f.write(f"    ports:\n      - '{port}:80'\n")
+                    f.write(f"    depends_on:\n      - {db}\n")
+                    port += 1
+            elif ctype == "frontend":
+                f.write(f"  {name}:\n")
                 f.write(f"    build: ./{name}\n")
                 f.write(f"    ports:\n      - '{port}:80'\n")
                 if ctype== "backend":
                     f.write(f"    depends_on:\n      - {db}\n")
+                port += 1
+            elif ctype == "load_balancer":
+                port += 1
+                f.write(f"  {name}:\n")
+                f.write(f"    build: ./{name}\n")
+                f.write(f"    ports:\n      - '{port}:80'\n")
+                f.write(f"    depends_on:\n")
+                f.write(f"      - lssa_be1\n")
+                f.write(f"      - lssa_be2\n")
 
         f.write("\nnetworks:\n  default:\n    driver: bridge\n")
 
@@ -204,6 +259,10 @@ def apply_transformations(model):
             if e.type == 'backend':
                 generate_backend(e.name, database=database_name)
             elif e.type == 'frontend':
-                generate_frontend(e.name, backend=backend_name)
-
+                target = backend_name
+                if any(comp.type == 'load_balancer' for comp in model.elements):
+                    target = next(comp.name for comp in model.elements if comp.type == 'load_balancer')
+                generate_frontend(e.name, backend=target)
+            elif e.type == 'load_balancer':
+                generate_load_balancer(e.name, targets=[f"{backend_name}1", f"{backend_name}2"])
     generate_docker_compose(components)
