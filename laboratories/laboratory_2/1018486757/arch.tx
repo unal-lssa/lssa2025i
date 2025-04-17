@@ -1,0 +1,19 @@
+Model: 
+    'architecture' ':' 
+        elements*=Element 
+; 
+Element: 
+    Component | Connector //tipos de elementos
+; 
+Component: 
+    'component' type=ComponentType name=ID //componentes tendrán un typo y un id
+; 
+Connector: 
+    'connector' type=ConnectorType from=[Component] '->' to=[Component] //tipo de conector y de donde a donde va
+; 
+ComponentType: 
+    'frontend' | 'backend' | 'database' | 'load_balancer' //tipos de componentes
+; 
+ConnectorType: 
+    'http' | 'db_connector' //tipos de conectores 
+; 
