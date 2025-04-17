@@ -1,4 +1,4 @@
-# Laboratorio 3 - Arquitectura de Microservicios
+# Laboratorio 3 - Seguridad
 
 ### Juan David Ramírez Ávila
 
