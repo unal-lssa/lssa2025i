@@ -73,7 +73,7 @@ El API Gateway escrito con Flask de este laborario, implementa diferentes mecani
 
 ## Requisitos
 
-- Python 3.7 o superior
+- Python 3.x
 - `pip` para gestionar paquetes
 
 ### Dependencias recomendadas
@@ -81,6 +81,7 @@ El API Gateway escrito con Flask de este laborario, implementa diferentes mecani
 ```bash
 pip install flask
 pip install requests
+pip install pyjwt
 ```
 
 ## Ejecución del Laboratorio
@@ -93,7 +94,7 @@ Asegúrate de tener todos los archivos en el mismo directorio:
 Laboratorio3/
 ```
 
-### Paso 2: Ejecutar los microservicios
+### Paso 2: Ejecutar los arcivos .py 
 
 En diferentes terminales, ejecuta cada uno de los microservicios:
 
