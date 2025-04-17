@@ -1,25 +1,22 @@
 Model:
-    'architecture' ':'
+    'architecture' name=ID ':'
         elements*=Element
 ;
 
-Element:
-    Component | Connector
-;
+Element: Component | Connector;
 
 Component:
     'component' type=ComponentType name=ID
 ;
 
 Connector:
-    'connector' type=ConnectorType from=[Component] '->' to=[Component]
+    'connector' type=ConnectorType from_=[Component] '->' to_=[Component]
 ;
 
 ComponentType:
-    'engine' | 'matcher' | 'frontend' | 'loadbalancer' | 'pub_sub'
+    'frontend' | 'gateway' | 'service' | 'broker' | 'queue' | 'cache' | 'database' | 'loadbalancer'
 ;
 
-
 ConnectorType:
-    'http' | 'pub_sub_driver' | 'web_socket'
+    'http' | 'web_socket' | 'queue_connector' | 'broker_connector' | 'db_connector' | 'internal_call'
 ;
