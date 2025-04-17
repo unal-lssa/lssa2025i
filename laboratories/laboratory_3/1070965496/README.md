@@ -94,7 +94,7 @@ Asegúrate de tener todos los archivos en el mismo directorio:
 Laboratorio3/
 ```
 
-### Paso 2: Ejecutar los arcivos .py 
+### Paso 2: Ejecutar los archivos .py 
 
 En diferentes terminales, ejecuta cada uno de los microservicios:
 
