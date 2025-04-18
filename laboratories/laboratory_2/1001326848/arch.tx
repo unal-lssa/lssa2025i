@@ -1,0 +1,25 @@
+Model:
+    'architecture' ':'
+        elements*=Element
+;
+
+Element:
+    Component | Connector
+;
+
+Component:
+    'component' type=ComponentType name=ID
+;
+
+Connector:
+    'connector' type=ConnectorType from=[Component] '->' to=[Component]
+;
+
+ComponentType:
+    'database' | 'backend' | 'frontend' | 'loadbalancer'
+;
+
+
+ConnectorType:
+    'http' | 'db_connector'
+;

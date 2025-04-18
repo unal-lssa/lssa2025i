@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  api_gateway:
+    build:
+      context: ./gateway
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      - JWT_SECRET=supersecretjwt
+    networks:
+      - public
+      - internal
+    depends_on:
+      - microservice
+      - whitelist
+
+  microservice:
+    build:
+      context: ./microservice
+    environment:
+      - DB_HOST=db
+      - DB_USER=admin
+      - DB_PASSWORD=admin123
+      - DB_NAME=app_db
+      - DB_PORT=5432
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - internal
+      - db_net
+
+  whitelist:
+    build:
+      context: ./whitelist
+    environment:
+      - DB_HOST=db
+      - DB_USER=admin
+      - DB_PASSWORD=admin123
+      - DB_NAME=app_db
+      - DB_PORT=5432
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - internal
+      - db_net
+
+  db:
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin123
+      - POSTGRES_DB=app_db
+    networks:
+      - db_net
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  invalid_request:
+    image: curlimages/curl
+    entrypoint: >
+      /bin/sh -c "curl -X POST http://api_gateway:8080/login -d ''"
+    networks:
+      - public
+    profiles:
+      - request
+
+networks:
+  public:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16
+          gateway: 172.30.0.1
+  internal:
+    internal: true
+  db_net:
+    internal: true
