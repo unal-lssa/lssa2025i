@@ -1,14 +1,13 @@
 from flask import Flask, request, jsonify
 import jwt
 import os
+import requests
 from functools import wraps
 
 app = Flask(__name__)
-SECRET_KEY = os.getenv("SECRET_KEY", "kS1p_UhHHit_dOmJw1JO1e6PiQLV0xlF7bq5O4U65bw")
+
+SECRET_KEY = os.getenv("SECRET_KEY")
 AUTHORIZED_IP = os.getenv('AUTHORIZED_IP', '172.18.0.1')
-USERS = {
-    "user1": "password123"
-}
 
 
 def limit_exposure(f):
@@ -20,7 +19,6 @@ def limit_exposure(f):
             return jsonify({'message': 'Forbidden: Unauthorized IP'}), 403
         return f(*args, **kwargs)
     return decorated_function
-
 
 # Function to check JWT token
 def token_required(f):
@@ -36,24 +34,46 @@ def token_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-
 # Route for user login (returns JWT token)
 @app.route('/login', methods=['POST'])
+@limit_exposure 
 def login():
-    auth = request.get_json()
-    username = auth.get('username')
-    password = auth.get('password')
-    if USERS.get(username) == password:
-        token = jwt.encode({'username': username}, SECRET_KEY, algorithm="HS256")
-        return jsonify({'token': token})
-    return jsonify({'message': 'Invalid credentials'}), 401
+    try: 
+        auth = request.get_json()
+        if not auth or not auth.get('username') or not auth.get('password'):
+            return jsonify({'message': 'Missing credentials'}), 404
+        
+        username = auth.get('username')
+        password = auth.get('password')
 
-# Protected route
-@app.route('/data', methods=['GET'])
+        response = requests.post(
+            'http://login-microservice:5001/login',
+            json={'username': username, 'password': password},  
+            headers={'Content-Type': 'application/json'}
+        )
+       
+        if response.status_code == 200:
+            return jsonify(response.json()), 200
+        else:
+            return jsonify(response.json()), 401
+    except requests.exceptions.RequestException as e:
+        return jsonify({'Message': 'Error at api-gateway', 'Details': str(e)}), 500
+
+@app.route('/products', methods=['GET'])
 @token_required
-@limit_exposure # Apply the limit exposure tactic to this route
-def get_data():
-    return jsonify({'message': 'Data accessed successfully!'}), 200
+@limit_exposure
+def query_products():
+    try:
+        response = requests.get(
+            'http://products-microservice:5003/products'
+        )
+        
+        if response.status_code == 200:
+            return jsonify(response.json()), 200
+        else:
+            return jsonify(response.json()), 404
+    except requests.exceptions.RequestException as e:
+        return jsonify({'message': 'Error at api-gateway', 'Details: ': str(e)}), 500
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)

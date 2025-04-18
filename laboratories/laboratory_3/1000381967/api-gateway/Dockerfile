@@ -11,12 +11,12 @@ RUN apk update && \
 
 RUN pip install --no-cache-dir \
     Flask==3.1.0  \
-    PyJWT==2.10.1 
+    PyJWT==2.10.1 \
+    requests==2.32.3 
 
 COPY api-gateway.py .
 
 ENV SECRET_KEY=kS1p_UhHHit_dOmJw1JO1e6PiQLV0xlF7bq5O4U65bw
 ENV AUTHORIZED_IP=172.18.0.1 
-
 
 CMD ["python", "api-gateway.py"]

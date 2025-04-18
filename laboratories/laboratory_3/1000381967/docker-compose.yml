@@ -11,17 +11,33 @@ services:
     networks:
       - lab-network
 
-  microservice:
-    build: ./microservice1
-    expose:
-      - "5001"
+  login-microservice:
+    build: ./login-microservice
+    ports:
+      - "5001:5001"
     networks:
       - lab-network
 
-  database:
-    build: ./database
-    expose:
-      - "5002"
+  login-database:
+    build: ./login-database
+    ports:
+      - "5002:5002"
+    environment:
+      - SECRET_KEY=kS1p_UhHHit_dOmJw1JO1e6PiQLV0xlF7bq5O4U65bw
+    networks:
+      - lab-network
+
+  products-microservice:
+    build: ./products-microservice
+    ports:
+      - "5003:5003"
+    networks:
+      - lab-network
+
+  products-database:
+    build: ./products-database
+    ports:
+      - "5004:5004"
     networks:
       - lab-network
 
