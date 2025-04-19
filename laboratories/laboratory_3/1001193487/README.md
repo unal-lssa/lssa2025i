@@ -31,6 +31,13 @@ graph LR
 	end
 ```
 
+## Security by Design Decisions
+- **API Gateway**: Centralized entry point for all requests, handles authentication and routing.
+- **JWT Tokens**: Used for secure communication between the client and the API Gateway, and between the Gateway and microservices.
+- **IP-based Access Control**: Only the API Gateway can access the microservices and databases, preventing direct access from clients.
+- **Service-to-Service Communication**: Microservices communicate with their respective databases only through the API Gateway, ensuring that no service can access another's database directly.
+- **Role-based Access Control**: Admin users have additional privileges, enforced through decorators in the microservices.
+
 ## Prerequisites
 - Docker & Docker Compose installed
 
@@ -113,6 +120,11 @@ docker compose ps
    ![Admin Endpoint Error](images/image-3.png)
    **Admin users will have access.*
    ![Admin Endpoint Screenshot](images/image-4.png)
+
+4. *IP-based access control:*
+
+   *Direct access to microservices or databases will be denied.*
+   ![IP-based Access Control Screenshot](images/image-5.png)
 
 
 ---
