@@ -85,6 +85,7 @@ This will respond whit ur token, copy and save it, it will be useful for other p
 
 ### Try acces via Api-Gateway whitouy JWT token
     curl -X GET http://localhost:5000/companies
+
 U will obtain a message like this:
 
     { 
@@ -95,3 +96,27 @@ U will obtain a message like this:
 
     curl -X GET http://localhost:5004/products -H "Authorization: <Token>"
 
+U will obtain a message like this:
+
+    {
+        "message": "Forbidden: Unauthorized IP"
+    }
+Test whit other microservices an simulated databases as u want.
+
+### Access Microservices with jwt token and via Api-Gateway.
+
+    curl -X GET http://localhost:5000/products -H "Authorization: <Token>"
+
+    curl -X GET http://localhost:5000/companies -H "Authorization: <Token>"
+
+### Test frecuency petitions limits:
+
+    for i in {1..6}; do 
+        curl -X POST \
+         -H "Content-Type: application/json" \
+        -d '{"username": "user1", "password": "password123"}' \
+        http://127.0.0.1:5000/login
+        echo ""  # Salto de línea entre respuestas
+    done
+
+    
