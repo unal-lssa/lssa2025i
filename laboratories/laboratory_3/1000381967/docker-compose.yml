@@ -40,6 +40,20 @@ services:
       - "5004:5004"
     networks:
       - lab-network
+  
+  companies-microservice:
+    build: ./companies-microservice
+    ports:
+      - "5005:5005"
+    networks:
+      - lab-network
+    
+  companies-database:
+    build: ./companies-database
+    ports:
+      - "5006:5006"
+    networks:
+      - lab-network
 
 networks:
   lab-network:

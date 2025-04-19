@@ -3,12 +3,17 @@ import jwt
 import os
 import requests
 from functools import wraps
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 app = Flask(__name__)
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+)
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 AUTHORIZED_IP = os.getenv('AUTHORIZED_IP', '172.18.0.1')
-
 
 def limit_exposure(f):
     @wraps(f)
@@ -37,6 +42,7 @@ def token_required(f):
 # Route for user login (returns JWT token)
 @app.route('/login', methods=['POST'])
 @limit_exposure 
+@limiter.limit("5 per minute")
 def login():
     try: 
         auth = request.get_json()
@@ -62,10 +68,28 @@ def login():
 @app.route('/products', methods=['GET'])
 @token_required
 @limit_exposure
+@limiter.limit("100 per minute")
 def query_products():
     try:
         response = requests.get(
             'http://products-microservice:5003/products'
+        )
+        
+        if response.status_code == 200:
+            return jsonify(response.json()), 200
+        else:
+            return jsonify(response.json()), 404
+    except requests.exceptions.RequestException as e:
+        return jsonify({'message': 'Error at api-gateway', 'Details: ': str(e)}), 500
+    
+@app.route('/companies', methods=['GET'])
+@token_required
+@limit_exposure
+@limiter.limit("100 per minute")
+def query_companies():
+    try:
+        response = requests.get(
+            'http://companies-microservice:5005/companies'
         )
         
         if response.status_code == 200:

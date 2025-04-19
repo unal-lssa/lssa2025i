@@ -1,4 +1,4 @@
-FROM python:3.9-alpine
+FROM python:3.10-alpine
 
 WORKDIR /app
 
@@ -12,7 +12,8 @@ RUN apk update && \
 RUN pip install --no-cache-dir \
     Flask==3.1.0  \
     PyJWT==2.10.1 \
-    requests==2.32.3 
+    requests==2.32.3 \
+    Flask-Limiter==3.12.0
 
 COPY api-gateway.py .
 
