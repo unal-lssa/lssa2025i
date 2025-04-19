@@ -1,0 +1,60 @@
+# version: '3.8'
+
+services:
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "5000:5000"
+    environment:
+      - SECRET_KEY=kS1p_UhHHit_dOmJw1JO1e6PiQLV0xlF7bq5O4U65bw
+      - AUTHORIZED_IP=172.19.0.1
+    networks:
+      - lab-network
+
+  login-microservice:
+    build: ./login-microservice
+    ports:
+      - "5001:5001"
+    networks:
+      - lab-network
+
+  login-database:
+    build: ./login-database
+    ports:
+      - "5002:5002"
+    environment:
+      - SECRET_KEY=kS1p_UhHHit_dOmJw1JO1e6PiQLV0xlF7bq5O4U65bw
+    networks:
+      - lab-network
+
+  products-microservice:
+    build: ./products-microservice
+    ports:
+      - "5003:5003"
+    networks:
+      - lab-network
+
+  products-database:
+    build: ./products-database
+    ports:
+      - "5004:5004"
+    networks:
+      - lab-network
+  
+  companies-microservice:
+    build: ./companies-microservice
+    ports:
+      - "5005:5005"
+    networks:
+      - lab-network
+    
+  companies-database:
+    build: ./companies-database
+    ports:
+      - "5006:5006"
+    networks:
+      - lab-network
+
+networks:
+  lab-network:
+    driver: bridge
