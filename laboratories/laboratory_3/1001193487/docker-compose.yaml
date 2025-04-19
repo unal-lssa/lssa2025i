@@ -1,0 +1,53 @@
+services:
+  api_gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - AUTHORIZED_IP = "127.0.0.1"
+    networks:
+      - default
+    depends_on:
+      - auth_ms
+      - users_ms
+
+  auth_ms:
+    build:
+      context: ./microservices/auth_ms
+      dockerfile: Dockerfile
+    environment:
+      - SECRET_KEY = "your_secret_key"
+    networks:
+      - default
+    depends_on:
+      - auth_db
+
+  users_ms:
+    build:
+      context: ./microservices/users_ms
+      dockerfile: Dockerfile
+    networks:
+      - default
+    depends_on:
+      - users_db
+
+  auth_db:
+    build:
+      context: ./databases/auth_db
+      dockerfile: Dockerfile
+    networks:
+      - default
+
+  users_db:
+    build:
+      context: ./databases/users_db
+      dockerfile: Dockerfile
+    networks:
+      - default
+
+networks:
+  default:
+    name: lab3_network
+    driver: bridge
