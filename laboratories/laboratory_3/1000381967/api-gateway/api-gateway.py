@@ -13,17 +13,6 @@ limiter = Limiter(
 )
 
 SECRET_KEY = os.getenv("SECRET_KEY")
-AUTHORIZED_IP = os.getenv('AUTHORIZED_IP', '172.18.0.1')
-
-def limit_exposure(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        client_ip = request.remote_addr
-        print(f"Client IP: {client_ip}")  # Debugging line to check client IP
-        if client_ip != AUTHORIZED_IP:  
-            return jsonify({'message': 'Forbidden: Unauthorized IP'}), 403
-        return f(*args, **kwargs)
-    return decorated_function
 
 # Function to check JWT token
 def token_required(f):
@@ -41,7 +30,6 @@ def token_required(f):
 
 # Route for user login (returns JWT token)
 @app.route('/login', methods=['POST'])
-@limit_exposure 
 @limiter.limit("5 per minute")
 def login():
     try: 
@@ -67,7 +55,6 @@ def login():
 
 @app.route('/products', methods=['GET'])
 @token_required
-@limit_exposure
 @limiter.limit("100 per minute")
 def query_products():
     try:
@@ -84,7 +71,6 @@ def query_products():
     
 @app.route('/companies', methods=['GET'])
 @token_required
-@limit_exposure
 @limiter.limit("100 per minute")
 def query_companies():
     try:
