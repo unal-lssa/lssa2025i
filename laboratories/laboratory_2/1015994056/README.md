@@ -1,12 +1,12 @@
 # Implementación del Balanceador de Carga – LSSA Lab 2
 
-## 🎯 Objetivo
+## Objetivo
 Agregar soporte para un nuevo tipo de componente arquitectónico: `load_balancer`, usando un enfoque de Model-Driven Software Engineering (MDE). El balanceador enruta el tráfico desde el `frontend` hacia uno o varios `backend` mediante `nginx`.
 
-## 🧪 Archivos modificados
+## Archivos modificados
 
 ### 1. `arch.tx`
-**¿Qué hicimos?**  
+
 Se extendió la gramática del DSL para soportar el nuevo tipo de componente:
 
 ```txt
@@ -20,7 +20,7 @@ Para que la definición del modelo acepte componentes del tipo `load_balancer`.
 ---
 
 ### 2. `transformations.py`
-**¿Qué hicimos?**
+
 - Se agregó la función `generate_load_balancer()` para generar un contenedor con `nginx` configurado como balanceador.
 - Se modificó `apply_transformations()` para:
   - Detectar si hay un `load_balancer` en el modelo.
@@ -33,7 +33,7 @@ Para automatizar la generación de un proxy inverso con `nginx` que distribuya l
 ---
 
 ### 3. `model.arch`
-**¿Qué hicimos?**  
+
 Se incluyó un nuevo componente `load_balancer` en el modelo y se definieron los conectores correspondientes:
 
 ```txt
@@ -48,7 +48,7 @@ Para modelar explícitamente la arquitectura con balanceo de carga entre fronten
 ---
 
 ### 4. `docker-compose.yml`
-**¿Qué hicimos?**  
+
 Se agregó el servicio `lssa_lb` y se ajustaron los puertos expuestos de los servicios:
 
 ```yaml
@@ -68,7 +68,7 @@ Para exponer el balanceador y el frontend en diferentes puertos locales, permiti
 
 ---
 
-## ✅ Resultado final
+## Resultado final
 - Se generó automáticamente un contenedor `nginx` que actúa como balanceador de carga.
 - El frontend ahora se conecta al balanceador (`lssa_lb`), que enruta hacia el backend (`lssa_be`).
 - La arquitectura es extensible a múltiples backends agregando más componentes y conectores.
