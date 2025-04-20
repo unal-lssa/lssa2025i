@@ -1,0 +1,58 @@
+services:
+  tasks_db:
+    image: mysql:8
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=tasks_db
+    volumes:
+      - ./tasks_db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - '3306:3306'
+    networks:
+      - task-network
+  projects_db:
+    image: mysql:8
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=projects_db
+    volumes:
+      - ./projects_db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - '3307:3306'
+    networks:
+      - project-network
+  ms-task:
+    build: ./ms-task
+    ports:
+      - '5001:5000'
+    depends_on:
+      - tasks_db
+    networks:
+      - app-network
+      - task-network
+  ms-project:
+    build: ./ms-project
+    ports:
+      - '5002:5000'
+    depends_on:
+      - projects_db
+    networks:
+      - app-network
+      - project-network
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - '5000:5000'
+    depends_on:
+      - ms-task
+      - ms-project
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+  task-network:
+    driver: bridge
+  project-network:
+    driver: bridge
