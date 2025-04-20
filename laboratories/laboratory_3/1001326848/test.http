@@ -1,0 +1,22 @@
+
+### Login API Request
+POST http://localhost:5000/login
+Content-Type: application/json
+
+{
+    "username": "user1",
+    "password": "password123"
+}
+// response: "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIn0.2nSrDXt0I7TlXvocn_Z9qxGFnSHOvOyT3sboBgbkoCo"
+
+### Data Request
+GET http://localhost:5000/data
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIn0.2nSrDXt0I7TlXvocn_Z9qxGFnSHOvOyT3sboBgbkoCo
+
+### Tasks Request
+GET http://localhost:5000/task
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIn0.2nSrDXt0I7TlXvocn_Z9qxGFnSHOvOyT3sboBgbkoCo
+
+### Projects Request
+GET http://localhost:5000/project
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIn0.2nSrDXt0I7TlXvocn_Z9qxGFnSHOvOyT3sboBgbkoCo
