@@ -1,0 +1,27 @@
+services:
+  api_gateway:
+    build: ./api_gateway
+    ports:
+      - "5000:5000"
+    networks:
+      - secure_net
+    depends_on:
+      - microservice
+      - database
+
+  microservice:
+    build: ./microservice
+    ports:
+      - "5001:5001"
+    networks:
+      - secure_net
+
+  database:
+    build: ./database
+    ports:
+      - "5002:5002"
+    networks:
+      - secure_net
+networks:
+  secure_net:
+    driver: bridge
