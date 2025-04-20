@@ -1,0 +1,6 @@
+jwt_secret: "tu_clave_secreta_aquí"
+routes:
+  /ms-1:
+    backend: "http://ms-1:5000"
+  /ms-2:
+    backend: "http://ms-2:5000"

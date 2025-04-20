@@ -65,4 +65,55 @@ This metamodel describes the structural architecture of a real-time multiplayer 
 
 ## Architecture Diagram
 
-![C&C-architecture](assets/architecture.png)
+```mermaid
+graph
+	CL[WebApp]
+    GW[API Gateway]
+    RTS[Real-Time Server]
+
+    subgraph Microservices
+		US[User service]
+		MS[Matchmaking service]
+	end
+
+    GS[Game engine service]
+
+    Broker1[(PubSub-RT-Broker)]
+    Queue1[(Message Queue)]
+
+    CL --> GW
+    CL --> RTS
+    GW --> US
+    GW --> MS
+
+    MS --> Queue1
+    GS --> Queue1
+
+    RTS --> Broker1
+    GS --> Broker1
+
+```
+---
+
+### Arquitectura simplificada (Carpeta template)
+
+```mermaid
+graph
+	CL[Frontend]
+    GW[API Gateway]
+    RTS[Real-Time Server]
+
+    subgraph Microservices
+		MS1[Microservice 1]
+		MS2[Microservice 2]
+	end
+
+    Broker1[(RT-Broker)]
+
+    CL --> GW
+    CL --> RTS
+    GW --> MS1
+    GW --> MS2
+    RTS --> Broker1
+
+```
