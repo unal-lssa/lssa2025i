@@ -1,0 +1,45 @@
+version: "3.8"
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  real-time-service:
+    build:
+      context: ./real-time-service
+    environment:
+      REDIS_URL: "redis://redis:6379"
+    depends_on:
+      - redis
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  frontend:
+      build:
+        context: ./frontend
+      ports:
+        - "8080:80"
+      restart: unless-stopped
+
+  ms-1:
+    build:
+      context: ./service
+    ports:
+      - "5001:5000"
+    restart: unless-stopped
+  ms-2:
+    build:
+      context: ./service
+    ports:
+      - "5002:5000"
+    restart: unless-stopped
+
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
