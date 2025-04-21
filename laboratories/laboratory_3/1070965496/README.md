@@ -7,7 +7,7 @@ Este laboratorio presenta una simulación de una arquitectura de microservicios 
 ## Estructura del Proyecto
 
 ```
-Laboratorio3/
+1070965496/
 ├── api_gateway.py               
 ├── database.py                  
 ├── database_logging.py          
