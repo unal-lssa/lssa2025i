@@ -92,7 +92,8 @@ A continuación, se describen las URLs de los endpoints disponibles en el API Ga
   {
     "username": "user1",
     "password": "password"
-  }```
+  }
+  ```
 
 ### **2. `/userinfo`**
 - **Método:** `GET`
@@ -125,19 +126,21 @@ A continuación, se describen las URLs de los endpoints disponibles en el API Ga
 ### Pre requisitos
 
 ## Usuarios del sistema
-    ```
+```
     Usuario Administrador :
     
     - Usuario `admin` 
     - Password `admin123` 
     
-    ```
-    ```
+    
+    
+    
     Usuario normal : 
 
     - Usuario `user1` 
-    - Password `user123`   
-    ```
+    - Password `user123` 
+    
+```
     Nota: Los usuario ya están creados.
 
 ## Pasos para ejecutar 
