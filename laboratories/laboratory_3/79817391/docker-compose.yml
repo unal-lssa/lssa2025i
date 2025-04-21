@@ -1,0 +1,48 @@
+services:
+  api_gateway:    
+    image: lab3_api_gateway_image
+    build:     
+      context: .
+      dockerfile: ./api_gateway/Dockerfile
+    ports:
+      - "5000:5000"
+    env_file: .env
+    networks:
+      - secure_net
+    container_name: lab3_api_gateway
+
+  db_service:
+    image: lab3_db_service_image
+    build: 
+      context: .
+      dockerfile:  ./db_service/Dockerfile      
+    env_file: .env
+    networks:
+      - secure_net
+    container_name: lab3_db_service
+
+  data_service:
+    image: lab3_data_service_image
+    build: 
+      context: .
+      dockerfile:  ./data_service/Dockerfile  
+    env_file: .env
+    networks:
+      - secure_net
+    container_name: lab3_data_service
+
+  microservice:
+    image: lab3_microservice_service_image
+    build: 
+      context: .  
+      dockerfile:  ./microservice/Dockerfile      
+    env_file: .env
+    networks:
+      - secure_net
+    container_name: lab3_microservice
+
+networks:
+  secure_net:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
