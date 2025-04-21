@@ -91,7 +91,7 @@ pip install pyjwt
 Asegúrate de tener todos los archivos en el mismo directorio:
 
 ```
-Laboratorio3/
+1070965496/
 ```
 
 ### Paso 2: Ejecutar los archivos .py 
