@@ -1,4 +1,4 @@
- Large-Scale Software Architecture
+Large-Scale Software Architecture
 # Laboratory 3 - Security
 
 ## 1. Objective
