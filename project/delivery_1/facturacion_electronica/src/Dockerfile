@@ -4,6 +4,6 @@ WORKDIR /app
 
 COPY . .
 
-RUN pip install --no-cache-dir textX mysql-connector-python flask
+RUN pip install --no-cache-dir textX
 
 CMD ["python", "generation.py"]
