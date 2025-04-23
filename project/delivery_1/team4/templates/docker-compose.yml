@@ -43,3 +43,17 @@ services:
     ports:
       - "5000:5000"
     restart: unless-stopped
+
+  database:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: team_4
+      POSTGRES_PASSWORD: team_4
+      POSTGRES_DB: team_4
+    volumes:
+      - ./sql:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U team_4 -d team_4"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
