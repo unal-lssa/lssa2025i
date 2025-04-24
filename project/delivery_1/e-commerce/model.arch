@@ -1,18 +1,17 @@
 architecture:
 
-    component frontend ecommerce-fe
-    component backend ecommerce-be-or
-    component backend ecommerce-be-pd
-    component backend ecommerce-be-inv
-    component mqtp ecommerce-be-pmt
-    component api_gateway ecommerce-ag-us
-    component database ecommerce-be-or-db
-    component database ecommerce-be-pd-db
-    component database ecommerce-be-inv-db
-    component database ecommerce-be-pmt-db
+    component frontend ecommerce_fe
+    component backend ecommerce_be_or
+    component backend ecommerce_be_pd
+    component backend ecommerce_be_inv
+    component mqtp ecommerce_be_pmt
+    component api_gateway ecommerce_ag_us
+    component database ecommerce_be_or_db
+    component database ecommerce_be_pd_db
+    component database ecommerce_be_inv_db
+    component database ecommerce_be_pmt_db
     component load_balancer ecommerce_lb
 
-//TODO: define components distribution
-    connector http lssa_lb -> ecommerce-fe
-    connector http ecommerce-fe -> lssa_be
-    connector db_connector lssa_be -> lssa_db
+    connector http ecommerce_lb -> ecommerce_fe
+    connector http ecommerce_fe -> ecommerce_ag_us
+    connector db_connector ecommerce_be_or -> ecommerce_be_or_db

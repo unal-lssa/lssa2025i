@@ -152,69 +152,40 @@ def generate_frontend(name, backend):
             """
         ))
 
-def generate_load_balancer(name, frontend):
-    
+def generate_load_balancer(name, frontend_name):
     path = f'skeleton/{name}'
     os.makedirs(path, exist_ok=True)
 
+    # Construir los objetivos basados en el frontend
+    targets = [f"{frontend_name}1", f"{frontend_name}2"]
+
     with open(os.path.join(path, 'Dockerfile'), 'w') as f:
         f.write(textwrap.dedent("""
-            FROM haproxy:2.8-alpine
+            FROM node:18
+            WORKDIR /app
+            COPY . .
+            RUN npm install express http-proxy
+            CMD ["node", "app.js"]
+        """))
 
-            COPY haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
-
-            EXPOSE 80 8404
-
-            # Health check
-            HEALTHCHECK --interval=5s --timeout=3s CMD wget --no-verbose --tries=1 --spider http://localhost:8404/stats || exit 1
-            """
-        ))
-
-    with open(os.path.join(path, 'haproxy.cfg'), 'w') as f:
+    with open(os.path.join(path, 'app.js'), 'w') as f:
+        targets_str = ", ".join([f"'{t}'" for t in targets])
         f.write(textwrap.dedent(f"""
-            global
-                log stdout format raw local0
-                maxconn 4096
-                user haproxy
-                group haproxy
+            const express = require('express');
+            const httpProxy = require('http-proxy');
+            const app = express();
+            const proxy = httpProxy.createProxyServer({{}});
+            const targets = [{targets_str}].map(host => `http://${{host}}:80`);
+            let index = 0;
 
-            defaults
-                log     global
-                mode    http
-                option  httplog
-                option  dontlognull
-                retries 3
-                timeout connect 5s
-                timeout client  30s
-                timeout server  30s
-                timeout http-request 10s
+            app.use((req, res) => {{
+                const target = targets[index % targets.length];
+                index++;
+                proxy.web(req, res, {{ target }});
+            }});
 
-            # Stats page
-            listen stats
-                bind *:8404
-                stats enable
-                stats uri /stats
-                stats refresh 10s
-                stats admin if TRUE
-
-            # Frontend configuration
-            frontend http_front
-                bind *:80
-                default_backend web_servers
-                
-                # Add request headers
-                http-request set-header X-Forwarded-Proto http
-
-            # Backend configuration for web servers
-            backend web_servers
-                balance roundrobin
-                option httpchk GET /health
-                http-check expect status 200
-                server {frontend} {frontend}:80 check
-            """
-        ))
-
-# TODO:
+            app.listen(80, () => console.log("Load balancer running on port 80"));
+        """))
 
 def generate_docker_compose(components):
 
@@ -285,6 +256,6 @@ def apply_transformations(model):
             if e.type == 'frontend':
                 generate_frontend(e.name, backend=backend_name)
             if e.type == 'load_balancer':
-                generate_load_balancer(e.name, frontend=frontend_name)
+                generate_load_balancer(e.name, frontend_name=frontend_name)
 
     generate_docker_compose(components)
