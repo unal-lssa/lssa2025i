@@ -1,0 +1,24 @@
+Model:
+    'architecture' ':'
+        elements*=Element
+;
+
+Element:
+    Component | Connector
+;
+
+Component:
+    'component' type=ComponentType name=ID
+;
+
+Connector:
+    'connector' type=ConnectorType from=[Component] '->' to=[Component]
+;
+
+ComponentType:
+    'frontend' | 'backend' | 'database' | 'load_balancer' | 'api_gateway' | 'mqtp'
+;
+
+ConnectorType:
+    'http' | 'db_connector' | 'message_queue'
+;
