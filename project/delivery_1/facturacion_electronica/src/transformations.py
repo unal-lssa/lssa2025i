@@ -9,12 +9,12 @@ def generate_frontend(element):
     """
     # Obtener el nombre del frontend
     name = element.name
-
+    
     # Obtener la ruta del directorio de plantillas
-    templates_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "templates", name))
-
+    templates_dir = get_templates_path(name)
+    
     # Obtener la ruta del directorio de salida
-    skeleton_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "skeleton", name))
+    skeleton_dir = get_skeleton_path(name)
 
     # Crear el directorio de salida si no existe
     if not os.path.exists(skeleton_dir):
@@ -29,6 +29,7 @@ def generate_frontend(element):
     # Generar los archivos de plantilla
     # 1. app.js
     template_path = os.path.join(templates_dir, "app.js")
+    
     with open(template_path, "r") as template_file:
         template = template_file.read()
     # Reemplazar los marcadores de posición en la plantilla
@@ -78,10 +79,10 @@ def generate_api_gateway(element):
     name = element.name
 
     # Obtener la ruta del directorio de plantillas
-    templates_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "templates", name))
+    templates_dir = get_templates_path(name)
 
     # Obtener la ruta del directorio de salida
-    skeleton_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "skeleton", name))
+    skeleton_dir = get_skeleton_path(name)
 
     # Crear el directorio de salida si no existe
     if not os.path.exists(skeleton_dir):
@@ -134,10 +135,10 @@ def generate_load_balancer(element, instances):
     name = element.name[:-1]
 
     # Obtener la ruta del directorio de plantillas
-    templates_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "templates", name))
+    templates_dir = get_templates_path(name)
 
     # Obtener la ruta del directorio de salida
-    skeleton_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "skeleton", name))
+    skeleton_dir = get_skeleton_path(name)
 
     # Crear el directorio de salida si no existe
     if not os.path.exists(skeleton_dir):
@@ -180,10 +181,10 @@ def generate_backend(element):
     name = element.name
 
     # Obtener la ruta del directorio de plantillas
-    templates_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "templates", name))
+    templates_dir = get_templates_path(name)
 
     # Obtener la ruta del directorio de salida
-    skeleton_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "skeleton", name))
+    skeleton_dir = get_skeleton_path(name)
 
     # Crear el directorio de salida si no existe
     if not os.path.exists(skeleton_dir):
@@ -236,10 +237,10 @@ def generate_database(element):
     name = element.name
 
     # Obtener la ruta del directorio de plantillas
-    templates_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "templates", name))
+    templates_dir = get_templates_path(name)
 
     # Obtener la ruta del directorio de salida
-    skeleton_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "skeleton", name))
+    skeleton_dir = get_skeleton_path(name)
 
     # Crear el directorio de salida si no existe
     if not os.path.exists(skeleton_dir):
@@ -259,6 +260,29 @@ def generate_database(element):
     with open(os.path.join(skeleton_dir, "init.sql"), "w") as output_file:
         output_file.write(template)
 
+def get_templates_path(element_name):
+    
+    # Si el directorio /app existe, el proyecto se está ejecutando en el contenedor
+    app_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "app"))
+    app_dir_exists = os.path.exists(app_dir)
+
+    if app_dir_exists:
+        return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "app", "templates", element_name))
+    else:
+        # Esta opción soporta la ejecución local del proyecto
+        return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src", "templates", element_name))
+    
+def get_skeleton_path(element_name):
+    
+    # Si el directorio /app existe, el proyecto se está ejecutando en el contenedor
+    app_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "app"))
+    app_dir_exists = os.path.exists(app_dir)
+
+    if app_dir_exists:
+        return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "app", "skeleton", element_name))
+    else:
+        # Esta opción soporta la ejecución local del proyecto
+        return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src", "skeleton", element_name))
 
 def apply_transformations(model):
     """
