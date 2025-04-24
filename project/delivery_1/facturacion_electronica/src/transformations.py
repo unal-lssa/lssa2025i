@@ -261,7 +261,11 @@ def generate_database(element):
         output_file.write(template)
 
 def get_templates_path(element_name):
-    
+    """
+    Determina la ruta de las plantillas para el elemento dado teniendo en cuenta si se está ejecutando en un contenedor o localmente.
+    :param element_name: El elemento del modelo del cual se requiere la ruta.
+    :return: None
+    """
     # Si el directorio /app existe, el proyecto se está ejecutando en el contenedor
     app_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "app"))
     app_dir_exists = os.path.exists(app_dir)
@@ -273,7 +277,11 @@ def get_templates_path(element_name):
         return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src", "templates", element_name))
     
 def get_skeleton_path(element_name):
-    
+    """
+    Determina la ruta de las plantillas para el elemento dado teniendo en cuenta si se está ejecutando en un contenedor o localmente.
+    :param element_name: El elemento del modelo del cual se requiere la ruta.
+    :return: None
+    """
     # Si el directorio /app existe, el proyecto se está ejecutando en el contenedor
     app_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "app"))
     app_dir_exists = os.path.exists(app_dir)
