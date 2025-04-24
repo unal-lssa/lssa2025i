@@ -1,46 +1,39 @@
 architecture:
 
+    component frontend register_fe
+    component frontend seller_fe
+    component frontend admin_fe
+
     component api_gateway efact_ag
 
-    component load_balancer efact_lb1
-    component load_balancer efact_lb2
-    component load_balancer efact_lb3
-    component load_balancer efact_lb4
-    component load_balancer efact_lb5
-    component load_balancer efact_lb6
+    component backend auth_be
 
-    component frontend admin_fe
-    component frontend report_fe instances 2
-    component frontend user_fe instances 2
+    component load_balancer users_lb
+    component load_balancer efact_writing_lb
+    component load_balancer efact_reading_lb
 
-    component backend perna_be instances 2
-    component backend perju_be instances 2
-    component backend busre_be instances 2
-    component backend proc_be instances 2
+    component backend users_be
+    component backend efact_writing_be
+    component backend efact_reading_be
 
-    component database perna_db
-    component database perju_db
-    component database busre_db
-    component database proc_db
+    component database users_db
+    component database efact_writing_db
+    component database efact_reading_db
+    
+    connector register_fe -> efact_ag
+    connector seller_fe -> efact_ag
+    connector admin_fe -> efact_ag
 
-    connector lb_conn efact_lb1 -> report_fe
-    connector lb_conn efact_lb2 -> user_fe
+    connector efact_ag -> auth_be
 
-    connector http admin_fe -> efact_ag
-    connector http report_fe -> efact_ag
-    connector http user_fe -> efact_ag
+    connector efact_ag -> users_lb
+    connector efact_ag -> efact_writing_lb
+    connector efact_ag -> efact_reading_lb
 
-    connector http efact_ag -> efact_lb3
-    connector http efact_ag -> efact_lb4
-    connector http efact_ag -> efact_lb5
-    connector http efact_ag -> efact_lb6
+    connector users_lb -> users_be
+    connector efact_writing_lb -> efact_writing_be
+    connector efact_reading_lb -> efact_reading_be
 
-    connector lb_conn efact_lb3 -> perna_be
-    connector lb_conn efact_lb4 -> perju_be
-    connector lb_conn efact_lb5 -> busre_be
-    connector lb_conn efact_lb6 -> proc_be
-
-    connector db_conn perna_be -> perna_db
-    connector db_conn perju_be -> perju_db
-    connector db_conn busre_be -> busre_db
-    connector db_conn proc_be -> proc_db
+    connector users_be -> users_db
+    connector efact_writing_be -> efact_writing_db
+    connector efact_reading_be -> efact_reading_db
