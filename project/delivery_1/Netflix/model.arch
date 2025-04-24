@@ -1,0 +1,19 @@
+architecture:
+
+    component frontend web_client
+    component mobile_client android_app
+    component auth_service auth
+    component payment_service payment
+    component streaming_service streamer payment
+    component recommendation_service recommender
+    component content_service content
+    component account_service accounts
+
+    database mongodb main_db
+    cache redis session_cache
+    event_stream kafka event_bus
+
+    connector http web_client -> auth_service
+    connector rest auth_service -> main_db
+    connector kafka streamer -> event_bus
+    connector redis auth_service -> session_cache
