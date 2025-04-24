@@ -1,0 +1,65 @@
+Model:
+    'architecture' ':'
+        elements*=Element
+;
+
+Element:
+    Component | Connector
+;
+
+Component:
+    LoadBalancer | StandardComponent | Database | ApiGateway
+;
+
+StandardComponent:
+    'component' type=StandardComponentType name=ID
+;
+
+LoadBalancer:
+    'component' 'loadbalancer' name=ID instanceCount=INT target=[Component]
+;
+
+StandardComponentType:
+    'frontend' | 'backend' | 'source'
+;
+
+Database:
+    'component' 'db' name=ID databaseType=DatabaseType
+;
+
+DatabaseType:
+    'mysql' | 'postgresql' | 'mongodb' | 'cassandra'
+
+ApiGateway:
+    'component' 'api_gateway' name=ID target=[Component] auth=Component
+;
+
+Connector:
+    'connector' type=ConnectorType from=[Component] '->' to=[Component]
+;
+
+ConnectorType:
+    'http' | 'kafka_connector' | 'db_connector'
+;
+
+/* Dynamic Database implementation on backend example
+import x
+import y
+{import mongoose if connector == 'db_connector' else 'import xyz'}
+
+@app.route('/')
+def hello():
+    pass
+
+@app.route('/api/v1')
+def hello_v1():
+    {
+        db_queries.get(connector)
+    }
+
+db_queries = {
+    'db_connector': 'db.query()', // 'db.query()' is a placeholder for actual database query code
+    'kafka_connector': 'kafka.produce()',
+    'http': 'http.get()'
+}
+**/
