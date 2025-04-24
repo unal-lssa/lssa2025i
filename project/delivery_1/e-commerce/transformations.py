@@ -214,6 +214,8 @@ def generate_load_balancer(name, frontend):
             """
         ))
 
+# TODO:
+
 def generate_docker_compose(components):
 
     path = f'skeleton/'
@@ -263,6 +265,7 @@ def apply_transformations(model):
     database_name = None
     frontend_name = None
 
+# TODO: modify this logic tio cover more than one possible backend
     for e in model.elements:
         if e.__class__.__name__ == 'Component':
             if e.type == 'backend':
