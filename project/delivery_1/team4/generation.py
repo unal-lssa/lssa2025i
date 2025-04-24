@@ -1,6 +1,7 @@
 import os
-from metamodel import create_metamodel
 from textx.export import metamodel_export, model_export
+from metamodel import create_metamodel
+from transformations import apply_transformations
 
 if __name__ == '__main__':
     metamodel = create_metamodel()
@@ -10,3 +11,6 @@ if __name__ == '__main__':
     os.makedirs('diagrams', exist_ok=True)
     metamodel_export(metamodel, 'diagrams/metamodel.dot')
     model_export(model, 'diagrams/model.dot')
+
+    # Transformations
+    apply_transformations(model)
