@@ -1,0 +1,45 @@
+/* style.css */
+body {
+    font-family: sans-serif;
+    margin: 20px;
+}
+
+#login-section div, #app-section div {
+    margin-bottom: 10px;
+}
+
+label {
+    display: inline-block;
+    width: 80px;
+}
+
+input[type="text"], input[type="password"] {
+    padding: 5px;
+    width: 200px;
+}
+
+button {
+    padding: 8px 15px;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.error-message {
+    color: red;
+    margin-top: 10px;
+    display: none; /* Hidden by default */
+}
+
+#meetings-output {
+    margin-top: 15px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    min-height: 50px;
+    background-color: #f9f9f9;
+    white-space: pre-wrap; /* Keep formatting if needed */
+}
+
+#meetings-output ul {
+    margin: 0;
+    padding-left: 20px;
+}

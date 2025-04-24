@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda Frontend</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="login-section">
+        <h2>Login</h2>
+        <form id="login-form">
+            <div>
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div>
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+        <div id="login-error" class="error-message"></div>
+    </div>
+
+    <div id="app-section" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+             <h1 id="welcome-title">Welcome!</h1>
+             <button id="logout-btn">Logout</button> <!-- Added Logout Button -->
+        </div>
+        <hr>
+        <button id="see-meetings-btn">See Meetings</button>
+        <button id="extra-meetings-btn">Extra Meetings (No Action)</button>
+        <hr>
+        <h2>Meetings Data:</h2>
+        <div id="meetings-output">
+            <!-- Meetings data will be displayed here -->
+        </div>
+        <div id="app-error" class="error-message"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
