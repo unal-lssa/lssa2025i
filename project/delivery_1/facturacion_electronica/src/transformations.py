@@ -68,7 +68,6 @@ def generate_frontend(element):
     with open(os.path.join(skeleton_dir, "index.html"), "w") as output_file:
         output_file.write(template)
 
-
 def generate_api_gateway(element):
     """
     Genera el API Gateway para la aplicación usando las plantillas.
@@ -124,15 +123,14 @@ def generate_api_gateway(element):
     with open(os.path.join(skeleton_dir, "requirements.txt"), "w") as output_file:
         output_file.write(template)
 
-
-def generate_load_balancer(element, instances):
+def generate_load_balancer(element, targets):
     """
     Genera el Load Balancer para la aplicación usando las plantillas.
     :param element: El elemento del modelo que representa el Load Balancer.
     :return: None
     """
     # Obtener el nombre del Load Balancer
-    name = element.name[:-1]
+    name = element.name
 
     # Obtener la ruta del directorio de plantillas
     templates_dir = get_templates_path(name)
@@ -154,8 +152,9 @@ def generate_load_balancer(element, instances):
     with open(template_path, "r") as template_file:
         template = template_file.read()
     # Reemplazar los marcadores de posición en la plantilla
-    # Usar las instancias del backend o frontend
-    # template = template.replace("{{MARCADOR}}", VALOR)
+    # Esta versión sólo funciona si el puerto de todos los backend es 5000
+    VALOR = ";".join(target + ":5000" for target in targets) + ";"
+    template = template.replace("###Targets###", VALOR)
     # Guardar el archivo generado
     with open(os.path.join(skeleton_dir, "nginx.conf"), "w") as output_file:
         output_file.write(template)
@@ -169,7 +168,6 @@ def generate_load_balancer(element, instances):
     # Guardar el archivo generado
     with open(os.path.join(skeleton_dir, "Dockerfile"), "w") as output_file:
         output_file.write(template)
-
 
 def generate_backend(element):
     """
@@ -226,7 +224,6 @@ def generate_backend(element):
     with open(os.path.join(skeleton_dir, "requirements.txt"), "w") as output_file:
         output_file.write(template)
 
-
 def generate_database(element):
     """
     Genera la Base de Datos para la aplicación usando las plantillas.
@@ -260,6 +257,60 @@ def generate_database(element):
     with open(os.path.join(skeleton_dir, "init.sql"), "w") as output_file:
         output_file.write(template)
 
+def apply_transformations(model):
+    """
+    Aplica las transformaciones al modelo dado.
+    :param model: El modelo al que se aplicarán las transformaciones.
+    :return: None
+    """
+    
+    # Componentes del modelo por tipo
+    components = {
+        "frontend": [],
+        "api_gateway": [],
+        "load_balancer": [],
+        "backend": [],
+        "database": []
+    }
+
+    connectors = []
+
+    # Obtener los Componentes del modelo por tipo
+    for element in model.elements:
+        if element.__class__.__name__ == "Component":
+            components[element.type].append(element)
+        elif element.__class__.__name__ == "Connector":
+            connectors.append(element)
+            
+    # Aplicar transformaciones a cada componente
+    for component_type, elements in components.items():
+        if component_type == "frontend":
+            # Aplicar transformaciones específicas para frontend
+            for element in elements:
+                generate_frontend(element)
+        elif component_type == "api_gateway":
+            # Aplicar transformaciones específicas para api_gateway
+            for element in elements:
+                generate_api_gateway(element)
+        elif component_type == "load_balancer":
+            # Aplicar transformaciones específicas para load_balancer
+            # Esta logica se debe crear por aparte cuando se tengan creadas
+            # las instancias del backend o frontend
+            for element in elements:
+                loadBalancerTargets = get_load_balancer_targets(element, connectors)
+                generate_load_balancer(element, loadBalancerTargets)
+        elif component_type == "backend":
+            # Aplicar transformaciones específicas para backend
+            for element in elements:
+                # Aquí se puede agregar la lógica para generar el backend
+                generate_backend(element)
+        elif component_type == "database":
+            # Aplicar transformaciones específicas para database
+            for element in elements:
+                # Aquí se puede agregar la lógica para generar la base de datos
+                generate_database(element)
+
+### Helper functions ###
 def get_templates_path(element_name):
     """
     Determina la ruta de las plantillas para el elemento dado teniendo en cuenta si se está ejecutando en un contenedor o localmente.
@@ -291,51 +342,30 @@ def get_skeleton_path(element_name):
     else:
         # Esta opción soporta la ejecución local del proyecto
         return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src", "skeleton", element_name))
-
-def apply_transformations(model):
+    
+def get_load_balancer_targets(element, connectors):
     """
-    Aplica las transformaciones al modelo dado.
-    :param model: El modelo al que se aplicarán las transformaciones.
+    Obtiene los targets del Load Balancer a partir de los elementos conectados.
+    :param element: El elemento del modelo que representa el Load Balancer.
+    :param connectors: Los conectores del modelo.
     :return: None
     """
-    
-    # Componentes del modelo por tipo
-    components = {
-        "frontend": [],
-        "api_gateway": [],
-        "load_balancer": [],
-        "backend": [],
-        "database": []
-    }
-    
-    # Obtener los Componentes del modelo por tipo
-    for element in model.elements:
-        if element.type in components:
-            components[element.type].append(element)
-    
-    # Aplicar transformaciones a cada componente
-    for component_type, elements in components.items():
-        if component_type == "frontend":
-            # Aplicar transformaciones específicas para frontend
-            for element in elements:
-                generate_frontend(element)
-        elif component_type == "api_gateway":
-            # Aplicar transformaciones específicas para api_gateway
-            for element in elements:
-                generate_api_gateway(element)
-        elif component_type == "load_balancer":
-            # Aplicar transformaciones específicas para load_balancer
-            # Esta logica se debe crear por aparte cuando se tengan creadas
-            # las instancias del backend o frontend
-            for element in elements:
-                generate_load_balancer(element, [])
-        elif component_type == "backend":
-            # Aplicar transformaciones específicas para backend
-            for element in elements:
-                # Aquí se puede agregar la lógica para generar el backend
-                generate_backend(element)
-        elif component_type == "database":
-            # Aplicar transformaciones específicas para database
-            for element in elements:
-                # Aquí se puede agregar la lógica para generar la base de datos
-                generate_database(element)
+    targets = []
+    for connector in connectors:
+        # Debemos usar la función getattr para obtener el valor del atributo "from" del conector
+        # ya que "from" es una palabra reservada en Python
+        connectionSource = getattr(connector, "from").name
+        if connectionSource == element.name:
+            targets.append(connector.to.name)
+    return targets
+
+def replace_placeholders(template, placeholders):
+    """
+    Reemplaza los marcadores de posición en la plantilla con los valores dados.
+    :param template: La plantilla en la que se reemplazarán los marcadores de posición.
+    :param placeholders: Un diccionario con los marcadores de posición y sus valores correspondientes.
+    :return: La plantilla con los marcadores de posición reemplazados.
+    """
+    for placeholder, value in placeholders.items():
+        template = template.replace(placeholder, value)
+    return template
