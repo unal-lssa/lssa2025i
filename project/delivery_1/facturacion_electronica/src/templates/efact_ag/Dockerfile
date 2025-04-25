@@ -1,18 +1,13 @@
-# Imagen base oficial de Python
 FROM python:3.11-slim
 
-# Establecer el directorio de trabajo
 WORKDIR /app
 
-# Copiar dependencias e instalar
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY /shared/auth_utils.py templates/shared/auth_utils.py
 
-# Copiar el código fuente
-COPY . .
+COPY /efact_ag/api_gateway.py .
 
-# Exponer el puerto usado por la gateway
-EXPOSE 8080
+COPY /efact_ag/requirements.txt .
 
-# Comando por defecto
-CMD ["python", "app.py"]
+RUN pip install flask pyjwt requests python-dotenv -r requirements.txt
+
+CMD ["python", "api_gateway.py"]
