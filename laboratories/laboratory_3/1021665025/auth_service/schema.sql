@@ -31,8 +31,8 @@ INSERT INTO roles (name) VALUES ('legal') ON CONFLICT (name) DO NOTHING;
 INSERT INTO roles (name) VALUES ('finance_assistance') ON CONFLICT (name) DO NOTHING;
 INSERT INTO roles (name) VALUES ('legal_assitance') ON CONFLICT (name) DO NOTHING;
 
--- Insert test users with hashed passwords (using 'password' for simplicity in testing)
--- These hashes were generated using bcrypt.hashpw('password'.encode('utf-8'), bcrypt.gensalt())
+-- Insert test users with hashed passwords (using 'password123' for simplicity in testing)
+-- These hashes were generated using bcrypt.hashpw('password123'.encode('utf-8'), bcrypt.gensalt())
 
 -- User with 'user' role
 INSERT INTO users (username, password_hash) VALUES ('test_user', '$2b$12$xDRA1G0zAHyay45CnmNWYuWa/VXUHgy2GLycJlt1sXu3241lM8bTy') ON CONFLICT (username) DO NOTHING;
