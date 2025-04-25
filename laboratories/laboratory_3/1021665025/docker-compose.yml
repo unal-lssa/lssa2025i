@@ -1,0 +1,95 @@
+services:
+  api_gateway:
+    build: ./api_gateway
+    ports:
+      - "5000:5000"
+    depends_on:
+      - auth_service # API Gateway will depend on the auth service for login/token validation
+
+  auth_service:
+    build: ./auth_service
+    ports:
+      - "5001:5001"
+    environment:
+      # Database connection details for auth_db
+      DATABASE_URL: postgresql://user:password@auth_db:5432/auth_db
+    depends_on:
+      - auth_db
+
+  finances_service:
+    build: ./finances_service
+    ports:
+      - "5002:5002"
+    environment:
+      # Database connection details for finances_db
+      DATABASE_URL: postgresql://user:password@finances_db:5432/finances_db
+    depends_on:
+      - finances_db
+
+  legal_service:
+    build: ./legal_service
+    ports:
+      - "5003:5003"
+    environment:
+      # Database connection details for legal_db
+      DATABASE_URL: postgresql://user:password@legal_db:5432/legal_db
+    depends_on:
+      - legal_db
+
+  units_service:
+    build: ./units_service
+    ports:
+      - "5004:5004"
+    environment:
+      # Database connection details for units_db
+      DATABASE_URL: postgresql://user:password@units_db:5432/units_db
+    depends_on:
+      - units_db
+
+  # Databases
+  auth_db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data # Persistent data
+      - ./auth_service/schema.sql:/docker-entrypoint-initdb.d/schema.sql # Initialize with schema
+
+  finances_db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: finances_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - finances_db_data:/var/lib/postgresql/data # Persistent data
+      - ./finances_service/schema.sql:/docker-entrypoint-initdb.d/schema.sql # Initialize with schema
+
+  legal_db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: legal_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - legal_db_data:/var/lib/postgresql/data # Persistent data
+      - ./legal_service/schema.sql:/docker-entrypoint-initdb.d/schema.sql # Initialize with schema
+
+  units_db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: units_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - units_db_data:/var/lib/postgresql/data # Persistent data
+      - ./units_service/schema.sql:/docker-entrypoint-initdb.d/schema.sql # Initialize with schema
+
+
+volumes:
+  auth_db_data:
+  finances_db_data:
+  legal_db_data:
+  units_db_data:
