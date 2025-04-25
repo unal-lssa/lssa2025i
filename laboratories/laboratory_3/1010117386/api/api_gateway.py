@@ -1,24 +1,12 @@
 from flask import Flask, request, jsonify
 import jwt
 from functools import wraps
+import requests
 
 app = Flask(__name__)
 SECRET_KEY = "your_secret_key"
-AUTHORIZED_IP = "127.0.0.1"  # Only allow local access for simplicity
 # Mock users for the sake of the example
 USERS = {"user1": "password123"}
-
-
-# Function to check if the request comes from an authorized IP address
-def limit_exposure(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        client_ip = request.remote_addr
-        if client_ip != AUTHORIZED_IP:
-            return jsonify({"message": "Forbidden: Unauthorized IP"}), 403
-        return f(*args, **kwargs)
-
-    return decorated_function
 
 
 # Function to check JWT token
@@ -55,13 +43,18 @@ def login():
     return jsonify({"message": "Invalid credentials"}), 401
 
 
-# Protected route
-@app.route("/data", methods=["GET"])
+# Route for accesing microservice
+@app.route("/service1", methods=["GET"])
 @token_required
-@limit_exposure  # Apply the limit exposure tactic to this route
-def get_data():
-    return jsonify({"message": "Data accessed successfully!"}), 200
+def service_1():
+    response = requests.get("http://microservice:5001/microservice")
+    if response.status_code != 200:
+        return (
+            jsonify({"message": "Internal Service Error. Contact the administrator."}),
+            500,
+        )
+    return response.content
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000)
