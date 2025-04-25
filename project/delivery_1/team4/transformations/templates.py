@@ -1,7 +1,7 @@
 from pathlib import Path
 
 PROJECT_BASE = Path.cwd() / "skeleton"
-TEMPLATES_BASE = Path(__file__).parent / "templates"
+TEMPLATES_BASE = Path.cwd() / "templates"
 
 #Create the location for a given component
 def _make_component_dir(component_name: str, project_base: Path = PROJECT_BASE) -> Path:
@@ -29,22 +29,3 @@ def _copy_template(template_path: Path, target_path: Path, params: dict | None =
 def generate_templated_component(name: str, template_name: str, params: dict = None) -> None:
     path = _make_component_dir(name)
     _copy_template(template_path=TEMPLATES_BASE / template_name, target_path=path, params=params)
-
-
-def generate_database(name):
-    generate_templated_component(name, "database")
-
-
-def generate_docker_compose(components):
-    path = _make_component_dir("")
-
-def apply_transformations(model):
-    components = {}
-
-    for e in model.elements:
-        if e.__class__.__name__ == "Component":
-            components[e.name] = e
-            if e.type == "database":
-                generate_database(e.name)
-
-    # generate_docker_compose(components)

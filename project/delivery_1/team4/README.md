@@ -78,8 +78,8 @@ graph
     RTS[Real-Time Server]
 
     subgraph Microservices
-		US[User service]
 		MS[Matchmaking service]
+		US[User service]
 	end
 
     GS[Game engine service]
@@ -90,10 +90,10 @@ graph
     CL --> GW
     CL --> RTS
     GW --> US
+    RTS --> US
     GW --> MS
 
     MS --> Queue1
-    GS --> Queue1
 
     RTS --> Broker1
     GS --> Broker1
