@@ -9,7 +9,7 @@ architecture TicTacToe :
 
     component broker PubSubRealTimeBroker
     component queue GameMatchingQueue
-    component database OnlineGamesCache
+    component cache OnlineGamesCache
 
     connector web_socket WebApp -> RealTimeService
 

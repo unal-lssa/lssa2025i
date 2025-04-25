@@ -13,14 +13,14 @@ def _make_component_dir(component_name: str, project_base: Path = PROJECT_BASE) 
 # the parameters in templates.
 def _copy_template(template_path: Path, target_path: Path, params: dict | None = None) -> None:
     for template in template_path.iterdir():
-        with template.open("r") as template_file:
+        with template.open("r", encoding="utf-8") as template_file:
             content = template_file.read()
 
         if params is not None:
             for param, value in params.items():
                 content = content.replace(f"{{{{{param}}}}}", value)
 
-        with (target_path / template.name).open("w") as target_file:
+        with (target_path / template.name).open("w", encoding="utf-8") as target_file:
             target_file.write(content)
 
 
