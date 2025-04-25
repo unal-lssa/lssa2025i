@@ -1,16 +1,101 @@
 import os, textwrap
 
 def generate_database(name):
-
     path = f'skeleton/{name}'
     os.makedirs(path, exist_ok=True)
 
     with open(os.path.join(path, 'init.sql'), 'w') as f:
         f.write(textwrap.dedent("""
-            CREATE TABLE IF NOT EXISTS systems (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(255)
+            CREATE TABLE IF NOT EXISTS inventory (
+                id SERIAL PRIMARY KEY,
+                product_id VARCHAR(255) NOT NULL,
+                quantity INTEGER NOT NULL,
+                region VARCHAR(255) NOT NULL
             );
+            """
+        ))
+
+def generate_backend_inv(name, database):
+    path = f'skeleton/{name}'
+    os.makedirs(path, exist_ok=True)
+
+    with open(os.path.join(path, 'app.py'), 'w') as f:
+        f.write(textwrap.dedent(f"""
+            from fastapi import FastAPI, HTTPException
+            from pydantic import BaseModel
+            from typing import List, Optional
+            import psycopg2
+            from psycopg2.extras import RealDictCursor
+            import uvicorn
+
+            app = FastAPI(title="Inventory Management API")
+
+            class InventoryItem(BaseModel):
+                product_id: str
+                quantity: int
+                region: str
+
+            class InventoryItemResponse(InventoryItem):
+                id: int
+
+            class InventoryItemUpdate(BaseModel):
+                product_id: Optional[str] = None
+                quantity: Optional[int] = None
+                region: Optional[str] = None
+
+            def get_db_connection():
+                return psycopg2.connect(
+                    host='{database}',
+                    user='postgres',
+                    password='postgres',
+                    dbname='{database}'
+                )
+
+            @app.post("/inventory", response_model=InventoryItemResponse)
+            async def create_inventory_item(item: InventoryItem):
+                try:
+                    conn = get_db_connection()
+                    cursor = conn.cursor(cursor_factory=RealDictCursor)
+                    cursor.execute(
+                        "INSERT INTO inventory (product_id, quantity, region) VALUES (%s, %s, %s) RETURNING *",
+                        (item.product_id, item.quantity, item.region)
+                    )
+                    new_item = cursor.fetchone()
+                    conn.commit()
+                    cursor.close()
+                    conn.close()
+                    return new_item
+                except Exception as e:
+                    raise HTTPException(status_code=500, detail=str(e))
+
+            @app.get("/inventory", response_model=List[InventoryItemResponse])
+            async def get_inventory_items():
+                try:
+                    conn = get_db_connection()
+                    cursor = conn.cursor(cursor_factory=RealDictCursor)
+                    cursor.execute("SELECT * FROM inventory")
+                    items = cursor.fetchall()
+                    cursor.close()
+                    conn.close()
+                    return items
+                except Exception as e:
+                    raise HTTPException(status_code=500, detail=str(e))
+
+
+            if __name__ == '__main__':
+                uvicorn.run("app:app", host="0.0.0.0", port=80, reload=True)
+            """
+        ))
+
+    with open(os.path.join(path, 'Dockerfile'), 'w') as f:
+        f.write(textwrap.dedent("""
+            FROM python:3.11-slim
+                               
+            WORKDIR /app
+            COPY . .
+            RUN pip install fastapi uvicorn psycopg2-binary pydantic
+                               
+            CMD ["python", "app.py"]
             """
         ))
 
@@ -217,44 +302,45 @@ def generate_load_balancer(name, frontend):
 # TODO:
 
 def generate_docker_compose(components):
-
     path = f'skeleton/'
     os.makedirs(path, exist_ok=True)
-
+    
     with open(os.path.join(path, 'docker-compose.yml'), 'w') as f:
-        
+        # Sort components to ensure databases come first
         sorted_components = dict(sorted(components.items(), key=lambda item: 0 if item[1] == "database" else 1))
-
+        
         f.write("services:\n")
-
+        
         db = None
         fe = None
-
+        
         for i, (name, ctype) in enumerate(sorted_components.items()):
             port = 8000 + i
             f.write(f"  {name}:\n")
+            
             if ctype == "database":
                 db = name
-                f.write("    image: mysql:8\n")
+                f.write("    image: postgres:13\n")
                 f.write("    environment:\n")
-                f.write("      - MYSQL_ROOT_PASSWORD=root\n")
-                f.write(f"      - MYSQL_DATABASE={name}\n")
+                f.write("      - POSTGRES_PASSWORD=postgres\n")
+                f.write(f"      - POSTGRES_DB={name}\n")
+                f.write("      - POSTGRES_USER=postgres\n")
                 f.write("    volumes:\n")
                 f.write(f"      - ./{name}/init.sql:/docker-entrypoint-initdb.d/init.sql\n")
                 f.write("    ports:\n")
-                f.write("      - '3306:3306'\n")
+                f.write("      - '5432:5432'\n")
             else:
                 f.write(f"    build: ./{name}\n")
                 f.write(f"    ports:\n      - '{port}:80'\n")
-                if ctype== "backend":
+                if ctype == "backend":
                     f.write(f"    depends_on:\n      - {db}\n")
-                if ctype== "frontend":
+                if ctype == "frontend":
                     fe = name
-                if ctype== "load_balancer":
+                if ctype == "load_balancer":
                     f.write(f"      - '8084:8084'\n")
                     f.write(f"    depends_on:\n      - {fe}\n")
                     f.write(f"    restart: unless-stopped\n")
-
+        
         f.write("\nnetworks:\n  default:\n    driver: bridge\n")
 
 
