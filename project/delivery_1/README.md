@@ -36,4 +36,4 @@ The objective of the first delivery of the project is to architecturally design 
 
 ### 4.3. Delivery Deadline
 
-Saturday, April 26, 2025, before 23h59.
+Monday, April 28, 2025, before 23h59.
