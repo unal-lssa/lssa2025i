@@ -1,5 +1,8 @@
 import os
+import logging
 
+# Configurar el nivel de logging
+logging.basicConfig(level=logging.DEBUG)
 
 def generate_frontend(element):
     """
@@ -74,54 +77,39 @@ def generate_api_gateway(element):
     :param element: El elemento del modelo que representa el API Gateway.
     :return: None
     """
-    # Obtener el nombre del API Gateway
+    # Obtener el nombre del frontend
     name = element.name
-
-    # Obtener la ruta del directorio de plantillas
-    templates_dir = get_templates_path(name)
-
-    # Obtener la ruta del directorio de salida
+            # Obtener la ruta del directorio de salida
     skeleton_dir = get_skeleton_path(name)
-
-    # Crear el directorio de salida si no existe
-    if not os.path.exists(skeleton_dir):
-        os.makedirs(skeleton_dir)
     
-    # Existen 2 archivos de plantilla para el API Gateway
-    # 1. app.py
-    # 2. Dockerfile
-    # 3. requirements.txt
-
-    # Generar los archivos de plantilla
-    # 1. app.py
-    template_path = os.path.join(templates_dir, "app.py")
-    with open(template_path, "r") as template_file:
-        template = template_file.read()
-    # Reemplazar los marcadores de posición en la plantilla
-    # template = template.replace("{{MARCADOR}}", VALOR)
-    # Guardar el archivo generado
-    with open(os.path.join(skeleton_dir, "app.py"), "w") as output_file:
-        output_file.write(template)
-
-    # 2. Dockerfile
-    template_path = os.path.join(templates_dir, "Dockerfile")
-    with open(template_path, "r") as template_file:
-        template = template_file.read()
-    # Reemplazar los marcadores de posición en la plantilla
-    # template = template.replace("{{MARCADOR}}", VALOR)
-    # Guardar el archivo generado
-    with open(os.path.join(skeleton_dir, "Dockerfile"), "w") as output_file:
-        output_file.write(template)
+    logging.debug(f"Iniciar generando el microservicio {name}");   
+        
+   
+    path = get_templates_path(name)   
     
-    # 3. requirements.txt
-    template_path = os.path.join(templates_dir, "requirements.txt")
-    with open(template_path, "r") as template_file:
-        template = template_file.read()
-    # Reemplazar los marcadores de posición en la plantilla
-    # template = template.replace("{{MARCADOR}}", VALOR)
-    # Guardar el archivo generado
-    with open(os.path.join(skeleton_dir, "requirements.txt"), "w") as output_file:
-        output_file.write(template)
+    # leo la plantilla
+    template_api_gateway = read_template(path,'api_gateway.py');   
+    # escribo el archivo
+    write_artefact(skeleton_dir, 'api_gateway.py', template_api_gateway);
+     
+     
+    # Leo la plantilla de dockerfile para el frontend
+    template_dockerfile_frontend = read_template(path,'Dockerfile');
+    # Escribo el dockerfile en la ruta de salida
+    write_artefact(skeleton_dir, 'Dockerfile', template_dockerfile_frontend);  
+    
+    # Leo la plantilla de dockerfile para el frontend
+    template_requisitos = read_template(path,'requirements.txt');
+    # Escribo el dockerfile en la ruta de salida
+    write_artefact(skeleton_dir, 'requirements.txt', template_requisitos);  
+    
+    
+    path = get_templates_path('shared') 
+    skeleton_dir = get_skeleton_path('shared')
+     # Leo la plantilla de dockerfile para el frontend
+    template_shared = read_template(path,'auth_utils.py');
+    # Escribo el dockerfile en la ruta de salida
+    write_artefact(skeleton_dir, 'auth_utils.py', template_shared);  
 
 def generate_load_balancer(element, targets):
     """
@@ -257,6 +245,31 @@ def generate_database(element):
     with open(os.path.join(skeleton_dir, "init.sql"), "w") as output_file:
         output_file.write(template)
 
+
+
+def generate_docker_compose():
+    """Genera el docker compose.
+    
+    Args:
+        components: componentes del modelo para generar los servicios
+    """ 
+    # Obtener la ruta del directorio de salida
+    skeleton_dir = get_skeleton_path("")
+    
+    templates_dir = get_templates_path("compose")
+    
+      # Leo la plantilla de dockerfile para el frontend
+    template_compose = read_template(templates_dir,'docker-compose.yml' );
+
+    write_artefact(skeleton_dir, 'docker-compose.yml',template_compose);
+    
+    
+    # Leo la plantilla de .env 
+    templates_dir = get_templates_path("..")
+    template_compose = read_template(templates_dir,'.env' );
+
+    write_artefact(skeleton_dir, '.env',template_compose);
+
 def apply_transformations(model):
     """
     Aplica las transformaciones al modelo dado.
@@ -309,6 +322,7 @@ def apply_transformations(model):
             for element in elements:
                 # Aquí se puede agregar la lógica para generar la base de datos
                 generate_database(element)
+    generate_docker_compose()
 
 ### Helper functions ###
 def get_templates_path(element_name):
@@ -369,3 +383,38 @@ def replace_placeholders(template, placeholders):
     for placeholder, value in placeholders.items():
         template = template.replace(placeholder, value)
     return template
+
+
+def write_artefact(directory, name_file, content):
+    """Escribe un artefacto en un archivo.
+
+    Args:
+        directory (str): Directorio donde se guardará el archivo.
+        name_file (str): Nombre del archivo a guardar.
+        content (str): Contenido que se escribirá en el archivo.
+    """
+    try:
+        path =os.path.join(directory, name_file)
+        # Crear el directorio si no existe
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, 'w') as f:
+            f.write(content)
+    except OSError as e:
+        logging.error(f"Error al escribir el archivo en {path}: {e}")
+        
+        
+def read_template(directory, template_name):
+    """Lee un archivo desde el disco
+    
+    Args:
+        directoriy: Directorio especifico para leer el archivo
+        template_name: Nombre del archivo a leer
+    """
+        # Obtener la ruta del directorio de plantillas
+    
+    template_path = os.path.join(directory,  template_name)
+    if not os.path.exists(template_path):
+        logging.warning(f"El archivo de plantilla no existe: {template_path}")
+        return ""
+    with open(template_path, 'r') as f:
+        return f.read()
