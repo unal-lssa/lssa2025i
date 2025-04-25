@@ -49,7 +49,7 @@ Login as admin:
 ```bash
 curl -X POST -H "Content-Type: application/json" -d '{"username": "admin", "password": "admin123"}' http://localhost:5000/auth/login
 ```
-
+Login as user:
 ```bash
 curl -X POST -H "Content-Type: application/json" -d '{"username": "user1", "password": "password123"}' http://localhost:5000/auth/login
 ```
