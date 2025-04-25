@@ -8,12 +8,17 @@ Element:
 
 Component:
     'component' type=ComponentType name=ID
+    ('instances' instances=INT)?
 ;
 
 Connector:
-    'connector' from=[Component] '->' to=[Component]
+    'connector' type=ConnectorType from=[Component] '->' to=[Component]
 ;
 
 ComponentType:
     'frontend' | 'backend' | 'database' | 'load_balancer' | 'api_gateway'
 ;
+
+ConnectorType:
+     'http' | 'db_conn' | 'lb_conn'
+ ;

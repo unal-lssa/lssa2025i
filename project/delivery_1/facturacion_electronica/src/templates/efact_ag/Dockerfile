@@ -1,13 +1,15 @@
+# Imagen base de Python minimalista
 FROM python:3.11-slim
 
+# Directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-COPY /shared/auth_utils.py templates/shared/auth_utils.py
+# Instalar dependencias
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY /efact_ag/api_gateway.py .
+# Copiar todos los archivos al contenedor
+COPY . .
 
-COPY /efact_ag/requirements.txt .
-
-RUN pip install flask pyjwt requests python-dotenv -r requirements.txt
-
-CMD ["python", "api_gateway.py"]
+# Comando para ejecutar la app
+CMD ["python", "app.py"]

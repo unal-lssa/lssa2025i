@@ -1,7 +1,7 @@
 {
   "name": "seller-fe-app",
   "version": "1.0.0",
-  "description": "Frontend básico con Express",
+  "description": "Frontend básico de Seller",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
@@ -10,7 +10,8 @@
   "author": "Sebastian Rios Sabogal",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "axios": "^1.6.7"
   },
   "devDependencies": {
     "nodemon": "^3.0.0"
