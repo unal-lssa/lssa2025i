@@ -7,10 +7,8 @@ Controla:
 - Limitación de exposición
 """
 from flask import Flask, request, jsonify
-from datetime import datetime, timedelta
-import requests
 import os
-from templates.shared.auth_utils import token_required, limit_exposure, role_required, generate_token
+from auth_utils import token_required, limit_exposure, role_required, generate_token
 
 app = Flask(__name__)
 

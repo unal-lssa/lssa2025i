@@ -12,9 +12,9 @@ architecture:
     component load_balancer efact_writing_lb
     component load_balancer efact_reading_lb
 
-    component backend users_be instances 2
-    component backend efact_writing_be instances 2
-    component backend efact_reading_be instances 2
+    component backend users_be
+    component backend efact_writing_be
+    component backend efact_reading_be
 
     component database users_db
     component database efact_writing_db
@@ -27,6 +27,7 @@ architecture:
     connector http efact_ag -> auth_be
 
     connector http efact_ag -> users_lb
+    connector http efact_ag -> efact_writing_lb
     connector http efact_ag -> efact_writing_lb
     connector http efact_ag -> efact_reading_lb
 

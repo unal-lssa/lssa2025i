@@ -7,53 +7,6 @@ load_dotenv()  # take environment variables
 # Configurar el nivel de logging
 logging.basicConfig(level=logging.DEBUG)
 
-
-def generate_frontend(element):
-    """
-    Genera el Frontend para la aplicación usando las plantillas.
-    :param element: El elemento del modelo que representa el frontend.
-    :return: None
-    """
-    # Obtener el nombre del frontend
-    name = element.name
-    
-    # Obtener la ruta del directorio de plantillas
-    templates_dir = get_templates_path(name)
-    
-    # Obtener la ruta del directorio de salida
-    skeleton_dir = get_skeleton_path(name)
-    
-    # Existen 4 archivos de plantilla para el frontend
-    # 1. app.js
-    # 2. Dockerfile
-    # 3. package.json
-
-    # Generar los archivos de plantilla
-    # 1. app.js
-    template_path = os.path.join(templates_dir, "app.js")
-    with open(template_path, "r") as template_file:
-        template = template_file.read()
-    # Guardar el archivo generado
-    with open(os.path.join(skeleton_dir, "app.js"), "w") as output_file:
-        output_file.write(template)
-
-    # 2. Dockerfile
-    template_path = os.path.join(templates_dir, "Dockerfile")
-    with open(template_path, "r") as template_file:
-        template = template_file.read()
-    # Guardar el archivo generado
-    with open(os.path.join(skeleton_dir, "Dockerfile"), "w") as output_file:
-        output_file.write(template)
-    
-    # 3. package.json
-    template_path = os.path.join(templates_dir, "package.json")
-    with open(template_path, "r") as template_file:
-        template = template_file.read()
-    # Guardar el archivo generado
-    with open(os.path.join(skeleton_dir, "package.json"), "w") as output_file:
-        output_file.write(template)
-
-
 def generate_api_gateway(element):
     """
     Genera el API Gateway para la aplicación usando las plantillas.
@@ -93,11 +46,12 @@ def generate_api_gateway(element):
     
     # 3. requirements.txt
     template_path = os.path.join(templates_dir, "requirements.txt")
-    with open(template_path, "r") as template_file:
-        template = template_file.read()
-    # Guardar el archivo generado
-    with open(os.path.join(skeleton_dir, "requirements.txt"), "w") as output_file:
-        output_file.write(template)
+    if os.path.exists(template_path):
+        with open(template_path, "r") as template_file:
+            template = template_file.read()
+        # Guardar el archivo generado
+        with open(os.path.join(skeleton_dir, "requirements.txt"), "w") as output_file:
+            output_file.write(template)
 
 
 def generate_load_balancer(element, target):
@@ -126,7 +80,7 @@ def generate_load_balancer(element, target):
     with open(template_path, "r") as template_file:
         template = template_file.read()
     # Reemplazar los marcadores de posición en la plantilla
-    VALOR = ";\n".join(f"{target['name']}_{i}" + f":{target['port']}" for i in range(target['instances'])) + ";"
+    VALOR = "server " + str(target["name"]) + ":" + str(target["port"]) + ";"
     template = template.replace("###Targets###", VALOR)
 
     # Guardar el archivo generado
@@ -142,7 +96,7 @@ def generate_load_balancer(element, target):
         output_file.write(template)
 
 
-def generate_backend(element):
+def generate_microservice(element):
     """
     Genera el Backend para la aplicación usando las plantillas.
     :param element: El elemento del modelo que representa el Backend.
@@ -157,41 +111,18 @@ def generate_backend(element):
     # Obtener la ruta del directorio de salida
     skeleton_dir = get_skeleton_path(name)
     
-    # Existen 2 archivos de plantilla para el Backend
-    # 1. app.py
-    # 2. Dockerfile
-    # 3. requirements.txt
-
     # Generar los archivos de plantilla
-    # 1. app.py
-    template_path = os.path.join(templates_dir, "app.py")
-    with open(template_path, "r") as template_file:
-        template = template_file.read()
-    # Reemplazar los marcadores de posición en la plantilla
-    # template = template.replace("{{MARCADOR}}", VALOR)
-    # Guardar el archivo generado
-    with open(os.path.join(skeleton_dir, "app.py"), "w") as output_file:
-        output_file.write(template)
-
-    # 2. Dockerfile
-    template_path = os.path.join(templates_dir, "Dockerfile")
-    with open(template_path, "r") as template_file:
-        template = template_file.read()
-    # Reemplazar los marcadores de posición en la plantilla
-    # template = template.replace("{{MARCADOR}}", VALOR)
-    # Guardar el archivo generado
-    with open(os.path.join(skeleton_dir, "Dockerfile"), "w") as output_file:
-        output_file.write(template)
-    
-    # 3. requirements.txt
-    template_path = os.path.join(templates_dir, "requirements.txt")
-    with open(template_path, "r") as template_file:
-        template = template_file.read()
-    # Reemplazar los marcadores de posición en la plantilla
-    # template = template.replace("{{MARCADOR}}", VALOR)
-    # Guardar el archivo generado
-    with open(os.path.join(skeleton_dir, "requirements.txt"), "w") as output_file:
-        output_file.write(template)
+    template_path = os.path.join(templates_dir)
+    if os.path.exists(templates_dir):
+        for file_name in os.listdir(templates_dir):
+            template_path = os.path.join(templates_dir, file_name)
+            if os.path.isfile(template_path):
+                with open(template_path, "r") as template_file:
+                    template = template_file.read()
+                # Guardar el archivo generado en el directorio de salida
+                output_path = os.path.join(skeleton_dir, file_name)
+                with open(output_path, "w") as output_file:
+                    output_file.write(template)
 
 
 def generate_database(element):
@@ -279,10 +210,10 @@ def apply_transformations(model):
     
     # Aplicar transformaciones a cada componente
     for component_type, elements in components.items():
-        if component_type == "frontend":
+        if component_type == "frontend" or component_type == "backend":
             # Aplicar transformaciones específicas para frontend
             for element in elements:
-                generate_frontend(element)
+                generate_microservice(element)
         
         elif component_type == "api_gateway":
             # Aplicar transformaciones específicas para api_gateway
@@ -294,12 +225,6 @@ def apply_transformations(model):
             for element in elements:
                 load_balancer_targets = get_load_balancer_target(element, connectors)
                 generate_load_balancer(element, load_balancer_targets)
-
-        elif component_type == "backend":
-            # Aplicar transformaciones específicas para backend
-            for element in elements:
-                # Aquí se puede agregar la lógica para generar el backend
-                generate_backend(element)
 
         elif component_type == "database":
             # Aplicar transformaciones específicas para database
@@ -350,7 +275,6 @@ def get_load_balancer_target(element, connectors):
     # Obtener la cantidad de instancias del target y el puerto del target
     target = {
         "name": target.name,
-        "instances": target.instances,
         "port": get_backend_ports(target.name)
     }
     return target

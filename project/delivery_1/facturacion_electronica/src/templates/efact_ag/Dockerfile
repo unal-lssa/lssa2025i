@@ -4,12 +4,10 @@ FROM python:3.11-slim
 # Directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Instalar dependencias
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY . /app
 
-# Copiar todos los archivos al contenedor
-COPY . .
+# Instalar dependencias
+RUN pip install flask==2.3.2 requests==2.31.0 pyjwt==2.10.1
 
 # Comando para ejecutar la app
 CMD ["python", "app.py"]

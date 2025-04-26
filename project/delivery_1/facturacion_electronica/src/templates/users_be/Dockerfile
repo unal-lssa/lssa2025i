@@ -5,11 +5,10 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Instalar dependencias
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir flask==2.3.2 mysql-connector-python==9.3.0
 
 # Copiar el código fuente de la app
-COPY . .
+COPY . /app
 
 # Comando para ejecutar la app
 CMD ["python", "app.py"]
