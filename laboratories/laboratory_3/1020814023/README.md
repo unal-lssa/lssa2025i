@@ -96,3 +96,7 @@ Stats Microservice
 curl -X GET -H "Authorization: Bearer <your_token>"
 http://127.0.0.1:5000/stats
 ```
+
+# Notes
+
+I didn´t contenerize the application because I was having some issues with the "Time limitations" limiting exposure rule. The time functions inside the containers were not working correctly.

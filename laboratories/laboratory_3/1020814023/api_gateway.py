@@ -99,6 +99,12 @@ def message_service():
 def stats_service():
     return redirect_to_microservice("http://127.0.0.1:5004/stats")
 
+@app.route('/microservice', methods=['GET'])
+@token_required
+@limit_exposure  # Apply the limit exposure tactic to this route
+def microservice_service():
+    return redirect_to_microservice("http://127.0.0.1:5001/microservice")
+
 @app.route('/data', methods=['GET'])
 @token_required
 @limit_exposure  # Apply the limit exposure tactic to this route
