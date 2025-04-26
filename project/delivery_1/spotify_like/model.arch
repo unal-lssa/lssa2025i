@@ -26,6 +26,11 @@ architecture:
     connector http api_gateway_comp -> auth_lb
     connector http api_gateway_comp -> playlist_lb
 
+    connector http catalog_ld -> catalog_service
+    connector http user_lb -> user_service  
+    connector http auth_lb -> auth_service
+    connector http playlist_lb -> playlist_service
+
     connector db_connector catalog_service -> catalog_db
     connector db_connector user_service -> user_db
     connector db_connector auth_service -> auth_db
