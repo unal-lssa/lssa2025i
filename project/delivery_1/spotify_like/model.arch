@@ -4,16 +4,32 @@ architecture:
 
     component frontend app_fe
 
-    component backend app_be_1
-    component backend app_be_2
-    component backend app_be_3
+    component backend catalog_service
+    component backend user_service
+    component backend auth_service
+    component backend playlist_service
+    component api_gateway api_gateway_comp auth_service
 
-    component db app_db_mongo mongodb
-    component db app_db_postgress postgresql
+    component db catalog_db elasticsearch
+    component db user_db postgresql
+    component db auth_db postgresql
+    component db playlist_service mongodb
+    
+    component loadbalancer catalog_ld 1 catalog_service
+    component loadbalancer user_lb 1 user_service
+    component loadbalancer auth_lb 1 auth_service
+    component loadbalancer playlist_lb 1 playlist_service
 
-    connector http app_fe -> app_be_1
-    connector db_connector app_be_1 -> app_db_mongo
-    connector db_connector app_be_2 -> app_db_postgress
+    connector http app_fe -> api_gateway_comp
+    connector http api_gateway_comp -> catalog_ld
+    connector http api_gateway_comp -> user_lb
+    connector http api_gateway_comp -> auth_lb
+    connector http api_gateway_comp -> playlist_lb
+
+    connector db_connector catalog_service -> catalog_db
+    connector db_connector user_service -> user_db
+    connector db_connector auth_service -> auth_db
+    connector db_connector playlist_service -> playlist_db
     
     component backend uploader
     component backend fileSaver
