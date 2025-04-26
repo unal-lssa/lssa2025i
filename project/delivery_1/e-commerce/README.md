@@ -51,3 +51,5 @@ Payments -> payment_id (Yosman)
             total_payment
             transaction_id
             status
+
+Arreglar
