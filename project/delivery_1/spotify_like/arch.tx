@@ -4,7 +4,7 @@ Model:
 ;
 
 Element:
-    Component | Connector
+    Component | Connector | Network
 ;
 
 Component:
@@ -49,6 +49,10 @@ ConnectorType:
 
 KafkaConnectorConfig:
     'kafka_connector' 'topic' '=' topicName=ID 'group_id' '=' groupId=ID
+;
+
+Network:
+    'network' networkName=ID
 ;
 
 /* Dynamic Database implementation on backend example

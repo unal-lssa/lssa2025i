@@ -1,5 +1,7 @@
 architecture:
 
+    network arch-network
+
     component frontend app_fe
 
     component backend app_be_1
@@ -12,3 +14,8 @@ architecture:
     connector http app_fe -> app_be_1
     connector db_connector app_be_1 -> app_db_mongo
     connector db_connector app_be_2 -> app_db_postgress
+    
+    component backend uploader
+    component backend fileSaver
+    connector kafka_connector topic=upload-topic group_id=uploader-group uploader -> uploadQueue 
+    connector kafka_connector topic=upload-topic group_id=saver-group uploadQueue -> fileSaver
