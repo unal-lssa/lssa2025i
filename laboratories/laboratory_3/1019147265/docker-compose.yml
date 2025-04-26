@@ -1,0 +1,88 @@
+services:
+  db:
+    image: mysql:8
+    container_name: login_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./schemas.sql:/docker-entrypoint-initdb.d/schemas.sql
+
+  login_service:
+    build: ./login_ms
+    container_name: login_service
+    ports:
+      - "5001:5001"
+    environment:
+      DB_USER: root
+      DB_PASSWORD: rootpass
+      DB_HOST: db
+      DB_NAME: login_service
+    depends_on:
+      - db
+
+  appsettings_db:
+    image: mysql:8
+    container_name: appsettings_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./appsettings_service/schemas.sql:/docker-entrypoint-initdb.d/schemas.sql
+
+  appsettings_service:
+    build: ./appsettings_ms
+    container_name: appsettings_service
+    ports:
+      - "5002:5002"
+    environment:
+      DB_USER: root
+      DB_PASSWORD: rootpass
+      DB_HOST: appsettings_db
+      DB_NAME: appsettings_service
+    depends_on:
+      - appsettings_db
+
+  api_gateway:
+    build: ./api_gateway
+    container_name: api_gateway
+    ports:
+      - "8000:8000"
+    environment:
+      SECRET_KEY: your-secret-key
+      AUTHORIZED_IPS: 127.0.0.1
+    depends_on:
+      - login_service
+      - appsettings_service
+      - blogpost_service
+
+  blogpost_db:
+    image: mysql:8
+    container_name: blogpost_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+    ports:
+      - "3308:3306"
+    volumes:
+      - ./blogpost_service/schemas.sql:/docker-entrypoint-initdb.d/schemas.sql
+
+  blogpost_service:
+    build: ./blogpost_service
+    container_name: blogpost_service
+    ports:
+      - "5003:5003"
+    environment:
+      DB_USER: root
+      DB_PASSWORD: rootpass
+      DB_HOST: blogpost_db
+      DB_NAME: blogpost_service
+    depends_on:
+      - blogpost_db
+
+
+
