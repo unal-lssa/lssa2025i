@@ -1,0 +1,45 @@
+version: "3.9"
+
+networks:
+  private_network:
+    driver: bridge
+  public_network:
+    driver: bridge
+
+services:
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "5003:5003"
+    environment:
+      - FLASK_APP=clients_ms.py
+    networks:
+      - private_network
+
+  api_gateway:
+    build:
+      context: ./api_gateway
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=api_gateway.py
+    depends_on:
+      - client
+      - admin
+    networks:
+      - public_network
+      - private_network
+
+  admin:
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+    ports:
+      - "5004:5004"
+    environment:
+      - FLASK_APP=admin_ms.py
+    networks:
+      - private_network
