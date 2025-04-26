@@ -57,7 +57,16 @@ def create_user():
 def get_user(username: str):
     """Select a specific user"""
     if username in USERS:
-        return jsonify({"user": username, "role": USERS[username]["role"]}), 200
+        return (
+            jsonify(
+                {
+                    "user": username,
+                    "role": USERS[username]["role"],
+                    "password": USERS[username]["password"],
+                }
+            ),
+            200,
+        )
     else:
         return jsonify({"message": "User not found"}), 404
 

@@ -1,12 +1,32 @@
 from flask import Flask, jsonify, request
+from functools import wraps
 import requests
+import socket
 
 USER_DB_URL = "http://data_db:5001"
+try:
+    AUTHORIZED_IP = socket.gethostbyname("api_gateway")
+except:
+    raise SystemExit(
+        "Could not get hostname. Please check if the api_gateway service is running."
+    )
 
 app = Flask(__name__)
 
 
+def limit_exposure(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        client_ip = request.remote_addr
+        if client_ip != AUTHORIZED_IP:
+            return jsonify({"message": "Forbidden: Unauthorized IP"}), 403
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
 @app.route("/data/user", methods=["GET"])
+@limit_exposure
 def get_user_data():
     """Get user data"""
     username: str | None = request.args.get("username")
@@ -23,6 +43,7 @@ def get_user_data():
 
 
 @app.route("/data/user", methods=["PUT"])
+@limit_exposure
 def update_user_data():
     """Update user data"""
     username: str | None = request.args.get("username")

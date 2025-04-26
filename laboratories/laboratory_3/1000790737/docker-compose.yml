@@ -1,0 +1,128 @@
+version: "3.9"
+services:
+  api_gateway:
+    build: 
+      context: api_gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - api_gateway_network
+    volumes:
+      - ./api_gateway:/home/backend/app
+  auth_db:
+    build:
+      context: auth_db
+      dockerfile: Dockerfile
+    networks:
+      - api_gateway_network
+      - auth_service_network
+    volumes:
+      - ./auth_db:/home/backend/app
+  auth_service:
+    build:
+      context: auth_ms
+      dockerfile: Dockerfile
+    networks:
+      - api_gateway_network
+      - auth_service_network
+    depends_on:
+      - auth_db
+      - api_gateway
+    volumes:
+      - ./auth_ms:/home/backend/app
+  user_db:
+    build:
+      context: user_db
+      dockerfile: Dockerfile
+    networks:
+      - api_gateway_network
+      - user_service_network
+    volumes:
+      - ./user_db:/home/backend/app
+  user_service:
+    build:
+      context: user_ms
+      dockerfile: Dockerfile
+    networks:
+      - api_gateway_network
+      - user_service_network
+    depends_on:
+      - user_db
+      - api_gateway
+    volumes:
+      - ./user_ms:/home/backend/app
+  data_db:
+    build:
+      context: data_db
+      dockerfile: Dockerfile
+    networks:
+      - api_gateway_network
+      - data_service_network
+    volumes:
+      - ./data_db:/home/backend/app
+  data_service:
+    build:
+      context: data_provider_ms
+      dockerfile: Dockerfile
+    networks:
+      - api_gateway_network
+      - data_service_network
+    depends_on:
+      - data_db
+      - api_gateway
+    volumes:
+      - ./data_provider_ms:/home/backend/app
+  transaction_db:
+    build:
+      context: transaction_db
+      dockerfile: Dockerfile
+    networks:
+      - api_gateway_network
+      - transaction_service_network
+    volumes:
+      - ./transaction_db:/home/backend/app
+  transaction_service:
+    build:
+      context: transaction_ms
+      dockerfile: Dockerfile
+    networks:
+      - api_gateway_network
+      - transaction_service_network
+    depends_on:
+      - transaction_db
+      - api_gateway
+    volumes:
+      - ./transaction_ms:/home/backend/app
+
+networks:
+  api_gateway_network:
+    driver: bridge
+  auth_service_network:
+    internal: true
+  user_service_network:
+    internal: true
+  data_service_network:
+    internal: true
+  transaction_service_network:
+    internal: true
+
+volumes:
+  auth_db_data:
+    driver: local
+  user_db_data:
+    driver: local
+  data_db_data:
+    driver: local
+  transaction_db_data:
+    driver: local
+  api_gateway_data:
+    driver: local
+  auth_service_data:
+    driver: local
+  user_service_data:
+    driver: local
+  data_service_data:
+    driver: local
+  transaction_service_data:
+    driver: local

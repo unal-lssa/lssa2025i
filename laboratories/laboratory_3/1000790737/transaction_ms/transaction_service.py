@@ -1,12 +1,32 @@
 from flask import Flask, jsonify, request
+from functools import wraps
 import requests
+import socket
 
 USER_DB_URL = "http://transaction_db:5001"
+try:
+    AUTHORIZED_IP = socket.gethostbyname("api_gateway")
+except:
+    raise SystemExit(
+        "Could not get hostname. Please check if the api_gateway service is running."
+    )
 
 app = Flask(__name__)
 
 
-@app.route("/transactions.user/<username>", methods=["GET"])
+def limit_exposure(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        client_ip = request.remote_addr
+        if client_ip != AUTHORIZED_IP:
+            return jsonify({"message": "Forbidden: Unauthorized IP"}), 403
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
+@app.route("/transactions/user/<username>", methods=["GET"])
+@limit_exposure
 def get_user_transactions(username: str):
     """Get transactions for a user"""
     response = requests.get(USER_DB_URL + f"/transactions/user/{username}")
@@ -17,6 +37,7 @@ def get_user_transactions(username: str):
 
 
 @app.route("/transaction", methods=["POST"])
+@limit_exposure
 def add_user_transaction():
     """Add a transaction for a user"""
     username: str | None = request.json.get("username")
