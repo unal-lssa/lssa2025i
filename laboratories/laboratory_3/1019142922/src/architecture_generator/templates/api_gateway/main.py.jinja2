@@ -1,0 +1,66 @@
+from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
+import json
+from pathlib import Path
+from typing import Optional
+
+app = FastAPI(
+    title="API Gateway",
+    description="Unified API Gateway for the system"
+)
+
+# Enable CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Dummy API key for demonstration
+API_KEY = "dummy-api-key-123"
+
+async def verify_api_key(api_key: Optional[str] = None):
+    if api_key != API_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid API Key"
+        )
+    return True
+
+# Load routes from configuration
+def load_routes():
+    config_path = Path("api_gateway.json")
+    if not config_path.exists():
+        return []
+    
+    with config_path.open() as f:
+        config = json.load(f)
+    return config.get("routes", [])
+
+# Create routes dynamically
+for route in load_routes():
+    async def create_route_handler(route=route):
+        # Dummy response for now
+        return {
+            "message": f"Proxying request to {route['target']}",
+            "route": route
+        }
+
+    # Add authentication dependencies based on route configuration
+    dependencies = []
+    if "api_key" in route.get("auth_methods", []):
+        dependencies.append(Depends(verify_api_key))
+
+    # Create the route
+    app.add_api_route(
+        path=route["path"],
+        endpoint=create_route_handler,
+        methods=[route["method"]],
+        dependencies=dependencies
+    )
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000) 

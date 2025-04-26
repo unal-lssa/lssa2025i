@@ -1,0 +1,26 @@
+services:
+{% for name, component in components.items() %}
+  {{ name }}:
+    {% if component.type == "database" %}
+    image: mysql:8
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE={{ name }}
+    volumes:
+      - ./{{ name }}/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - '3306:3306'
+    {% else %}
+    build: ./{{ name }}
+    ports:
+      - '{{ 8000 + loop.index0 }}:80'
+    {% if component.type == "backend" %}
+    depends_on:
+      - {{ db_component }}
+    {% endif %}
+    {% endif %}
+{% endfor %}
+
+networks:
+  default:
+    driver: bridge 

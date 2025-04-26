@@ -1,0 +1,30 @@
+[project]
+name = "architecture-generator"
+version = "0.1.0"
+description = "CLI Application for automatic boilerplate generation based on a DSL architecture model."
+readme = "README.md"
+authors = [
+    { name = "Juan Bernardo Benavides Rubio", email = "jbbenavidesr@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "jinja2>=3.1.6",
+    "textx>=4.1.0",
+    "typer>=0.15.2",
+]
+
+[project.scripts]
+generate = "architecture_generator.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+    "ruff>=0.11.7",
+]
+
+[tool.uv.workspace]
+members = ["src/architecture_generator/templates/backend"]

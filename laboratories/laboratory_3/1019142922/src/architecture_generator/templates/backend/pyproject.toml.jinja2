@@ -1,0 +1,10 @@
+[project]
+name = "{{ component.name }}",
+version = "0.1.0"
+description = "{{ component.description | default('API Service') }}"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.115.12",
+    "uvicorn>=0.27.1",
+]

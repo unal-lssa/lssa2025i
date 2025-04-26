@@ -1,0 +1,44 @@
+Model:
+    'architecture' ':'
+        elements*=Element
+;
+
+Element:
+    Component | Connector
+;
+
+Component:
+    'component' type=ComponentType name=ID
+    ('{' 
+        (endpoints*=Endpoint)?
+        (exposes*=ExposedEndpoint)?
+    '}')?
+;
+
+Connector:
+    'connector' type=ConnectorType from=[Component] '->' to=[Component]
+;
+
+ComponentType:
+    'frontend' | 'backend' | 'database'
+;
+
+ConnectorType:
+    'http' | 'db_connector'
+;
+
+Endpoint:
+    'endpoint' name=ID ':' method=HttpMethod path=STRING ('auth' auth_methods+=AuthMethod (',' auth_methods+=AuthMethod)*)?
+;
+
+ExposedEndpoint:
+    'expose' endpoint=[Endpoint] ('as' public_path=STRING)?
+;
+
+HttpMethod:
+    'GET' | 'POST' | 'PUT' | 'DELETE'
+;
+
+AuthMethod:
+    'api_key' | 'none'
+;

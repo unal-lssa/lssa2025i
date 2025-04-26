@@ -1,0 +1,23 @@
+architecture:
+
+    component frontend web
+    
+    component backend user_service {
+        endpoint getUser: GET "/users/{id}" auth api_key
+        endpoint createUser: POST "/users" auth api_key
+        endpoint internalStats: GET "/internal/stats" auth none
+        
+        expose getUser as "/api/users/{id}"
+        expose createUser as "/api/users"
+    }
+    component database user_db
+    
+    component backend order_service {
+        endpoint getOrder: GET "/orders/{id}" auth api_key
+        endpoint createOrder: POST "/orders" auth api_key
+        
+        expose getOrder as "/api/orders/{id}"
+        expose createOrder as "/api/orders"
+    }
+    component database order_db
+    

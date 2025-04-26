@@ -1,0 +1,13 @@
+from fastapi import FastAPI
+
+app = FastAPI(
+    title="{{ component.name }}",
+    description="{{ component.description | default('API Service') }}"
+)
+
+
+{% for endpoint in component.endpoints %}
+@app.{{ endpoint.method | lower }}("{{ endpoint.path }}")
+def {{ endpoint.name }}():
+    return {"message": "Endpoint {{ endpoint.name }} response from {{ component.name }}."}
+{% endfor %}
