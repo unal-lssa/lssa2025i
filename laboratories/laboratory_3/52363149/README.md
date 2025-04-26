@@ -11,20 +11,21 @@ Secure by Design — building security into the architecture from the start.
 
 ### Security tactic 1: Time Based Access Control
 
-1. Tiempo de vigencia del Token
+Tiempo de vigencia del Token
 
     Una vez que se entrega el token valido a un usuario, se establece el tiempo de vigencia del token en 10 minutos. 
   
         expiration_time = datetime.utcnow() + timedelta(minutes=10)
      
-    Si este tiempo expira, se controla el error mostrando que ha vencido el tiempo de vigencia del token.
+
+Si este tiempo expira, se controla el error mostrando que ha vencido el tiempo de vigencia del token.
     
          except jwt.ExpiredSignatureError:
               return jsonify({"message": "Token has expired!"}), 401
       
 ### Security tactic 2: Limit Exposure
 
-2. Se agregaron roles y recursos reservados para cada rol
+Se agregaron roles y recursos reservados para cada rol
 
      Se definieron dos roles: el rol de usuario y el de administrador:
       
@@ -33,7 +34,8 @@ Secure by Design — building security into the architecture from the start.
           "admin1": {"password": "adminpass", "role": "admin"},
           }
   
-    Se creo el microservicio admin_service.py y se limitó el acceso solo al rol admin
+  
+  Se creo el microservicio admin_service.py y se limitó el acceso solo al rol admin
   
         
         @app.route("/admin", methods=["GET"])
