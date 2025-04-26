@@ -19,7 +19,7 @@ services:
     networks:
       - internal
     ports:
-      - '3306:3306'
+      - '{{ 3306 + loop.index0 }}:3306'
     {% elif component.type == "frontend" %}
     build: ./{{ name }}
     ports:
