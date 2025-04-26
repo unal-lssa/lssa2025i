@@ -55,24 +55,3 @@ Network:
     'network' networkName=ID
 ;
 
-/* Dynamic Database implementation on backend example
-import x
-import y
-{import mongoose if connector == 'db_connector' else 'import xyz'}
-
-@app.route('/')
-def hello():
-    pass
-
-@app.route('/api/v1')
-def hello_v1():
-    {
-        db_queries.get(connector)
-    }
-
-db_queries = {
-    'db_connector': 'db.query()', // 'db.query()' is a placeholder for actual database query code
-    'kafka_connector': 'kafka.produce()',
-    'http': 'http.get()'
-}
-**/

@@ -1,6 +1,6 @@
 architecture:
 
-    network arch-network
+    network arch_network
 
     component frontend app_fe
 
@@ -8,25 +8,25 @@ architecture:
     component backend user_service
     component backend auth_service
     component backend playlist_service
-    component api_gateway api_gateway_comp auth_service
+    component api_gateway api_gateway_comp
 
     component db catalog_db elasticsearch
     component db user_db postgresql
     component db auth_db postgresql
-    component db playlist_service mongodb
+    component db playlist_db mongodb
     
-    component loadbalancer catalog_ld 1 catalog_service
+    component loadbalancer catalog_lb 1 catalog_service
     component loadbalancer user_lb 1 user_service
     component loadbalancer auth_lb 1 auth_service
     component loadbalancer playlist_lb 1 playlist_service
 
     connector http app_fe -> api_gateway_comp
-    connector http api_gateway_comp -> catalog_ld
+    connector http api_gateway_comp -> catalog_lb
     connector http api_gateway_comp -> user_lb
     connector http api_gateway_comp -> auth_lb
     connector http api_gateway_comp -> playlist_lb
 
-    connector http catalog_ld -> catalog_service
+    connector http catalog_lb -> catalog_service
     connector http user_lb -> user_service  
     connector http auth_lb -> auth_service
     connector http playlist_lb -> playlist_service
@@ -38,5 +38,5 @@ architecture:
     
     component backend uploader
     component backend fileSaver
-    connector kafka_connector topic=upload-topic group_id=uploader-group uploader -> uploadQueue 
-    connector kafka_connector topic=upload-topic group_id=saver-group uploadQueue -> fileSaver
+    connector kafka_connector topic=upload_topic group_id=uploader_group uploader -> uploadQueue 
+    connector kafka_connector topic=upload_topic group_id=saver_group uploadQueue -> fileSaver

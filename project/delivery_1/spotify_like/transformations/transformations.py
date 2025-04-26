@@ -3,23 +3,27 @@ from .backend.generate_backend import generate_backend
 from .frontend.generate_frontend import generate_frontend
 from .load_balancer.generate_load_balancer import generate_loadbalancer
 from .compose.generate_docker_compose import generate_docker_compose
-
+from .api_gateway.generate_api_gateway import generate_api_gateway
 def process_connectors(model):
     """Process all connectors in the model and return a mapping of component connections."""
     component_connections = {}
     
     for e in model.elements:
         if e.__class__.__name__ == 'Connector':
-            # Use getattr to avoid 'from' reserved keyword issue
             source_component = getattr(e, 'from').name
-            to_component = e.to.name
             conn_type = e.type
-            
+            targets = e.to if isinstance(e.to, list) else [e.to]  # Always work with a list
+
             if source_component not in component_connections:
                 component_connections[source_component] = {}
-            
-            component_connections[source_component][conn_type] = to_component
+
+            if conn_type not in component_connections[source_component]:
+                component_connections[source_component][conn_type] = []
+
+            for target in targets:
+                component_connections[source_component][conn_type].append(target.name)
     
+    print(f"Component connections: {component_connections}")
     return component_connections
 
 def apply_transformations(model):
@@ -28,6 +32,7 @@ def apply_transformations(model):
     load_balancer_config = {}
     database_name = None
     db_types = {}
+    api_gateway_name = None
     
     # Process components first
     for e in model.elements:
@@ -58,6 +63,10 @@ def apply_transformations(model):
                 
                 if target_name not in replicas and hasattr(e, 'instanceCount'):
                     replicas[target_name] = e.instanceCount
+
+        elif e.__class__.__name__ == 'ApiGateway':
+            api_gateway_name = e.name
+            components[api_gateway_name] = 'api_gateway'
     
     # Process connectors
     component_connections = process_connectors(model)
@@ -74,9 +83,10 @@ def apply_transformations(model):
                 backend_db_type = 'mysql'  # default
                 if connections and 'db_connector' in connections:
                     connected_db = connections['db_connector']
-                    if connected_db in db_types:
-                        backend_db_type = db_types[connected_db]
-                
+                    for db in connected_db:
+                        if db in db_types:
+                            backend_db_type = db_types[db]
+                            break
                 generate_backend(e.name, database=database_name, database_type=backend_db_type, connections=connections)
             elif e.type == 'frontend':
                 # Connect frontend to load balancer if it exists, otherwise connect to backend
@@ -98,5 +108,15 @@ def apply_transformations(model):
             if target_name:
                 replica_count = replicas.get(target_name, 1)
                 generate_loadbalancer(e.name, target_name, replica_count)
+        elif e.__class__.__name__ == 'ApiGateway':
+            connections = component_connections.get(e.name, {})  
+            route_map = {}
+
+            http_targets = connections.get('http', [])
+
+            for target in http_targets:
+                route_map[target] = target 
+                
+            generate_api_gateway(e.name, route_map)
 
     generate_docker_compose(components, replicas, load_balancer_config, db_types)
