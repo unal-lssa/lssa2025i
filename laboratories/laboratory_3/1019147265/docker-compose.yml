@@ -30,7 +30,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: rootpass
     ports:
-      - "3307:3306"
+      - "3310:3306"
     volumes:
       - ./appsettings_service/schemas.sql:/docker-entrypoint-initdb.d/schemas.sql
 
@@ -72,7 +72,7 @@ services:
       - ./blogpost_service/schemas.sql:/docker-entrypoint-initdb.d/schemas.sql
 
   blogpost_service:
-    build: ./blogpost_service
+    build: ./blogpost_ms
     container_name: blogpost_service
     ports:
       - "5003:5003"
