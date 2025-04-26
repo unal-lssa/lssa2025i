@@ -188,7 +188,7 @@ def user_service():
     
     # Forward the request to the actual user service
     try:
-        user_service_url = SERVICE_REGISTRY.get(user_service)
+        user_service_url = SERVICE_REGISTRY.get("user_service")
         response = requests.get(user_service_url)
 
         if response.status_code == 200:
@@ -220,7 +220,7 @@ def order_service():
     
     # Forward the request to the actual order service
     try:
-        order_service_url = SERVICE_REGISTRY.get(order_service)
+        order_service_url = SERVICE_REGISTRY.get("order_service")
         response = requests.get(order_service_url)
         
         if response.status_code == 200:
@@ -251,7 +251,7 @@ def product_service():
     
     # Forward the request to the actual product service
     try:
-        product_service_url = SERVICE_REGISTRY.get(product_service)
+        product_service_url = SERVICE_REGISTRY.get("product_service")
         response = requests.get(product_service_url)
         
         if response.status_code == 200:

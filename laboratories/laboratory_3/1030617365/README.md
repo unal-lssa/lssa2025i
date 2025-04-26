@@ -1,92 +1,98 @@
-# Laboratorio 3 - Seguridad: Sistema de Microservicios con API Gateway Mejorado
+# Laboratorio 3 - Seguridad: Sistema de Microservicios con API Gateway
 
 ### Nombre: Leidy Johana Llanos Culma 
 ### Documento: 1030617365
 
 ## Descripción del Proyecto
-Este proyecto implementa una arquitectura de microservicios que demuestra la importancia de la táctica de seguridad "Limit Exposure" (Limitar Exposición) utilizando un patrón de API Gateway como punto de acceso centralizado.
+Este proyecto implementa un API Gateway de microservicios con múltiples capas de seguridad, incluyendo autenticación con JWT, control de acceso basado en roles (RBAC), restricciones de IP y límites de tasa de solicitudes.
 
-El proyecto original ha sido mejorado con:
+## Características
 
-Servicios adicionales: Se agregaron User Service, Order Service, Product Service
-Reglas más complejas de limitación de exposición:
-Control de acceso basado en roles (RBAC)
-Restricción por IP basada en roles
-Límite de tasa de peticiones (Rate Limiting)
-Tokens JWT con expiración
-Registro de auditoría (Logging)
-Mayor seguridad: Centralización de autenticación y autorización en el API Gateway
-Arquitectura del Sistema
-Cliente → API Gateway (expuesto) → Microservicios (protegidos) → Base de Datos (protegida)
-#### Los componentes incluyen:
+- **Autenticación JWT**: Sistema de tokens seguro con expiración
+- **Control de Acceso Basado en Roles (RBAC)**: Diferentes niveles de acceso según el rol del usuario
+- **Lista Blanca de IPs**: Restricción de acceso por dirección IP
+- **Límite de Tasa de Solicitudes**: Protección contra abusos limitando el número de solicitudes por hora
+- **Registro (Logging)**: Registro detallado de actividades y eventos de seguridad
+- **Enrutamiento de Servicios**: Redirección transparente a los microservicios correspondientes
 
-**API Gateway:** El único punto de entrada, implementa autenticación, autorización y límites de exposición
-**User Service:** Gestiona datos de usuarios
-**Order Service:** Gestiona pedidos
-**Product Service:** Gestiona productos
-**Database Service:** Simula operaciones de base de datos (acceso muy restringido)
-**Táctica de Seguridad:** Limit Exposure
+## Requisitos
 
-La implementación mejorada aplica la táctica "Limit Exposure" mediante:
-
-**IP Whitelisting:** Solo IPs específicas pueden acceder a servicios, con acceso diferenciado por rol
-**Autenticación JWT:** Se requieren tokens válidos firmados para todas las operaciones protegidas
-**Control de Acceso por Roles:** Los roles de usuario determinan qué servicios pueden usar
-**Límite de Frecuencia de Peticiones:** Previene ataques de fuerza bruta y DDoS
-**Logging Detallado:** Registro completo de accesos e intentos fallidos para auditoría
-
-#### Requisitos
-Python 3.x
-Flask (pip install flask)
-PyJWT (pip install pyjwt)
+- Python 3.x
+- Flask (pip install flask)
+- PyJWT (pip install pyjwt)
+- Requests
 
 #### Instrucciones de Ejecución
 
-Opción 1: Ejecución centralizada 
-bash
-python run_secure_system.py
+1. Inicia el API Gateway:
+   ```bash
+   python api_gateway.py
+   ```
+   python user_service.py
+   ```
+   python product_service.py
+   ```
+   python order_service.py
 
-Opción 2: Ejecución manual
-Ejecute cada servicio en una terminal distinta:
+2. El servidor se iniciará en `http://0.0.0.0:5000`
 
-bash
-### Terminal 1 - API Gateway
-python api_gateway_enhanced.py
+## Estructura del Sistema
 
-### Terminal 2 - User Service
-python user_service.py
+El API Gateway actúa como punto de entrada centralizado para todos los microservicios:
 
-### Terminal 3 - Order Service
-python order_service.py
+```
+Cliente -> API Gateway -> Microservicios (user_service, order_service, product_service, etc.)
+```
 
-### Terminal 4 - Product Service
-python product_service.py
+## Consumir los Servicios
 
+### 1. Obtener un Token JWT (Login)
 
-### Terminal 6 - Database Service
-python database_service.py
+```bash
+curl -X POST http://localhost:5000/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "user1", "password": "password123"}'
+```
 
-## Prueba del Sistema
-1. Obtener un token JWT (login)
-Usuario normal:
-bash
-curl -X POST -H "Content-Type: application/json" -d '{"username": "user1", "password": "password123"}' http://localhost:5000/login
-Administrador:
-bash
-curl -X POST -H "Content-Type: application/json" -d '{"username": "admin1", "password": "admin123"}' http://localhost:5000/login
-Analista:
-bash
-curl -X POST -H "Content-Type: application/json" -d '{"username": "analyst1", "password": "analyst123"}' http://localhost:5000/login
-2. Acceder a los servicios con el token
-bash
-# Reemplazar YOUR_TOKEN_HERE con el token JWT recibido
-curl -X GET -H "Authorization: YOUR_TOKEN_HERE" http://localhost:5000/user
-curl -X GET -H "Authorization: YOUR_TOKEN_HERE" http://localhost:5000/order
-curl -X GET -H "Authorization: YOUR_TOKEN_HERE" http://localhost:5000/product
+Respuesta exitosa:
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
 
-# Solo para rol analista
-curl -X GET -H "Authorization: ANALYST_TOKEN_HERE" http://localhost:5000/analytics
+### 2. Acceder a los Servicios con el Token
 
-# Solo para rol administrador
-curl -X GET -H "Authorization: ADMIN_TOKEN_HERE" http://localhost:5000/db
-Explicación de Mejoras
+Servicio de Usuarios:
+```bash
+curl -X GET http://localhost:5000/user \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+Servicio de Pedidos:
+```bash
+curl -X GET http://localhost:5000/order \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+Servicio de Productos:
+```bash
+curl -X GET http://localhost:5000/product \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+### 3. Ejemplos por Rol
+
+#### Usuario Regular
+Un usuario con rol "user" puede acceder a:
+- /user
+- /order
+- /product
+
+#### Administrador
+Un usuario con rol "admin" puede acceder a todos los servicios, incluyendo:
+- /user
+- /order
+- /product
+- /database (sólo para administradores)
+
