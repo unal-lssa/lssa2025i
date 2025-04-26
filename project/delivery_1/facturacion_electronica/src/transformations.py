@@ -159,29 +159,6 @@ def generate_database(element):
         output_file.write(template)
 
 
-def generate_docker_compose():
-    """Genera el docker compose.
-    
-    Args:
-        components: componentes del modelo para generar los servicios
-    """ 
-    # Obtener la ruta del directorio de salida
-    skeleton_dir = get_skeleton_path("")
-    
-    templates_dir = get_templates_path("compose")
-    
-    # Leo la plantilla de dockerfile para el frontend
-    template_compose = read_template(templates_dir,'docker-compose.yml' )
-
-    write_artefact(skeleton_dir, 'docker-compose.yml',template_compose)
-    
-    # Leo la plantilla de .env 
-    templates_dir = get_templates_path("..")
-    template_compose = read_template(templates_dir,'.env' )
-
-    write_artefact(skeleton_dir, '.env',template_compose)
-
-
 def apply_transformations(model):
     """
     Aplica las transformaciones al modelo dado.
