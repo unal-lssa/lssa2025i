@@ -1,8 +1,10 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, Request
 from fastapi.middleware.cors import CORSMiddleware
 import json
 from pathlib import Path
 from typing import Optional
+import httpx
+import asyncio
 
 app = FastAPI(
     title="API Gateway",
@@ -39,14 +41,46 @@ def load_routes():
         config = json.load(f)
     return config.get("routes", [])
 
+# Create an async HTTP client
+async def get_http_client():
+    async with httpx.AsyncClient() as client:
+        yield client
+
 # Create routes dynamically
 for route in load_routes():
-    async def create_route_handler(route=route):
-        # Dummy response for now
-        return {
-            "message": f"Proxying request to {route['target']}",
-            "route": route
-        }
+    async def create_route_handler(
+        request: Request,
+        client: httpx.AsyncClient = Depends(get_http_client),
+        route=route
+    ):
+        # Forward the request to the target service
+        try:
+            # Get the request body if it exists
+            body = await request.body()
+            
+            # Forward headers (excluding host and content-length)
+            headers = {
+                k: v for k, v in request.headers.items()
+                if k.lower() not in ['host', 'content-length']
+            }
+            
+            # Make the request to the target service
+            response = await client.request(
+                method=route["method"],
+                url=route["target"],
+                headers=headers,
+                content=body,
+                timeout=30.0
+            )
+            
+            # Return the response from the target service
+            return response.json()
+            
+        except httpx.RequestError as e:
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Error forwarding request: {str(e)}"
+            )
 
     # Add authentication dependencies based on route configuration
     dependencies = []
