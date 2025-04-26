@@ -1,0 +1,18 @@
+services:
+  api_gateway:
+    build: ./api_gateway
+    ports:
+      - "5000:5000"
+    depends_on:
+      - microservice
+      - useful_microservice
+
+  microservice:
+    build: ./microservice
+    ports:
+      - "5001:5001"
+
+  useful_microservice:
+    build: ./useful_microservice
+    ports:
+      - "5002:5002"

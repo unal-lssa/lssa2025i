@@ -1,0 +1,29 @@
+services:
+  api_gateway:
+    build: ./AG
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth_service
+      - user_service
+      - order_service
+
+  auth_service:
+    build: ./auth_service
+    ports:
+      - "5003:5003"
+
+  user_service:
+    build: ./user_service
+    ports:
+      - "5001:5001"
+
+  order_service:
+    build: ./order_service
+    ports:
+      - "3002:3002"
+
+  log_service:
+    build: ./logs_service
+    ports:
+      - "5004:5004"
