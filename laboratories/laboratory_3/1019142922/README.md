@@ -106,3 +106,7 @@ The API Gateway provides:
 Currently supports:
 - API Key authentication (dummy implementation)
 
+## Testing the api gateway
+
+Once you generate the model and run the docker compose command, you can access
+an interactive page to play with the api gateway at `http://localhost:8000/docs`.
