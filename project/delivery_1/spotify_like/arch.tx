@@ -28,10 +28,10 @@ Database:
 ;
 
 DatabaseType:
-    'mysql' | 'postgresql' | 'mongodb' | 'cassandra'
+    'postgresql' | 'mongodb' | 'elasticsearch'
 
 ApiGateway:
-    'component' 'api_gateway' name=ID target=[Component] auth=Component
+    'component' 'api_gateway' name=ID auth=Component
 ;
 
 Connector:
@@ -39,7 +39,7 @@ Connector:
 ;
 
 ConnectorType:
-    'http' | 'kafka_connector' | 'db_connector'
+    'http' | 'db_connector' | 'kafka_connector'
 ;
 
 /* Dynamic Database implementation on backend example
