@@ -189,7 +189,7 @@ if __name__ == "__main__":
 
 ### Step 6: Database
 
-#### `worker.py`
+#### `database.py`
 
 ```python
 from flask import Flask, jsonify
