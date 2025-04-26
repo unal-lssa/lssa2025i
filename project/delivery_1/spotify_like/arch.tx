@@ -29,6 +29,7 @@ Database:
 
 DatabaseType:
     'postgresql' | 'mongodb' | 'elasticsearch'
+;
 
 ApiGateway:
     'component' 'api_gateway' name=ID auth=Component
