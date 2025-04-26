@@ -1,5 +1,5 @@
 from metamodel import create_metamodel
-from transformations import apply_transformations
+from transformations.transformations import apply_transformations
 
 if __name__ == '__main__':
     
