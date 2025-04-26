@@ -1,7 +1,8 @@
-import os
 import logging
+import os
 
 from dotenv import load_dotenv
+
 load_dotenv()  # take environment variables
 
 # Configurar el nivel de logging
@@ -16,13 +17,13 @@ def generate_frontend(element):
     """
     # Obtener el nombre del frontend
     name = element.name
-    
+
     # Obtener la ruta del directorio de plantillas
     templates_dir = get_templates_path(name)
-    
+
     # Obtener la ruta del directorio de salida
     skeleton_dir = get_skeleton_path(name)
-    
+
     # Existen 4 archivos de plantilla para el frontend
     # 1. app.js
     # 2. Dockerfile
@@ -44,7 +45,7 @@ def generate_frontend(element):
     # Guardar el archivo generado
     with open(os.path.join(skeleton_dir, "Dockerfile"), "w") as output_file:
         output_file.write(template)
-    
+
     # 3. package.json
     template_path = os.path.join(templates_dir, "package.json")
     with open(template_path, "r") as template_file:
@@ -62,13 +63,13 @@ def generate_api_gateway(element):
     """
     # Obtener el nombre del api_gateway
     name = element.name
-    
+
     # Obtener la ruta del directorio de plantillas
     templates_dir = get_templates_path(name)
-    
+
     # Obtener la ruta del directorio de salida
     skeleton_dir = get_skeleton_path(name)
-    
+
     # Existen 3 archivos de plantilla para el frontend
     # 1. app.py
     # 2. Dockerfile
@@ -90,7 +91,7 @@ def generate_api_gateway(element):
     # Guardar el archivo generado
     with open(os.path.join(skeleton_dir, "Dockerfile"), "w") as output_file:
         output_file.write(template)
-    
+
     # 3. requirements.txt
     template_path = os.path.join(templates_dir, "requirements.txt")
     with open(template_path, "r") as template_file:
@@ -115,7 +116,7 @@ def generate_load_balancer(element, target):
 
     # Obtener la ruta del directorio de salida
     skeleton_dir = get_skeleton_path(name)
-    
+
     # Existen 2 archivos de plantilla para el Load Balancer
     # 1. nginx.conf
     # 2. Dockerfile
@@ -126,7 +127,13 @@ def generate_load_balancer(element, target):
     with open(template_path, "r") as template_file:
         template = template_file.read()
     # Reemplazar los marcadores de posición en la plantilla
-    VALOR = ";\n".join(f"{target['name']}_{i}" + f":{target['port']}" for i in range(target['instances'])) + ";"
+    VALOR = (
+        ";\n".join(
+            f"{target['name']}_{i}" + f":{target['port']}"
+            for i in range(target["instances"])
+        )
+        + ";"
+    )
     template = template.replace("###Targets###", VALOR)
 
     # Guardar el archivo generado
@@ -156,7 +163,7 @@ def generate_backend(element):
 
     # Obtener la ruta del directorio de salida
     skeleton_dir = get_skeleton_path(name)
-    
+
     # Existen 2 archivos de plantilla para el Backend
     # 1. app.py
     # 2. Dockerfile
@@ -182,7 +189,7 @@ def generate_backend(element):
     # Guardar el archivo generado
     with open(os.path.join(skeleton_dir, "Dockerfile"), "w") as output_file:
         output_file.write(template)
-    
+
     # 3. requirements.txt
     template_path = os.path.join(templates_dir, "requirements.txt")
     with open(template_path, "r") as template_file:
@@ -212,7 +219,7 @@ def generate_database(element):
     # Crear el directorio de salida si no existe
     if not os.path.exists(skeleton_dir):
         os.makedirs(skeleton_dir)
-    
+
     # Existen 1 archivo de plantilla para la Base de Datos
     # 1. init.sql
 
@@ -228,27 +235,30 @@ def generate_database(element):
         output_file.write(template)
 
 
-def generate_docker_compose():
+def generate_docker_compose(skeleton):
     """Genera el docker compose.
-    
+
     Args:
         components: componentes del modelo para generar los servicios
-    """ 
+    """
+
+    # TODO: AJUSTAR METODO PARA GENERAR EL DOCKER COMPOSE CON EL ESQUELETO
+
     # Obtener la ruta del directorio de salida
     skeleton_dir = get_skeleton_path("")
-    
+
     templates_dir = get_templates_path("compose")
-    
+
     # Leo la plantilla de dockerfile para el frontend
-    template_compose = read_template(templates_dir,'docker-compose.yml' )
+    template_compose = read_template(templates_dir, "docker-compose.yml")
 
-    write_artefact(skeleton_dir, 'docker-compose.yml',template_compose)
-    
-    # Leo la plantilla de .env 
+    write_artefact(skeleton_dir, "docker-compose.yml", template_compose)
+
+    # Leo la plantilla de .env
     templates_dir = get_templates_path("..")
-    template_compose = read_template(templates_dir,'.env' )
+    template_compose = read_template(templates_dir, ".env")
 
-    write_artefact(skeleton_dir, '.env',template_compose)
+    write_artefact(skeleton_dir, ".env", template_compose)
 
 
 def apply_transformations(model):
@@ -257,18 +267,36 @@ def apply_transformations(model):
     :param model: El modelo al que se aplicarán las transformaciones.
     :return: None
     """
-    
+
     # Componentes del modelo por tipo
     components = {
         "frontend": [],
         "api_gateway": [],
         "load_balancer": [],
         "backend": [],
-        "database": []
+        "database": [],
     }
 
     # Conectores del modelo
     connectors = []
+
+    # Skeleton de la arquitectura
+    # 1. Frontend
+    # 2. API Gateway
+    # 3. Load Balancer
+    # 4. Backend
+    # 5. Base de Datos
+    # 6. Docker Compose
+    # 7. .env
+    skeleton = {
+        "frontend": [],
+        "api_gateway": [],
+        "load_balancer": [],
+        "backend": [],
+        "database": [],
+        "docker_compose": "docker-compose.yml",
+        ".env": ".env",
+    }
 
     # Obtener los Componentes del modelo por tipo
     for element in model.elements:
@@ -276,38 +304,77 @@ def apply_transformations(model):
             components[element.type].append(element)
         elif element.__class__.__name__ == "Connector":
             connectors.append(element)
-    
+
     # Aplicar transformaciones a cada componente
     for component_type, elements in components.items():
+
         if component_type == "frontend":
             # Aplicar transformaciones específicas para frontend
             for element in elements:
                 generate_frontend(element)
-        
+                skeleton["frontend"].append(
+                    {
+                        "name": element.name,
+                        "port": get_frontend_ports(element.name),
+                        "instances": 1 if element.instances < 1 else element.instances,
+                    }
+                )
+
         elif component_type == "api_gateway":
             # Aplicar transformaciones específicas para api_gateway
             for element in elements:
                 generate_api_gateway(element)
+                skeleton["api_gateway"].append(
+                    {
+                        "name": element.name,
+                        "port": os.getenv("API_GATEWAY_PORT", 5003),
+                        "instances": 1 if element.instances < 1 else element.instances,
+                    }
+                )
 
         elif component_type == "load_balancer":
             # Aplicar transformaciones específicas para load_balancer
             for element in elements:
-                load_balancer_targets = get_load_balancer_target(element, connectors)
-                generate_load_balancer(element, load_balancer_targets)
+                target = get_load_balancer_target(element, connectors)
+                generate_load_balancer(element, target)
+                skeleton["load_balancer"].append(
+                    {
+                        "name": target["name"],
+                        "port": target["port"],
+                        "instances": (
+                            1 if target["instances"] < 1 else target["instances"]
+                        ),
+                    }
+                )
 
         elif component_type == "backend":
             # Aplicar transformaciones específicas para backend
             for element in elements:
                 # Aquí se puede agregar la lógica para generar el backend
                 generate_backend(element)
+                skeleton["backend"].append(
+                    {
+                        "name": element.name,
+                        "port": get_backend_ports(element.name),
+                        "instances": 1 if element.instances < 1 else element.instances,
+                    }
+                )
 
         elif component_type == "database":
             # Aplicar transformaciones específicas para database
             for element in elements:
                 # Aquí se puede agregar la lógica para generar la base de datos
                 generate_database(element)
-        
-    #generate_docker_compose()
+                skeleton["database"].append(
+                    {
+                        "name": element.name,
+                        "port": 3306,
+                        "instances": 1 if element.instances < 1 else element.instances,
+                    }
+                )
+
+    # Generar el docker compose
+    generate_docker_compose(skeleton)
 
 
 ### Helper functions ###
@@ -317,11 +384,15 @@ def get_templates_path(element_name: str) -> str:
     :param element_name: El nombre del elemento del modelo el cual se requiere para la ruta de las plantillas.
     :return: str
     """
-    templates_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "templates", element_name))
+    templates_dir = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "templates", element_name)
+    )
     # Si no existe el directorio de plantillas, se imprime un mensaje de error y se aborata la ejecución
     if not os.path.exists(templates_dir):
         logging.error(f"El directorio de plantillas no existe: {templates_dir}")
-        raise FileNotFoundError(f"El directorio de plantillas no existe: {templates_dir}")
+        raise FileNotFoundError(
+            f"El directorio de plantillas no existe: {templates_dir}"
+        )
     return templates_dir
 
 
@@ -331,7 +402,9 @@ def get_skeleton_path(element_name: str) -> str:
     :param element_name: El nombre del elemento del modelo el cual se requiere para la ruta del esqueleto.
     :return: str
     """
-    skeleton_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "skeleton", element_name))
+    skeleton_dir = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "skeleton", element_name)
+    )
     # Crear el directorio de salida si no existe
     if not os.path.exists(skeleton_dir):
         os.makedirs(skeleton_dir)
@@ -346,12 +419,18 @@ def get_load_balancer_target(element, connectors):
     :return: dict
     """
     # Obtener el target del Load Balancer
-    target = list(filter(lambda conn: conn.type == 'lb_conn' and getattr(conn, "from").name == element.name, connectors))[0].to
+    target = list(
+        filter(
+            lambda conn: conn.type == "lb_conn"
+            and getattr(conn, "from").name == element.name,
+            connectors,
+        )
+    )[0].to
     # Obtener la cantidad de instancias del target y el puerto del target
     target = {
         "name": target.name,
         "instances": target.instances,
-        "port": get_backend_ports(target.name)
+        "port": get_backend_ports(target.name),
     }
     return target
 
@@ -365,8 +444,22 @@ def get_backend_ports(backend_name):
     return {
         "users_be": os.getenv("USERS_BACKEND_PORT", 5007),
         "efact_writing_be": os.getenv("EFACT_READING_BACKEND_PORT", 5008),
-        "efact_reading_be": os.getenv("EFACT_WRITING_BACKEND_PORT", 5009)
+        "efact_reading_be": os.getenv("EFACT_WRITING_BACKEND_PORT", 5009),
+        "auth_be": os.getenv("AUTH_BACKEND_PORT", 5010),
     }[backend_name]
+
+
+def get_frontend_ports(frontend_name):
+    """
+    Obtiene el puerto del frontend dado su nombre.
+    :param frontend_name: El nombre del frontend.
+    :return: int
+    """
+    return {
+        "register_fe": os.getenv("REGISTER_FRONTEND_PORT", 5001),
+        "seller_fe": os.getenv("SELLER_FRONTEND_PORT", 5002),
+        "admin_fe": os.getenv("ADMIN_FRONTEND_PORT", 5003),
+    }[frontend_name]
 
 
 def replace_placeholders(template, placeholders):
@@ -390,10 +483,10 @@ def write_artefact(directory, name_file, content):
         content (str): Contenido que se escribirá en el archivo.
     """
     try:
-        path =os.path.join(directory, name_file)
+        path = os.path.join(directory, name_file)
         # Crear el directorio si no existe
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, 'w') as f:
+        with open(path, "w") as f:
             f.write(content)
     except OSError as e:
         logging.error(f"Error al escribir el archivo en {path}: {e}")
@@ -401,16 +494,16 @@ def write_artefact(directory, name_file, content):
 
 def read_template(directory, template_name):
     """Lee un archivo desde el disco
-    
+
     Args:
         directoriy: Directorio especifico para leer el archivo
         template_name: Nombre del archivo a leer
     """
     # Obtener la ruta del directorio de plantillas
-    
-    template_path = os.path.join(directory,  template_name)
+
+    template_path = os.path.join(directory, template_name)
     if not os.path.exists(template_path):
         logging.warning(f"El archivo de plantilla no existe: {template_path}")
         return ""
-    with open(template_path, 'r') as f:
+    with open(template_path, "r") as f:
         return f.read()
