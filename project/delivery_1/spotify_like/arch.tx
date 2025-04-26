@@ -8,7 +8,7 @@ Element:
 ;
 
 Component:
-    LoadBalancer | StandardComponent | Database | ApiGateway
+    LoadBalancer | StandardComponent | Database | ApiGateway | Queue
 ;
 
 StandardComponent:
@@ -35,12 +35,20 @@ ApiGateway:
     'component' 'api_gateway' name=ID auth=Component
 ;
 
+Queue:
+    'component' 'queue' name=ID ('replicationFactor' '=' replicationFactor=INT)?
+;
+
 Connector:
     'connector' type=ConnectorType from=[Component] '->' to=[Component]
 ;
 
 ConnectorType:
-    'http' | 'db_connector' | 'kafka_connector'
+    'http' | 'db_connector' | KafkaConnectorConfig
+;
+
+KafkaConnectorConfig:
+    'kafka_connector' 'topic' '=' topicName=ID 'group_id' '=' groupId=ID
 ;
 
 /* Dynamic Database implementation on backend example
