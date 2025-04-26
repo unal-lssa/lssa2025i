@@ -43,11 +43,13 @@ El proyecto está compuesto por los siguientes componentes:
     - python database.py
     - python microservice_pay.py
 2. Iniciar el API Gateway:
+   
     ```bash
     - python api_gateway.py
 ---
 ## **Probar el proyecto**
 1. Generar token para administrador:
+   
     ```bash
     - curl --location 'http://127.0.0.1:5000/login' \
     --header 'Content-Type: application/json' \
@@ -57,17 +59,20 @@ El proyecto está compuesto por los siguientes componentes:
         "password": "admin123"
     }'
 2. Consultar servicio de base de datos atraves del gateway:
+   
     ```bash
     curl --location 'http://127.0.0.1:5000/gateway/db' \
     --header 'Authorization: Bearer <Token>
     
 3. Intentar consumir microservicio:
+   
     ```bash
     curl --location 'http://127.0.0.1:5000/gateway/microservice' \
     --header 'Content-Type: application/json' \
     --header 'Authorization: ••••••'
     
 4. Generar autenticación como cliente:
+   
     ```bash
     curl --location 'http://127.0.0.1:5000/login' \
     --header 'Content-Type: application/json' \
@@ -76,6 +81,7 @@ El proyecto está compuesto por los siguientes componentes:
         "password": "password123"
     }'
 5. Procesar pago como cliente:
+    
     ```bash
     curl --location 'http://127.0.0.1:5000/gateway/microservice_pay' \
     --header 'Content-Type: application/json' \
@@ -85,6 +91,7 @@ El proyecto está compuesto por los siguientes componentes:
         "card": "32165"
     }'
 6. Si se intenta consumir algún servicio con el curl:
+   
     ```bash
         curl --location 'http://127.0.0.1:5003/microservice_pay' \
     --header 'Content-Type: application/json' \
@@ -94,6 +101,7 @@ El proyecto está compuesto por los siguientes componentes:
         "card": "32165"
     }'
 Se obtiene la respuesta:
+
 
     {
         "error": "resource not found"
