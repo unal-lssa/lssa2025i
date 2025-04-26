@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  api_gateway:
+    build:
+      context: ./services/api_gateway
+    ports:
+      - "5000:5000"
+    environment:
+      - SECRET_KEY=secure_secret_key_change_in_production
+      - AUTH_SERVICE_URL=http://auth_service:5001
+      - USER_SERVICE_URL=http://user_service:5002
+      - PRODUCT_SERVICE_URL=http://product_service:5003
+      - LOGGING_SERVICE_URL=http://logging_service:5004
+      - AUTH_SERVICE_KEY=auth_secret_key_change_in_production
+      - USER_SERVICE_KEY=user_secret_key_change_in_production
+      - PRODUCT_SERVICE_KEY=product_secret_key_change_in_production
+      - LOGGING_SERVICE_KEY=logging_secret_key_change_in_production
+      - AUTHORIZED_IPS=127.0.0.1,192.168.0.0/24,172.17.0.0/16,0.0.0.0/0
+    networks:
+      - secure_network
+    restart: unless-stopped
+    depends_on:
+      - auth_service
+      - user_service
+      - product_service
+      - logging_service
+
+  auth_service:
+    build:
+      context: ./services/auth_service
+    environment:
+      - SECRET_KEY=secure_secret_key_change_in_production
+      - AUTH_SERVICE_KEY=auth_secret_key_change_in_production
+    networks:
+      - secure_network
+    restart: unless-stopped
+    expose:
+      - "5001"
+
+  user_service:
+    build:
+      context: ./services/user_service
+    environment:
+      - SECRET_KEY=secure_secret_key_change_in_production
+      - USER_SERVICE_KEY=user_secret_key_change_in_production
+      - AUTH_SERVICE_URL=http://auth_service:5001
+      - AUTH_SERVICE_KEY=auth_secret_key_change_in_production
+    networks:
+      - secure_network
+    restart: unless-stopped
+    expose:
+      - "5002"
+    depends_on:
+      - auth_service
+
+  product_service:
+    build:
+      context: ./services/product_service
+    environment:
+      - SECRET_KEY=secure_secret_key_change_in_production
+      - PRODUCT_SERVICE_KEY=product_secret_key_change_in_production
+      - AUTH_SERVICE_URL=http://auth_service:5001
+      - AUTH_SERVICE_KEY=auth_secret_key_change_in_production
+    networks:
+      - secure_network
+    restart: unless-stopped
+    expose:
+      - "5003"
+    depends_on:
+      - auth_service
+
+  logging_service:
+    build:
+      context: ./services/logging_service
+    environment:
+      - LOGGING_SERVICE_KEY=logging_secret_key_change_in_production
+      - LOG_FILE=/app/logs/security_logs.json
+      - MAX_LOG_SIZE_MB=20
+    volumes:
+      - log_data:/app/logs
+    networks:
+      - secure_network
+    restart: unless-stopped
+    expose:
+      - "5004"
+
+networks:
+  secure_network:
+    driver: bridge
+
+volumes:
+  log_data:
