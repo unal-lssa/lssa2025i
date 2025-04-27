@@ -16,3 +16,4 @@ architecture:
     connector http ecommerce_lb -> ecommerce_fe
     connector http ecommerce_fe -> ecommerce_ag_us
     connector db_connector ecommerce_be_or -> ecommerce_be_or_db
+    connector db_connector ecommerce_be_inv -> ecommerce_be_inv_db
