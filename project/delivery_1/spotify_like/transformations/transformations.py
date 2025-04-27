@@ -4,6 +4,10 @@ from .frontend.generate_frontend import generate_frontend
 from .load_balancer.generate_load_balancer import generate_loadbalancer
 from .compose.generate_docker_compose import generate_docker_compose
 from .api_gateway.generate_api_gateway import generate_api_gateway
+from .cdn.generate_cdn import generate_cdn 
+from .bucket.generate_bucket import generate_bucket, move_file
+import os
+
 def process_connectors(model):
     """Process all connectors in the model and return a mapping of component connections."""
     component_connections = {}
@@ -119,4 +123,12 @@ def apply_transformations(model):
                 
             generate_api_gateway(e.name, route_map)
 
+        elif e.type == 'cdn':
+            generate_cdn(e.name)
+        elif e.type == 'bucket':
+            generate_bucket(e.name)
+
     generate_docker_compose(components, replicas, load_balancer_config, db_types)
+    src = os.path.join(os.getcwd(), 'song.mp3')
+    dest = os.path.join(os.getcwd(), 'skeleton/music_storage')
+    move_file(src, dest)

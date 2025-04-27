@@ -151,3 +151,39 @@ def generate_docker_compose(components, replicas=None, load_balancer_config=None
                     f.write("    depends_on:\n")
                     for i in range(target_replicas):
                         f.write(f"      - {target_name}_{i}\n")
+
+        buckets = {name: ctype for name, ctype in components.items() if ctype == "bucket"}
+        cdns = {name: ctype for name, ctype in components.items() if ctype == "cdn"}
+        has_cdn = False
+
+        for name in buckets:
+            f.write(f"  {name}:\n")
+            f.write(f"    container_name: ${{LOCALSTACK_DOCKER_NAME:-{name}}}\n")
+            f.write(f"    build:\n")
+            f.write(f"      context: ./{name}\n")
+            f.write(f"    ports:\n")
+            f.write(f"      - '4566:4566'\n")
+            f.write(f"    environment:\n")
+            f.write(f"      - DEBUG=${{DEBUG:-0}}\n")
+            f.write(f"    volumes:\n")
+            f.write(f"      - ${{LOCALSTACK_VOLUME_DIR:-./volume}}:/var/lib/localstack\n")
+            f.write(f"      - /var/run/docker.sock:/var/run/docker.sock\n")
+
+        for name in cdns:
+            has_cdn = True
+            f.write(f"  {name}:\n")
+            f.write(f"    container_name: {name}\n")
+            f.write(f"    build:\n")
+            f.write(f"      context: ./{name}\n")
+            f.write(f"    ports:\n")
+            f.write(f"      - '8080:80'\n")
+            f.write(f"    volumes:\n")
+            f.write(f"      - ./songs_cdn/nginx.conf:/etc/nginx/nginx.conf:ro\n")
+            f.write(f"      - nginx_cache:/tmp/nginx_cache\n")
+
+        # this MUST be at the end of the file, fokin orozco
+        if has_cdn:
+            f.write("\nvolumes:\n")
+            f.write("  nginx_cache:\n")
+
+        

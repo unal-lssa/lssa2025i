@@ -40,3 +40,6 @@ architecture:
     component backend fileSaver
     connector kafka_connector topic=upload_topic group_id=uploader_group uploader -> uploadQueue 
     connector kafka_connector topic=upload_topic group_id=saver_group uploadQueue -> fileSaver
+
+    component bucket music_storage
+    component cdn songs_cdn
