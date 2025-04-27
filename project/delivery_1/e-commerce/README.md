@@ -48,8 +48,8 @@ A continuación, se presenta un diagrama de arquitectura de componentes y conect
   - Limitación de exposición a sistemas internos (Se aplica la táctica de seguridad "Limit Exposure").
 
 - **Comunicación**:
-  - HTTP hacia el Backend, es decir, los microservicios de usuarios, ódenes, productos e inventario.
-  - MQTP hacia el servicio de Pagos.
+  - HTTP hacia el Backend, es decir, los microservicios definidos en la arquitectura. 
+  - MQTP para el servicio de Pagos.
 
 ---
 
