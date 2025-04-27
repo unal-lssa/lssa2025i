@@ -6,18 +6,13 @@ def generate_database(name):
     os.makedirs(path, exist_ok=True)
 
     with open(os.path.join(path, 'init.sql'), 'w') as f:
-        f.write(textwrap.dedent("""\
+        f.write(textwrap.dedent("""
             CREATE TABLE IF NOT EXISTS systems (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 name VARCHAR(255)
             );
-
-            CREATE TABLE IF NOT EXISTS inventory (
-                product_id VARCHAR(255) PRIMARY KEY,
-                quantity INT NOT NULL,
-                region VARCHAR(255) NOT NULL
-            );
-        """))
+            """
+        ))
         
 def generate_mqtp(name, database):
     path = f'skeleton/{name}'
@@ -120,83 +115,6 @@ def generate_mqtp(name, database):
         ))
 
 
-def generate_backend_inv(name, database):
-    path = f'skeleton/{name}'
-    os.makedirs(path, exist_ok=True)
-
-    with open(os.path.join(path, 'app.py'), 'w') as f:
-        f.write(textwrap.dedent(f"""\
-            from fastapi import FastAPI, HTTPException
-            from pydantic import BaseModel
-            import mysql.connector
-            from typing import List
-
-            app = FastAPI()
-
-            class System(BaseModel):
-                name: str
-
-            class InventoryItem(BaseModel):
-                product_id: str
-                quantity: int
-                region: str
-
-            def get_connection():
-                return mysql.connector.connect(
-                    host='{database}',
-                    user='root',
-                    password='root',
-                    database='{database}'
-                )
-
-            @app.post("/inventory")
-            def create_inventory(item: InventoryItem):
-                try:
-                    conn = get_connection()
-                    cursor = conn.cursor()
-                    cursor.execute(
-                        "INSERT INTO inventory (product_id, quantity, region) VALUES (%s, %s, %s)",
-                        (item.product_id, item.quantity, item.region)
-                    )
-                    conn.commit()
-                    cursor.close()
-                    conn.close()
-                    return {{"status": "Inventory item created"}}
-                except Exception as e:
-                    raise HTTPException(status_code=500, detail=str(e))
-
-            @app.get("/inventory", response_model=List[InventoryItem])
-            def get_inventory():
-                try:
-                    conn = get_connection()
-                    cursor = conn.cursor()
-                    cursor.execute("SELECT product_id, quantity, region FROM inventory")
-                    rows = cursor.fetchall()
-                    cursor.close()
-                    conn.close()
-                    return [InventoryItem(product_id=row[0], quantity=row[1], region=row[2]) for row in rows]
-                except Exception as e:
-                    raise HTTPException(status_code=500, detail=str(e))
-
-
-            if __name__ == "__main__":
-                import uvicorn
-                uvicorn.run(app, host="0.0.0.0", port=80)
-        """))
-
-          # Dockerfile
-    with open(os.path.join(path, 'Dockerfile'), 'w') as f:
-        f.write(textwrap.dedent("""
-            FROM python:3.11-slim
-
-            WORKDIR /app
-            COPY . .
-
-            RUN pip install fastapi uvicorn mysql-connector-python
-
-            CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "80"]
-        """))
-
 def generate_backend(name, database):
 
     path = f'skeleton/{name}'
@@ -258,108 +176,88 @@ def generate_backend(name, database):
         ))
 
 
-
-
 def generate_frontend(name, api_gateway):
+    
     path = f'skeleton/{name}'
     os.makedirs(path, exist_ok=True)
-    
-    # Crear Dockerfile básico
+
+    with open(os.path.join(path, 'package.json'), 'w') as f:
+        f.write(textwrap.dedent("""
+            {
+                "name": "frontend",
+                "version": "1.0.0",
+                "main": "app.js",
+                "dependencies": {
+                    "express": "^4.18.2",
+                    "axios": "^1.6.7"
+                }
+            }
+            """
+        ))
+
     with open(os.path.join(path, 'Dockerfile'), 'w') as f:
-        f.write("""FROM nginx:alpine
-COPY ./html /usr/share/nginx/html
-COPY ./nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
-""")
-    
-    # Crear configuración de Nginx simplificada
-    os.makedirs(os.path.join(path, 'html'), exist_ok=True)
-    with open(os.path.join(path, 'nginx.conf'), 'w') as f:
-        f.write(f"""server {{
-    listen 80;
-    
-    location / {{
-        root /usr/share/nginx/html;
-        index index.html;
-    }}
-    
-    location /health {{
-        return 200 'OK';
-    }}
-    
-    location /api/ {{
-        proxy_pass http://{api_gateway}:80/;
-        proxy_set_header Host $host;
-    }}
-}}
-""")
-    
-    # Crear HTML simplificado
-    with open(os.path.join(path, 'html', 'index.html'), 'w') as f:
-        f.write("""<!DOCTYPE html>
-<html>
-<head>
-    <title>Frontend</title>
-    <style>
-        body { font-family: Arial; margin: 20px; }
-        form { margin: 20px 0; }
-        input { padding: 8px; }
-        button { padding: 8px; background-color: green; color: white; border: none; }
-    </style>
-</head>
-<body>
-    <h1>Frontend</h1>
-    <form id="form">
-        <input id="name" placeholder="Nombre">
-        <button type="submit">Crear</button>
-    </form>
-    <ul id="list"></ul>
-    
-    <script>
-        // Cargar sistemas al iniciar
-        document.addEventListener('DOMContentLoaded', loadSystems);
-        
-        // Manejar envío del formulario
-        document.getElementById('form').onsubmit = async function(e) {
-            e.preventDefault();
-            const name = document.getElementById('name').value;
-            
-            try {
-                await fetch('/api/create', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({name})
-                });
-                document.getElementById('name').value = '';
-                loadSystems();
-            } catch (error) {
-                alert('Error: ' + error);
-            }
-        };
-        
-        // Función para cargar sistemas
-        async function loadSystems() {
-            try {
-                const response = await fetch('/api/systems');
-                const data = await response.json();
-                
-                const list = document.getElementById('list');
-                list.innerHTML = '';
-                
-                data.systems.forEach(([id, name]) => {
-                    const li = document.createElement('li');
-                    li.textContent = name;
-                    list.appendChild(li);
-                });
-            } catch (error) {
-                document.getElementById('list').innerHTML = '<li>Error al cargar sistemas</li>';
-            }
-        }
-    </script>
-</body>
-</html>
-""")
+        f.write(textwrap.dedent("""
+            FROM node:18
+                                
+            WORKDIR /app
+            COPY . .
+            RUN npm install
+                                
+            CMD ["node", "app.js"]
+            """
+        ))
+
+    with open(os.path.join(path, 'app.js'), 'w') as f:
+        f.write(textwrap.dedent(f"""
+            const express = require('express');
+            const axios = require('axios');
+            const app = express();
+            app.use(express.json());
+            app.use(express.urlencoded({{ extended: true }}));
+
+            const API_GATEWAY_URL = 'http://{api_gateway}:80';
+
+            app.get('/', async (req, res) => {{
+            try {{
+                const response = await axios.get(`${{API_GATEWAY_URL}}/systems`);
+                const systems = response.data.systems;
+                let list = systems.map(([id, name]) => `<li>${{name}}</li>`).join('');
+                res.send(`
+                <html>
+                    <body>
+                    <h1>Frontend</h1>
+                    <form method="POST" action="/create">
+                        <input name="name" />
+                        <button type="submit">Create</button>
+                    </form>
+                    <ul>${{list}}</ul>
+                    </body>
+                </html>
+                `);
+            }} catch (err) {{
+                console.error("Error connecting to API Gateway:", err.message);
+                res.status(500).send("Error contacting API Gateway");
+            }}
+            }});
+
+            app.post('/create', async (req, res) => {{
+            try {{
+                const name = req.body.name;
+                await axios.post(`${{API_GATEWAY_URL}}/create`, {{ name }});
+                res.redirect('/');
+            }} catch (err) {{
+                console.error("Error sending data to API Gateway:", err.message);
+                res.status(500).send("Error processing your request");
+            }}
+            }});
+
+            app.get('/health', async (req, res) => {{
+                res.status(200).send("Healthcheck OK!");
+            }});
+
+            app.listen(80, () => console.log("Frontend running on port 80"));
+            """
+        ))
 
 def generate_load_balancer(name, frontend_name):
     path = f'skeleton/{name}'
@@ -603,12 +501,12 @@ def generate_docker_compose(components):
                 backend_services.append(name)
                 f.write(f"  {name}:\n")
                 f.write(f"    build: ./{name}\n")
-                # f.write("    depends_on:\n")
-                # # Find database connections
-                # for db_name in sorted_components.get("database", []):
-                #     if db_name.startswith(name):
-                #         f.write(f"      {db_name}:\n")
-                #         f.write("        condition: service_healthy\n")
+                f.write("    depends_on:\n")
+                # Find database connections
+                for db_name in sorted_components.get("database", []):
+                    if db_name.startswith(name):
+                        f.write(f"      {db_name}:\n")
+                        f.write("        condition: service_healthy\n")
                 f.write("    healthcheck:\n")
                 f.write("      test: wget --no-verbose --tries=1 --spider http://localhost:80/health || exit 1\n")
                 f.write("      interval: 30s\n")
@@ -622,14 +520,14 @@ def generate_docker_compose(components):
                 mqtp_services.append(name)
                 f.write(f"  {name}:\n")
                 f.write(f"    build: ./{name}\n")
-                # f.write("    depends_on:\n")
-                # f.write("      rabbitmq:\n")
-                # f.write("        condition: service_healthy\n")
-                # # Find database connections
-                # for db_name in sorted_components.get("database", []):
-                #     if db_name.startswith(name):
-                #         f.write(f"      {db_name}:\n")
-                #         f.write("        condition: service_healthy\n")
+                f.write("    depends_on:\n")
+                f.write("      rabbitmq:\n")
+                f.write("        condition: service_healthy\n")
+                # Find database connections
+                for db_name in sorted_components.get("database", []):
+                    if db_name.startswith(name):
+                        f.write(f"      {db_name}:\n")
+                        f.write("        condition: service_healthy\n")
                 f.write("    healthcheck:\n")
                 f.write("      test: wget --no-verbose --tries=1 --spider http://localhost:80/health || exit 1\n")
                 f.write("      interval: 30s\n")
@@ -642,10 +540,10 @@ def generate_docker_compose(components):
             api_gateway_name = sorted_components["api_gateway"][0]
             f.write(f"  {api_gateway_name}:\n")
             f.write(f"    build: ./{api_gateway_name}\n")
-            # f.write("    depends_on:\n")
-            # for service in backend_services + mqtp_services:
-            #     f.write(f"      {service}:\n")
-            #     f.write("        condition: service_healthy\n")
+            f.write("    depends_on:\n")
+            for service in backend_services + mqtp_services:
+                f.write(f"      {service}:\n")
+                f.write("        condition: service_healthy\n")
             f.write("    healthcheck:\n")
             f.write("      test: wget --no-verbose --tries=1 --spider http://localhost:80/health || exit 1\n")
             f.write("      interval: 30s\n")
@@ -658,11 +556,9 @@ def generate_docker_compose(components):
             frontend_name = sorted_components["frontend"][0]
             f.write(f"  {frontend_name}:\n")
             f.write(f"    build: ./{frontend_name}\n")
-            # f.write("    depends_on:\n")
-            # f.write(f"      {api_gateway_name}:\n")
-            # f.write("        condition: service_healthy\n")
-            f.write("    ports:\n")
-            f.write("      - '5000:80'\n")
+            f.write("    depends_on:\n")
+            f.write(f"      {api_gateway_name}:\n")
+            f.write("        condition: service_healthy\n")
             f.write("    healthcheck:\n")
             f.write("      test: wget --no-verbose --tries=1 --spider http://localhost:80/health || exit 1\n")
             f.write("      interval: 30s\n")
@@ -676,9 +572,9 @@ def generate_docker_compose(components):
             f.write(f"    build: ./{load_balancer_name}\n")
             f.write("    ports:\n")
             f.write("      - '8080:80'\n")
-            # f.write("    depends_on:\n")
-            # f.write(f"      {frontend_name}:\n")
-            # f.write("        condition: service_healthy\n\n")
+            f.write("    depends_on:\n")
+            f.write(f"      {frontend_name}:\n")
+            f.write("        condition: service_healthy\n\n")
 
         f.write("\nnetworks:\n  default:\n    driver: bridge\n")
 
@@ -706,17 +602,13 @@ def apply_transformations(model):
         if ctype == 'database':
             generate_database(name)
         elif ctype == 'backend':
-            db_name = "ecommerce_be_inv_db"
-            ## TODO Corregir eleccion de database
+            db_name = None
             if name in connectors:
                 for conn in connectors[name]:
                     if components[conn['to']] == 'database' and conn['type'] == 'db_connector':
                         db_name = conn['to']
                         break
-            if name == 'ecommerce_be_inv':
-                generate_backend_inv(name, database=db_name)
-            else:
-                generate_backend(name, database=db_name)
+            generate_backend(name, database=db_name)
             backend_components[name] = ctype
         elif ctype == 'mqtp':
             db_name = None
