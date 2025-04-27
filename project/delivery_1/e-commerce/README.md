@@ -104,16 +104,16 @@ A continuación, se presenta un diagrama de arquitectura de componentes y conect
 
 ## 5. Comunicación entre componentes
 
-| Componente origen        | Componente destino             | Protocolo |
-|--------------------------|-------------------------------|-----------|
-| Cliente (Internet)       | Load Balancer                 | HTTP      |
-| Load Balancer            | Frontend (ecommerce_fe)       | HTTP      |
-| Frontend                 | API Gateway (ecommerce_ag_us) | HTTP      |
-| API Gateway              | Backend Usuarios              | HTTP      |
-| API Gateway              | Backend Órdenes               | HTTP      |
-| API Gateway              | Backend Productos             | HTTP      |
-| API Gateway              | Backend Inventario            | HTTP      |
-| API Gateway              | Servicio de Pagos             | MQTT      |
+| Componente origen        | Componente destino            | Protocolo   |
+|--------------------------|-------------------------------|--------------|
+| Cliente (Internet)       | Load Balancer                 | HTTP         |
+| Load Balancer            | Frontend (ecommerce_fe)       | HTTP         |
+| Frontend                 | API Gateway (ecommerce_ag_us) | HTTP         |
+| API Gateway              | Backend Usuarios              | HTTP         |
+| API Gateway              | Backend Órdenes               | HTTP         |
+| API Gateway              | Backend Productos             | HTTP         |
+| API Gateway              | Backend Inventario            | HTTP         |
+| API Gateway              | Servicio de Pagos             | MQTT         |
 | Backend                  |Base de datos                  | DB Connector |
 
 ---
@@ -130,6 +130,103 @@ A continuación, se presenta un diagrama de arquitectura de componentes y conect
 - **Optimización de comunicaciones**: uso de MQTT para pagos críticos asegura mínimo retardo en procesos sensibles.
 
 ---
+
+## 7.Descripción de los principales archivos 
+
+### 7.1. Archivo arch.tx
+
+Se define la grámitica de un lenguaje para modelar arquitecturas de software con **componentes** (frontend, backend, database, load balancer, API gateway, mqtp) y **conectores** (http, db_connector, message_queue), especificando su tipo y relaciones.
+
+
+### 7.1. Archivo metamodel.py
+
+Este archivo `metamodel.py` crea un metamodelo a partir de la gramática DSL definida en `arch.tx` utilizando la librería `textx`.
+
+### 7.2. Archivo transformations.py
+
+Este archivo `transformations.py` tiene como objetivo generar automáticamente el esqueleto del sistema que se va a modelar, con los siguientes componentes:
+
+- **Componente de Base de Datos**  
+  Se incluyen componentes de base de datos para almacenar y gestionar los datos.
+
+- **Componentes Backend**  
+  Se colocan los componentes del backend para manejar la lógica de negocio y las interacciones con la o las base de datos.
+
+- **Componente Frontend**  
+  Se encuentra un frontend  para permitir la interacción del usuario con el sistema.
+
+- **Componente de Balanceo de carga**  
+  Se incorpora un balanceador de carga para una mejor distribución del tráfico.
+
+- **Componente de  API Gateway**  
+  Se incluye un API Gateway para gestionar solicitudes, autenticación, autorización y enrutamiento, y optimizando la comunicación al consolidar múltiples servicios en un solo punto de acceso.
+
+Este esqueleto permmite simular la estructura inicial para el desarrollo del sistema y las interacciones entre estos.
+
+### 7.3. Archivo model.arch 
+
+Este archivo muestra los componentes y conectores del sistema.
+
+#### Arquitectura:
+
+- **Frontend (ecommerce_fe)**: Interfaz de usuario.
+- **Backends (ecommerce_be_usr, ecommerce_be_or, ecommerce_be_pd, ecommerce_be_inv)**: Gestionan usuarios, pedidos, productos e inventarios.
+- **MQTP (ecommerce_be_pmt)**: Maneja pagos.
+- **API Gateway (ecommerce_ag_us)**: Enruta las solicitudes al backend adecuado.
+- **Base de Datos (ecommerce_be_or_db, ecommerce_be_pd_db, ecommerce_be_inv_db, ecommerce_be_pmt_db)**: Almacenan información de pedidos, productos, inventarios y pagos.
+- **Load Balancer (ecommerce_lb)**: Distribuye el tráfico.
+
+#### Conectores:
+
+- **HTTP**
+- **DB**
+- **MQTP**
+
+### 7.4. Archivo model.arch 
+
+El archivo generation.py carga un modelo de arquitectura desde un archivo .arch y aplica transformaciones para generar el esqueleto del sistema utilizando un metamodelo.
+
+### 8. Pruebas y despliegue del esqueleto del sistema 
+
+A continuación, se presentan las instrucciones, para ejecutar, la generación del esqueleto. 
+
+a.Cree un archivo Dockerfile para especificar los requisitos para ejecutar el programa.
+
+```
+FROM python:3.11-slim
+WORKDIR /app
+COPY . .
+RUN pip install --no-cache-dir textX mysql-connector-python flask
+CMD ["python", "generation.py"]
+```
+
+b.  Cree una imagen de Docker desde el archivo Dockerfile.
+
+```
+docker build -t lssa-delivery1 .
+```
+
+c.  Cree un contenedor de Docker para ejecutar el programa y generar el sistema de software modelado.
+
+```
+docker run --rm -v "$PWD:/app lssa-delivery1" 
+```
+
+Después de ejecutar el comando anterior, se debería crear un directorio llamado `skeleton`.
+
+d.  Ingrese al directorio /skeleton.
+
+e.  Ejecute el esqueleto generado del sistema de software modelado.
+
+```
+docker-compose up --build
+```
+
+f.  Verifique los contenedores ejecutados 
+
+```
+docker ps -a
+```
 
 
 ---
