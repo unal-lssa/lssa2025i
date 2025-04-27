@@ -1,0 +1,9 @@
+[project]
+name = "multiplayer-game-platform"
+version = "0.1.0"
+description = "Metamodel and generation transformations for an online multiplayer game platform"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "textx>=4.1.0",
+]
