@@ -7,7 +7,7 @@
 #### Yosman Alexis Arenas Jimenez
 
 
-En esta entrega del proyecto, se enfoca en diseñar arquitectónicamente un sistema de software a gran escala desde un punto de vista estructural. Específicamente, se eligió el dominio de un e-commerce y se modeló como un sistema con un gran número de componentes. Por ello, se optó por una arquitectura distribuida basada en microservicios.
+Esta entrega del proyecto, se enfoca en diseñar arquitectónicamente un sistema de software a gran escala desde un punto de vista estructural. Específicamente, se eligió el dominio de un e-commerce y se modeló como un sistema de un gran número de componentes. Por ello, se optó por una arquitectura distribuida basada en microservicios.
 
 ---
 
