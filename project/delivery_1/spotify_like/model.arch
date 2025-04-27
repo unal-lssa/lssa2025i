@@ -1,9 +1,3 @@
 architecture:
-
-    component frontend lssa_fe
-    component backend lssa_be
-    component database lssa_db
-    component loadbalancer lssa_lb 3 lssa_be
-
-    connector http lssa_fe -> lssa_lb
-    connector db_connector lssa_be -> lssa_db
+    component bucket music_storage
+    component cdn songs_cdn

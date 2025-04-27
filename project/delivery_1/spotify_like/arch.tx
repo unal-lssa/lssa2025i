@@ -8,7 +8,7 @@ Element:
 ;
 
 Component:
-    LoadBalancer | StandardComponent | Database | ApiGateway
+    LoadBalancer | StandardComponent | Database | ApiGateway 
 ;
 
 StandardComponent:
@@ -20,7 +20,7 @@ LoadBalancer:
 ;
 
 StandardComponentType:
-    'frontend' | 'backend' | 'source'
+    'frontend' | 'backend' | 'bucket' | 'cdn'
 ;
 
 Database:
@@ -29,6 +29,7 @@ Database:
 
 DatabaseType:
     'postgresql' | 'mongodb' | 'elasticsearch'
+;
 
 ApiGateway:
     'component' 'api_gateway' name=ID auth=Component
