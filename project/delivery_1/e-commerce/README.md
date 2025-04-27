@@ -186,7 +186,7 @@ Este archivo muestra los componentes y conectores del sistema.
 
 El archivo generation.py carga un modelo de arquitectura desde un archivo .arch y aplica transformaciones para generar el esqueleto del sistema utilizando un metamodelo.
 
-### 8. Pruebas y despliegue del esqueleto del sistema 
+## 8. Pruebas y despliegue del esqueleto del sistema 
 
 A continuación, se presentan las instrucciones, para ejecutar, la generación del esqueleto. 
 
