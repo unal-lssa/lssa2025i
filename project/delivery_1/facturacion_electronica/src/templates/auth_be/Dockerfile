@@ -1,13 +1,15 @@
+# Imagen base oficial de Python
 FROM python:3.11-slim
 
+# Establecer directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-COPY /shared/auth_utils.py templates/shared/auth_utils.py
+# Instalar dependencias
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY /auth_be/app.py .
+# Copiar el código fuente de la app
+COPY . .
 
-COPY /efact_ag/requirements.txt .
-
-RUN pip install flask pyjwt requests python-dotenv -r requirements.txt
-
+# Comando para ejecutar la app
 CMD ["python", "app.py"]

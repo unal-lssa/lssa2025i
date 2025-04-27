@@ -129,7 +129,7 @@ def generate_load_balancer(element, target):
     # Reemplazar los marcadores de posición en la plantilla
     VALOR = (
         ";\n".join(
-            f"{target['name']}_{i}" + f":{target['port']}"
+            f"server {target['name']}_{i}" + f":{int(target['port']) + i}"
             for i in range(target["instances"])
         )
         + ";"
@@ -164,7 +164,7 @@ def generate_backend(element):
     # Obtener la ruta del directorio de salida
     skeleton_dir = get_skeleton_path(name)
 
-    # Existen 2 archivos de plantilla para el Backend
+    # Existen 3 archivos de plantilla para el Backend
     # 1. app.py
     # 2. Dockerfile
     # 3. requirements.txt
@@ -174,8 +174,6 @@ def generate_backend(element):
     template_path = os.path.join(templates_dir, "app.py")
     with open(template_path, "r") as template_file:
         template = template_file.read()
-    # Reemplazar los marcadores de posición en la plantilla
-    # template = template.replace("{{MARCADOR}}", VALOR)
     # Guardar el archivo generado
     with open(os.path.join(skeleton_dir, "app.py"), "w") as output_file:
         output_file.write(template)
@@ -184,8 +182,6 @@ def generate_backend(element):
     template_path = os.path.join(templates_dir, "Dockerfile")
     with open(template_path, "r") as template_file:
         template = template_file.read()
-    # Reemplazar los marcadores de posición en la plantilla
-    # template = template.replace("{{MARCADOR}}", VALOR)
     # Guardar el archivo generado
     with open(os.path.join(skeleton_dir, "Dockerfile"), "w") as output_file:
         output_file.write(template)
@@ -194,8 +190,6 @@ def generate_backend(element):
     template_path = os.path.join(templates_dir, "requirements.txt")
     with open(template_path, "r") as template_file:
         template = template_file.read()
-    # Reemplazar los marcadores de posición en la plantilla
-    # template = template.replace("{{MARCADOR}}", VALOR)
     # Guardar el archivo generado
     with open(os.path.join(skeleton_dir, "requirements.txt"), "w") as output_file:
         output_file.write(template)
@@ -216,18 +210,25 @@ def generate_database(element):
     # Obtener la ruta del directorio de salida
     skeleton_dir = get_skeleton_path(name)
 
-    # Existen 1 archivo de plantilla para la Base de Datos
+    # Existen 2 archivo de plantilla para la Base de Datos
     # 1. init.sql
+    # 2. Dockerfile
 
     # Generar los archivos de plantilla
     # 1. init.sql
     template_path = os.path.join(templates_dir, "init.sql")
     with open(template_path, "r") as template_file:
         template = template_file.read()
-    # Reemplazar los marcadores de posición en la plantilla
-    # template = template.replace("{{MARCADOR}}", VALOR)
     # Guardar el archivo generado
     with open(os.path.join(skeleton_dir, "init.sql"), "w") as output_file:
+        output_file.write(template)
+
+    # 2. Dockerfile
+    template_path = os.path.join(templates_dir, "Dockerfile")
+    with open(template_path, "r") as template_file:
+        template = template_file.read()
+    # Guardar el archivo generado
+    with open(os.path.join(skeleton_dir, "Dockerfile"), "w") as output_file:
         output_file.write(template)
 
 
@@ -263,7 +264,7 @@ def generate_docker_compose(skeleton):
                         f"    build: ./{component['name']}\n"
                         f"    container_name: {component['name']}_{i}\n"
                         f"    ports:\n"
-                        f"      - {component['port']}:{component['port']}\n"
+                        f"      - {int(component['port']) + i}:{component['port']}\n"
                         f"    env_file: .env\n"
                         f"{networks}\n"
                     )

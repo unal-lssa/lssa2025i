@@ -23,6 +23,8 @@ app.get('/', async (req, res) => {
         res.send(`
             <html>
                 <body>
+                    <!--DEBUG-->
+                    
                     <!-- Formulario para crear un nuevo vendedor -->
                     <h2>Crear nuevo vendedor</h2>
                     <form action="/seller" method="POST">
@@ -44,6 +46,22 @@ app.get('/', async (req, res) => {
         `);
     } catch (err) {
         res.status(500).send("Error contacting backend");
+    }
+});
+
+// Endpoint ping
+app.get('/ping', async (req, res) => {
+    try {
+        const response = await axios.get(`${API_GATEWAY_URL}/ping`);
+        res.send(
+            {
+                status: response.status,
+                data: response.data,
+                message: "Ping to API Gateway successful"
+            }
+        );
+    } catch (err) {
+        res.status(500).send("Error contacting API Gateway" + err);
     }
 });
 

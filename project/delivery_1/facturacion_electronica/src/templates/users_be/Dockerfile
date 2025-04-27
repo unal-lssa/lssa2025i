@@ -11,5 +11,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copiar el código fuente de la app
 COPY . .
 
+# Exponer el puerto dentro de la red interna del contenedor
+EXPOSE 8010
+
 # Comando para ejecutar la app
 CMD ["python", "app.py"]

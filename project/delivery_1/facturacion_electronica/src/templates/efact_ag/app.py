@@ -1,10 +1,12 @@
 import hashlib
-from flask import Flask, request, jsonify
+import logging
+import os
+import socket
+from functools import wraps
+
 import jwt
 import requests
-import os
-from functools import wraps
-import logging
+from flask import Flask, jsonify, request
 
 # Configurar el nivel de logging
 logging.basicConfig(level=logging.DEBUG)
@@ -40,6 +42,7 @@ def limit_exposure(f):
         if request.remote_addr != AUTHORIZED_IP:
             return jsonify({"message": f"Unauthorized IP {request.remote_addr}"}), 403
         return f(*args, **kwargs)
+
     return decorated
 
 
@@ -60,8 +63,28 @@ def token_required(role=None):
             except:
                 return jsonify({"message": "Invalid token"}), 403
             return f(*args, **kwargs)
+
         return decorated
+
     return decorator
+
+
+# Endpoint ping
+@app.route("/ping", methods=["GET"])
+def ping():
+    return (
+        jsonify(
+            {
+                "status": 200,
+                "data": {
+                    "Client IP": request.remote_addr,
+                    "API Gateway IP": socket.gethostbyname(socket.gethostname()),
+                },
+                "message": "Pong desde el API Gateway",
+            }
+        ),
+        200,
+    )
 
 
 # Endpoint de autenticación y autorización, genera token JWT
@@ -76,7 +99,11 @@ def auth():
     md5_password = hashlib.md5(auth.get("password").encode()).hexdigest()
     # Autenticación de usuario
     if user and user["password"] == md5_password:
-        token = jwt.encode({"username": user["doc_id"], "role": user["role"]}, SECRET_KEY, algorithm="HS256")
+        token = jwt.encode(
+            {"username": user["doc_id"], "role": user["role"]},
+            SECRET_KEY,
+            algorithm="HS256",
+        )
         return jsonify({"token": token})
     return jsonify({"message": "Invalid credentials"}), 401
 
@@ -90,7 +117,10 @@ def register_user():
     # Paso 2: Retornar el resultado al cliente
     # Simulación de registro de un usuario
     internal_token = jwt.encode({}, INTERNAL_SECRET, algorithm="HS256")
-    res = requests.post(f"http://{USERS_LB_HOST}:{USERS_LB_PORT}/user", headers={"X-Internal-Token": internal_token})
+    res = requests.post(
+        f"http://{USERS_LB_HOST}:{USERS_LB_PORT}/user",
+        headers={"X-Internal-Token": internal_token},
+    )
     return jsonify(res.json()), res.status_code
 
 
@@ -103,7 +133,10 @@ def get_users():
     # Paso 2: Retornar el resultado al cliente
     # Simulación de consulta de usuarios
     internal_token = jwt.encode({}, INTERNAL_SECRET, algorithm="HS256")
-    res = requests.get(f"http://{USERS_LB_HOST}:{USERS_LB_PORT}/users", headers={"X-Internal-Token": internal_token})
+    res = requests.get(
+        f"http://{USERS_LB_HOST}:{USERS_LB_PORT}/users",
+        headers={"X-Internal-Token": internal_token},
+    )
     return jsonify(res.json()), res.status_code
 
 
@@ -116,7 +149,10 @@ def get_user(doc_id):
     # Paso 2: Retornar el resultado al cliente
     # Simulación de consulta de un usuario por DOC_ID
     internal_token = jwt.encode({}, INTERNAL_SECRET, algorithm="HS256")
-    res = requests.get(f"http://{USERS_LB_HOST}:{USERS_LB_PORT}/user/{doc_id}", headers={"X-Internal-Token": internal_token})
+    res = requests.get(
+        f"http://{USERS_LB_HOST}:{USERS_LB_PORT}/user/{doc_id}",
+        headers={"X-Internal-Token": internal_token},
+    )
     return jsonify(res.json()), res.status_code
 
 
@@ -129,7 +165,10 @@ def register_invoice():
     # Paso 2: Retornar el resultado al cliente
     # Simulación de registro de una factura
     internal_token = jwt.encode({}, INTERNAL_SECRET, algorithm="HS256")
-    res = requests.post(f"http://{EFACT_WRITING_LB_HOST}:{EFACT_WRITING_LB_PORT}/invoice", headers={"X-Internal-Token": internal_token})
+    res = requests.post(
+        f"http://{EFACT_WRITING_LB_HOST}:{EFACT_WRITING_LB_PORT}/invoice",
+        headers={"X-Internal-Token": internal_token},
+    )
     return jsonify(res.json()), res.status_code
 
 
@@ -142,7 +181,10 @@ def get_invoices():
     # Paso 2: Retornar el resultado al cliente
     # Simulación de consulta de facturas
     internal_token = jwt.encode({}, INTERNAL_SECRET, algorithm="HS256")
-    res = requests.get(f"http://{EFACT_READING_LB_HOST}:{EFACT_READING_LB_PORT}/invoices", headers={"X-Internal-Token": internal_token})
+    res = requests.get(
+        f"http://{EFACT_READING_LB_HOST}:{EFACT_READING_LB_PORT}/invoices",
+        headers={"X-Internal-Token": internal_token},
+    )
     return jsonify(res.json()), res.status_code
 
 
@@ -155,7 +197,10 @@ def get_invoice(id_invoice):
     # Paso 2: Retornar el resultado al cliente
     # Simulación de consulta de una factura por ID_INVOICE
     internal_token = jwt.encode({}, INTERNAL_SECRET, algorithm="HS256")
-    res = requests.get(f"http://{EFACT_READING_LB_HOST}:{EFACT_READING_LB_PORT}/invoice/{id_invoice}", headers={"X-Internal-Token": internal_token})
+    res = requests.get(
+        f"http://{EFACT_READING_LB_HOST}:{EFACT_READING_LB_PORT}/invoice/{id_invoice}",
+        headers={"X-Internal-Token": internal_token},
+    )
     return jsonify(res.json()), res.status_code
 
 
