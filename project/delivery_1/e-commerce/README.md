@@ -158,7 +158,7 @@ Este archivo `transformations.py` tiene como objetivo generar automáticamente e
 - **Componente de  API Gateway**  
   Se incluye un API Gateway para gestionar solicitudes, autenticación, autorización y enrutamiento, y optimizando la comunicación al consolidar múltiples servicios en un solo punto de acceso.
 
-Este esqueleto permmite simular la estructura inicial para el desarrollo del sistema y las interacciones entre estos.
+Este esqueleto permite simular la estructura inicial para el desarrollo del sistema y las interacciones entre estos.
 
 ### 7.4. Archivo model.arch 
 
