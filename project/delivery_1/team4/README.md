@@ -1,3 +1,12 @@
+### Team Members:
+
+- Andrés Arenas
+- Cristian Camilo Triana Garcia
+- Daniel Estivenson Dorado Lame
+- Daniel Santiago Mendoza Morales
+- Juan B Benavides R
+- Santiago Suarez
+
 # Project Delivery 1 - Online Real-Time Tic-Tac-Toe Platform
 
 The proposed software system is a real-time, online multiplayer platform that allows users to play the classic game Tic-Tac-Toe or some variants from their web browsers or mobile devices. This platform operates in a concurrent environment, where multiple users can connect, interact, and play games simultaneously.
@@ -15,16 +24,19 @@ This metamodel describes the structural architecture of a real-time multiplayer 
 ### Grammar Overview
 
 ### Model
+
 - Represents the root element (`architecture`)
 - Contains a list of elements (components and connectors)
 
 ### Component
+
 - Represents a software element that performs a specific function.
 - Attributes:
   - `type`: semantic classification (`frontend`, `service`, `database`, etc.)
   - `name`: unique identifier
 
 ### Connector
+
 - Represents a connection between two components.
 - Attributes:
   - `type`: interaction medium (`http`, `web_socket`, etc.)
@@ -33,29 +45,30 @@ This metamodel describes the structural architecture of a real-time multiplayer 
 
 ### Component types
 
-|Type|Description|
-|---|---|
-|`frontend`|User interface component, typically running in the browser or mobile app.|
-|`gateway`|Entry point to backend services; handles routing, authentication, and request forwarding.|
-|`service`|Core logic or application component; performs specific tasks such as matchmaking or game logic.|
-|`broker`|Messaging mediator that supports publish-subscribe communication (e.g., MQTT, Kafka, Redis).|
-|`queue`|Manages message queues for asynchronous processing (e.g., RabbitMQ, Azure Queue).|
-|`cache`|Fast, volatile storage for temporary data (e.g., Redis) used to improve performance.|
-|`database`|Persistent storage system for long-term data retention and queries (e.g., PostgreSQL).|
-|`loadbalancer`|Distributes incoming traffic across multiple instances of a service for scalability and fault tolerance.|
+| Type           | Description                                                                                              |
+| -------------- | -------------------------------------------------------------------------------------------------------- |
+| `frontend`     | User interface component, typically running in the browser or mobile app.                                |
+| `gateway`      | Entry point to backend services; handles routing, authentication, and request forwarding.                |
+| `service`      | Core logic or application component; performs specific tasks such as matchmaking or game logic.          |
+| `broker`       | Messaging mediator that supports publish-subscribe communication (e.g., MQTT, Kafka, Redis).             |
+| `queue`        | Manages message queues for asynchronous processing (e.g., RabbitMQ, Azure Queue).                        |
+| `cache`        | Fast, volatile storage for temporary data (e.g., Redis) used to improve performance.                     |
+| `database`     | Persistent storage system for long-term data retention and queries (e.g., PostgreSQL).                   |
+| `loadbalancer` | Distributes incoming traffic across multiple instances of a service for scalability and fault tolerance. |
 
 ### Connector types
 
-|Type|Description|
-|---|---|
-|`http`|Standard REST or HTTP-based communication between components.|
-|`web_socket`|Bidirectional real-time connection, often used for live interactions (e.g., game moves).|
-|`queue_connector`|Connector to a queue system for message sending/receiving.|
-|`broker_connector`|Subscription-based connector to a messaging broker for event-driven communication.|
-|`db_connector`|Access path from a component to a database (e.g., SQL query interface).|
-|`internal_call`|Internal, synchronous communication between backend components.|
+| Type               | Description                                                                              |
+| ------------------ | ---------------------------------------------------------------------------------------- |
+| `http`             | Standard REST or HTTP-based communication between components.                            |
+| `web_socket`       | Bidirectional real-time connection, often used for live interactions (e.g., game moves). |
+| `queue_connector`  | Connector to a queue system for message sending/receiving.                               |
+| `broker_connector` | Subscription-based connector to a messaging broker for event-driven communication.       |
+| `db_connector`     | Access path from a component to a database (e.g., SQL query interface).                  |
+| `internal_call`    | Internal, synchronous communication between backend components.                          |
 
 ### Design Notes
+
 - This metamodel intentionally omits ports and low-level interaction details for simplicity.
 - It supports quick modeling and visualization of software architectures with low overhead.
 
@@ -99,6 +112,7 @@ graph
     GS --> Broker1
 
 ```
+
 ---
 
 ### Arquitectura simplificada (Carpeta template)
