@@ -138,11 +138,11 @@ A continuación, se presenta un diagrama de arquitectura de componentes y conect
 Se define la grámitica de un lenguaje para modelar arquitecturas de software con **componentes** (frontend, backend, database, load balancer, API gateway, mqtp) y **conectores** (http, db_connector, message_queue), especificando su tipo y relaciones.
 
 
-### 7.1. Archivo metamodel.py
+### 7.2. Archivo metamodel.py
 
 Este archivo `metamodel.py` crea un metamodelo a partir de la gramática DSL definida en `arch.tx` utilizando la librería `textx`.
 
-### 7.2. Archivo transformations.py
+### 7.3. Archivo transformations.py
 
 Este archivo `transformations.py` tiene como objetivo generar automáticamente el esqueleto del sistema que se va a modelar, con los siguientes componentes:
 
@@ -163,7 +163,7 @@ Este archivo `transformations.py` tiene como objetivo generar automáticamente e
 
 Este esqueleto permmite simular la estructura inicial para el desarrollo del sistema y las interacciones entre estos.
 
-### 7.3. Archivo model.arch 
+### 7.4. Archivo model.arch 
 
 Este archivo muestra los componentes y conectores del sistema.
 
@@ -182,7 +182,7 @@ Este archivo muestra los componentes y conectores del sistema.
 - **DB**
 - **MQTP**
 
-### 7.4. Archivo model.arch 
+### 7.5. Archivo model.arch 
 
 El archivo generation.py carga un modelo de arquitectura desde un archivo .arch y aplica transformaciones para generar el esqueleto del sistema utilizando un metamodelo.
 
