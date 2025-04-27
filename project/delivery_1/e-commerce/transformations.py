@@ -333,7 +333,7 @@ def generate_api_gateway(name, backends):
             SERVICE_REGISTRY = {{
                 'systems': ['ecommerce_be_or', 'ecommerce_be_pd', 'ecommerce_be_inv'],
                 'create': ['ecommerce_be_or'], 
-                'process': ['ecommerce_be_pmt']
+                'process': ['ecommerce_be_pmt','ecommerce_be_pmt_rep']
             }}
 
             # Define direct service routes
@@ -342,6 +342,7 @@ def generate_api_gateway(name, backends):
                 'ecommerce_be_pd': 'http://ecommerce_be_pd:80',
                 'ecommerce_be_inv': 'http://ecommerce_be_inv:80',
                 'ecommerce_be_pmt': 'http://ecommerce_be_pmt:80'
+                'ecommerce_be_pmt_rep': 'http://ecommerce_be_pmt_rep:80'
             }}
 
             # Select service using simple round-robin load balancing
