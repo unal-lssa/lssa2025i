@@ -48,8 +48,8 @@ A continuación, se presenta un diagrama de arquitectura de componentes y conect
   - Limitación de exposición a sistemas internos (Se aplica la táctica de seguridad "Limit Exposure").
 
 - **Comunicación**:
-  - HTTP hacia el Backend, es decir, los microservicios de usuarios, ódenes, productos e inventario.
-  - MQTT hacia el servicio de Pagos.
+  - HTTP hacia el Backend, es decir, los microservicios definidos en la arquitectura. 
+  - MQTP para el servicio de pagos, para el procesamiento y cobro de estos. 
 
 ---
 
@@ -81,11 +81,9 @@ A continuación, se presenta un diagrama de arquitectura de componentes y conect
   - Permite consultar disponibilidad de productos.
 - Puede integrarse en tiempo real con almacenes físicos o ERPs externos mediante API REST o Webhooks en el futuro.
 
-### 3.5. Mircroservicio de pagos (ecommerce_be_pmt)
+### 3.5. Mircroservicios de pagos (ecommerce_be_pmt)
+- Recibe las solicitudes desde el API GateWay y las redirige a un Broker, para que sean consumidas y se realicen operaciones posteriores, referentes al procesamiento de los pagos. 
 - Servicio especializado en procesamiento de **pagos**.
-- Comunicación a través de **MQTT**, debido a:
-  - Naturaleza asíncrona de eventos de pago.
-  - Necesidad de procesamiento rápido, bajo consumo de ancho de banda.
 - Administra procesos como:
   - Validación de tarjetas.
   - Confirmación de pagos.
@@ -113,8 +111,8 @@ A continuación, se presenta un diagrama de arquitectura de componentes y conect
 | API Gateway              | Backend Órdenes               | HTTP         |
 | API Gateway              | Backend Productos             | HTTP         |
 | API Gateway              | Backend Inventario            | HTTP         |
-| API Gateway              | Servicio de Pagos             | MQTT         |
-| Backend                  |Base de datos                  | DB Connector |
+| API Gateway              | Servicio de Pagos             | HTTP y MQTT  |
+| Backend                  | Base de datos                 | DB Connector |
 
 ---
 
@@ -161,7 +159,7 @@ Este archivo `transformations.py` tiene como objetivo generar automáticamente e
 - **Componente de  API Gateway**  
   Se incluye un API Gateway para gestionar solicitudes, autenticación, autorización y enrutamiento, y optimizando la comunicación al consolidar múltiples servicios en un solo punto de acceso.
 
-Este esqueleto permmite simular la estructura inicial para el desarrollo del sistema y las interacciones entre estos.
+Este esqueleto permite simular la estructura inicial para el desarrollo del sistema y las interacciones entre estos.
 
 ### 7.4. Archivo model.arch 
 
@@ -182,7 +180,7 @@ Este archivo muestra los componentes y conectores del sistema.
 - **DB**
 - **MQTP**
 
-### 7.5. Archivo model.arch 
+### 7.5. Archivo generation.py
 
 El archivo generation.py carga un modelo de arquitectura desde un archivo .arch y aplica transformaciones para generar el esqueleto del sistema utilizando un metamodelo.
 
