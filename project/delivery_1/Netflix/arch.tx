@@ -1,52 +1,41 @@
 Model:
     'architecture' ':' elements*=Element
 ;
-
 Element: 
     Component | Connector | Database | Cache | EventStream
 ;
-
 Component:
     'component' type=ComponentType name=ID properties*=Property
 ;
-
 Connector:
     'connector' type=ConnectorType from=[Element] '->' to=[Element] properties*=Property
 ;
-
 Database:
     'database' type=DatabaseType name=ID properties*=Property
 ;
-
 Cache:
     'cache' type=CacheType name=ID properties*=Property
 ;
-
 EventStream:
     'event_stream' type=EventStreamType name=ID properties*=Property
 ;
-
 Property:
     name=ID '=' value=STRING
 ;
-
 ComponentType:
     'frontend' | 'backend' | 'auth_service' | 'payment_service' | 'streaming_service' | 
-    'recommendation_service' | 'content_service' | 'account_service' | 'mobile_client'
+    'recommendation_service' | 'content_service' | 'account_service' | 'mobile_client' | 
+    'loadbalancer' | 'storage'
 ;
-
 ConnectorType:
-    'http' | 'rest' | 'grpc' | 'websocket' | 'kafka' | 'redis'
+    'http' | 'hls' | 's3' | 'mongoose' | 'db_connector' | 'kafka' | 'redis'
 ;
-
 DatabaseType:
-    'mongodb' | 'mysql' | 'postgresql'
+    'mongodb' | 'mysql' | 'storage'
 ;
-
 CacheType:
     'redis'
 ;
-
 EventStreamType:
     'kafka'
-;
+;   

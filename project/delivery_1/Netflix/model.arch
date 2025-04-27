@@ -1,19 +1,63 @@
 architecture:
+    #FrontEnd
+    component frontend web_frontend port="80"
 
-    component frontend web_client
-    component mobile_client android_app
-    component auth_service auth
-    component payment_service payment
-    component streaming_service streamer payment
-    component recommendation_service recommender
-    component content_service content
-    component account_service accounts
+    #Services
+    component streaming_service ms_streamer port="8001"
+    component recommendation_service ms_recommender port="8002"
+    component auth_service ms_auth port="8003"
+    component account_service ms_accounts port="8004"
+    component payment_service ms_payment port="8005"
+    component content_service ms_content port="8006"
+    
+    # LoadBalancer
+    component loadbalancer streamer_lb port="443"
+    component loadbalancer auth_lb port="443"
 
-    database mongodb main_db
-    cache redis session_cache
-    event_stream kafka event_bus
+    # Storage
+    component storage media_storage size="500gb"
 
-    connector http web_client -> auth_service
-    connector rest auth_service -> main_db
-    connector kafka streamer -> event_bus
-    connector redis auth_service -> session_cache
+    # Database
+    database mongodb recommender_db replicas="3"
+    database mongodb auth_db replicas="3"
+    database mysql accounts_db replicas="2"
+    database mongodb payment_db replicas="3"
+    database mongodb content_db replicas="3"
+    
+    # Caché
+    cache redis content_cache size="1gb"
+    
+    # Event Stream
+    event_stream kafka kafka_service partitions="3"
+    
+    # Conexiones a balanceadores
+    connector http web_frontend -> streamer_lb timeout="10s"
+    connector http web_frontend -> auth_lb timeout="5s"
+    
+    # Conexiones desde balanceadores a servicios
+    connector http streamer_lb -> ms_streamer timeout="15s"
+    connector http auth_lb -> ms_auth timeout="5s"
+    
+    # Conexiones directas a servicios
+    connector http web_frontend -> ms_recommender timeout="10s"
+    connector http web_frontend -> ms_accounts timeout="5s"
+    connector http web_frontend -> ms_payment timeout="5s"
+    connector http web_frontend -> ms_content timeout="10s"
+    
+    # Conexiones a bases de datos
+    connector mongoose ms_recommender -> recommender_db connection_pool="10"
+    connector mongoose ms_auth -> auth_db connection_pool="15"
+    connector db_connector ms_accounts -> accounts_db connection_pool="10"
+    connector mongoose ms_payment -> payment_db connection_pool="5"
+    connector mongoose ms_content -> content_db connection_pool="20"
+    
+    # Conexiones a almacenamiento y caché
+    connector s3 ms_streamer -> media_storage encryption="true"
+    connector redis ms_content -> content_cache ttl="3600"
+    
+    # Conexiones a kafka
+    connector kafka ms_auth -> kafka_service topic="auth_events"
+    connector kafka ms_recommender -> kafka_service topic="recommendation_events"
+    connector kafka ms_accounts -> kafka_service topic="account_events"
+    connector kafka ms_payment -> kafka_service topic="payment_events"
+    connector kafka ms_content -> kafka_service topic="content_events"
