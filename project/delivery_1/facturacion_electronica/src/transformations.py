@@ -216,10 +216,6 @@ def generate_database(element):
     # Obtener la ruta del directorio de salida
     skeleton_dir = get_skeleton_path(name)
 
-    # Crear el directorio de salida si no existe
-    if not os.path.exists(skeleton_dir):
-        os.makedirs(skeleton_dir)
-
     # Existen 1 archivo de plantilla para la Base de Datos
     # 1. init.sql
 
@@ -242,23 +238,58 @@ def generate_docker_compose(skeleton):
         components: componentes del modelo para generar los servicios
     """
 
-    # TODO: AJUSTAR METODO PARA GENERAR EL DOCKER COMPOSE CON EL ESQUELETO
-
     # Obtener la ruta del directorio de salida
     skeleton_dir = get_skeleton_path("")
 
-    templates_dir = get_templates_path("compose")
+    template_compose = "services:\n\n"
 
-    # Leo la plantilla de dockerfile para el frontend
-    template_compose = read_template(templates_dir, "docker-compose.yml")
+    # Componentes
+    for components, values in skeleton.items():
+        for component in values:
+            instances = component["instances"]
+            # Networks
+            if components in "frontend":
+                networks = f"    networks:\n" f"      - public_net\n"
+            elif components in "api_gateway":
+                networks = (
+                    f"    networks:\n" f"      - public_net\n" f"      - private_net\n"
+                )
+            else:
+                networks = f"    networks:\n" f"      - private_net\n"
+            if instances > 1:
+                for i in range(instances):
+                    template_compose += (
+                        f"  {component['name']}_{i}:\n"
+                        f"    build: ./{component['name']}\n"
+                        f"    container_name: {component['name']}_{i}\n"
+                        f"    ports:\n"
+                        f"      - {component['port']}:{component['port']}\n"
+                        f"    env_file: .env\n"
+                        f"{networks}\n"
+                    )
+            else:
+                template_compose += (
+                    f"  {component['name']}:\n"
+                    f"    build: ./{component['name']}\n"
+                    f"    container_name: {component['name']}\n"
+                    f"    ports:\n"
+                    f"      - {component['port']}:{component['port']}\n"
+                    f"    env_file: .env\n"
+                    f"{networks}\n"
+                )
+    # Networks
+    template_compose += (
+        "networks:\n"
+        "  public_net:\n"
+        "    driver: bridge\n"
+        "  private_net:\n"
+        "    driver: bridge\n"
+        "    internal: true\n"
+    )
 
-    write_artefact(skeleton_dir, "docker-compose.yml", template_compose)
-
-    # Leo la plantilla de .env
-    templates_dir = get_templates_path("..")
-    template_compose = read_template(templates_dir, ".env")
-
-    write_artefact(skeleton_dir, ".env", template_compose)
+    # Guardar el archivo generado
+    with open(os.path.join(skeleton_dir, "docker-compose.yml"), "w") as output_file:
+        output_file.write(template_compose)
 
 
 def apply_transformations(model):
@@ -286,16 +317,12 @@ def apply_transformations(model):
     # 3. Load Balancer
     # 4. Backend
     # 5. Base de Datos
-    # 6. Docker Compose
-    # 7. .env
     skeleton = {
         "frontend": [],
         "api_gateway": [],
         "load_balancer": [],
         "backend": [],
         "database": [],
-        "docker_compose": "docker-compose.yml",
-        ".env": ".env",
     }
 
     # Obtener los Componentes del modelo por tipo
@@ -339,11 +366,9 @@ def apply_transformations(model):
                 generate_load_balancer(element, target)
                 skeleton["load_balancer"].append(
                     {
-                        "name": target["name"],
-                        "port": target["port"],
-                        "instances": (
-                            1 if target["instances"] < 1 else target["instances"]
-                        ),
+                        "name": element.name,
+                        "port": get_load_balancer_ports(element.name),
+                        "instances": 1 if element.instances < 1 else element.instances,
                     }
                 )
 
@@ -375,6 +400,15 @@ def apply_transformations(model):
 
     # Generar el docker compose
     generate_docker_compose(skeleton)
+
+    # Copiar archivo .env en la carpeta skeleton
+    env_path = os.path.join(os.path.dirname(__file__), ".env")
+    skeleton_env_path = os.path.join(get_skeleton_path(""), ".env")
+    if os.path.exists(env_path):
+        with open(env_path, "r") as env_file:
+            env_content = env_file.read()
+        with open(skeleton_env_path, "w") as skeleton_env_file:
+            skeleton_env_file.write(env_content)
 
 
 ### Helper functions ###
@@ -460,6 +494,19 @@ def get_frontend_ports(frontend_name):
         "seller_fe": os.getenv("SELLER_FRONTEND_PORT", 5002),
         "admin_fe": os.getenv("ADMIN_FRONTEND_PORT", 5003),
     }[frontend_name]
+
+
+def get_load_balancer_ports(load_balancer_name):
+    """
+    Obtiene el puerto del load balancer dado su nombre.
+    :param load_balancer_name: El nombre del load balancer.
+    :return: int
+    """
+    return {
+        "users_lb": os.getenv("USERS_LB_HOST_PORT", 5004),
+        "efact_reading_lb": os.getenv("EFACT_READING_LB_HOST_PORT", 5005),
+        "efact_writing_lb": os.getenv("EFACT_WRITING_LB_HOST_PORT", 5006),
+    }[load_balancer_name]
 
 
 def replace_placeholders(template, placeholders):
