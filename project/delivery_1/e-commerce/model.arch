@@ -1,6 +1,7 @@
 architecture:
 
     component frontend ecommerce_fe
+     component backend ecommerce_be_usr
     component backend ecommerce_be_or
     component backend ecommerce_be_pd
     component backend ecommerce_be_inv

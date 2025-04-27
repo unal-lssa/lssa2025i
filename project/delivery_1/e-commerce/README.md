@@ -1,27 +1,38 @@
-# 📄 Descripción detallada de la arquitectura E-commerce distribuida basada en microservicios
+# Arquitectura distribuida basada en microservicios para un e-commerce 
+
+### Sergio Andrés Cabezas
+### Jilkson Alejandro Pulido Cruz
+### Juan David Ramírez Ávila
+### Diego Alejandro Rodriguez Martinez
+### Yosman Alexis Arenas Jimenez
+
+
+En esta entrega del proyecto, se enfoca en diseñar arquitectónicamente un sistema de software a gran escala desde un punto de vista estructural. Específicamente, se eligió el dominio de un e-commerce y se modeló como un sistema con un gran número de componentes. Por ello, se optó por una arquitectura distribuida basada en microservicios.
 
 ---
 
 ## 1. Visión general
-La arquitectura propuesta para el sistema de e-commerce se basa en principios de **microservicios desacoplados**, altamente escalables y seguros. El diseño permite gestionar de manera independiente cada dominio de negocio: pedidos, productos, inventario y pagos, con comunicación eficiente a través de protocolos adecuados, como HTTP para interacciones tradicionales y MQTT para eventos de pagos.
+La arquitectura propuesta para el sistema de e-commerce se basa en principios de **microservicios desacoplados**, altamente escalables y seguros. El diseño permite gestionar de manera independiente cada dominio de negocio: usuarios, pedidos, productos, inventario y pagos, con comunicación eficiente a través de protocolos adecuados, como HTTP para interacciones tradicionales y MQTT para los eventos relacionados con el servicio de pagos.
 
-El flujo completo desde el cliente hasta el procesamiento de pagos se maneja de forma **modular**, mejorando la resiliencia, escalabilidad y mantenibilidad del sistema.
+El flujo completo desde el cliente hasta el procesamiento de pagos se maneja de forma **modular**, mejorando la resiliencia, seguridad, escalabilidad y mantenibilidad del sistema.
 
 ---
 
 ## 2. Componentes principales
 
-![Texto alternativo de la imagen](./Diagrama de Arquitectura.png)
+A continuación, se presenta un diagrama de arquitectura de componentes y conectores. Y posteriormente, una descripción a alto nivel de cada uno de los componentes.
+
+![Texto alternativo de la imagen](DiagramaArquitectura.png)
 
 ### 2.1. Internet (Clientes)
-- Usuarios finales que interactúan con el sistema a través de navegadores web o aplicaciones móviles.
-- No hay interacción directa con los microservicios: todo tráfico pasa primero por el Load Balancer.
+- Usuarios finales que interactúan con el sistema a través de  un navegador web o un dispositivo móvil.
+
 
 ### 2.2. Load Balancer (ecommerce_lb)
 - Componente que actúa como **primera capa de defensa** y distribución de tráfico.
 - Balancea la carga entrante entre instancias del **Frontend** (`ecommerce_fe`) para asegurar alta disponibilidad.
 - Mejora la tolerancia a fallos y distribuye equitativamente las solicitudes.
-- **Protocolo usado**: HTTP (puede incluir HTTPS en entornos productivos).
+- **Protocolo usado**: HTTP.
 
 ### 2.3. Frontend (ecommerce_fe)
 - Aplicación web que ofrece la **interfaz gráfica** al usuario.
@@ -32,42 +43,45 @@ El flujo completo desde el cliente hasta el procesamiento de pagos se maneja de 
 ### 2.4. API Gateway (ecommerce_ag_us)
 - Único punto de entrada a los microservicios internos.
 - **Funciones clave**:
-  - Enrutamiento inteligente de solicitudes.
+  - Enrutamiento de solicitudes.
   - Autenticación y autorización de usuarios y servicios.
-  - Limitación de exposición a sistemas internos (tactic "Limit Exposure").
-  - Transformación de protocolos y carga de políticas de seguridad (rate limiting, CORS, throttling).
+  - Limitación de exposición a sistemas internos (Se aplica la táctica de seguridad "Limit Exposure").
+
 - **Comunicación**:
-  - HTTP hacia los Backends de Orders, Products e Inventory.
-  - MQTT hacia el Servicio de Pagos.
+  - HTTP hacia el Backend, es decir, los microservicios de usuarios, ódenes, productos e inventario.
+  - MQTT hacia el servicio de Pagos.
 
 ---
 
-## 3. Backends de negocio
+## 3. Backend con la lógica de negocio
 
-### 3.1. Backend Orders (ecommerce_be_or)
+
+### 3.1. Microservicio de usuarios (ecommerce_be_usr)
+- Servicio dedicado a la gestión de registro de usuarios **Usuarios**:
+  - Registrar datos de los usuarios.
+- Arquitectura transaccional con integridad ACID en su almacenamiento.
+- **Conexión a base de datos**: DB Connector.
+
+### 3.2. Microservicio de órdenes (ecommerce_be_or)
 - Servicio dedicado a la gestión de **órdenes de compra**:
   - Crear nuevas órdenes.
   - Consultar estado de órdenes.
   - Actualizar o cancelar órdenes.
-- Cada orden persiste en su propia base de datos `ecommerce_be_or_db`.
 - Arquitectura transaccional con integridad ACID en su almacenamiento.
 - **Conexión a base de datos**: DB Connector.
 
-### 3.2. Backend Products (ecommerce_be_pd)
+### 3.3. Microservicio de productos (ecommerce_be_pd)
 - Gestiona el **catálogo de productos**:
   - Altas, bajas y modificaciones de productos.
-  - Consulta de inventario relacionado.
-- Utiliza su propia base de datos `ecommerce_be_pd_db`.
 - Base de datos optimizada para búsquedas rápidas (indexes en campos de nombre, categoría, SKU).
 
-### 3.3. Backend Inventory (ecommerce_be_inv)
+### 3.4. Microservicio de inventarios (ecommerce_be_inv)
 - Controla el **stock de productos**:
   - Actualiza existencias después de cada compra o ajuste manual.
   - Permite consultar disponibilidad de productos.
-- Persistencia en `ecommerce_be_inv_db`.
 - Puede integrarse en tiempo real con almacenes físicos o ERPs externos mediante API REST o Webhooks en el futuro.
 
-### 3.4. Payment Service (ecommerce_be_pmt)
+### 3.5. Mircroservicio de pagos (ecommerce_be_pmt)
 - Servicio especializado en procesamiento de **pagos**.
 - Comunicación a través de **MQTT**, debido a:
   - Naturaleza asíncrona de eventos de pago.
@@ -75,18 +89,12 @@ El flujo completo desde el cliente hasta el procesamiento de pagos se maneja de 
 - Administra procesos como:
   - Validación de tarjetas.
   - Confirmación de pagos.
-  - Emisión de facturas electrónicas (futuro).
-- Almacena los registros en `ecommerce_be_pmt_db`, asegurando auditoría y trazabilidad de transacciones.
+  - Emisión de facturas electrónicas (Posible capacidad a integrar en el sistema).
+- Almacena los registros en una base de datos, asegurando auditoría y trazabilidad de transacciones.
 
 ---
 
-## 4. Bases de datos
-
-Cada servicio maneja su propio almacén de datos aislado:
-- **Orders DB** → `ecommerce_be_or_db`
-- **Products DB** → `ecommerce_be_pd_db`
-- **Inventory DB** → `ecommerce_be_inv_db`
-- **Payments DB** → `ecommerce_be_pmt_db`
+## 4. Almacenamiento de datos
 
 **Modelo de base de datos:**
 - Normalización para evitar redundancia.
@@ -96,22 +104,23 @@ Cada servicio maneja su propio almacén de datos aislado:
 
 ## 5. Comunicación entre componentes
 
-| Componente origen       | Componente destino            | Protocolo |
+| Componente origen        | Componente destino             | Protocolo |
 |--------------------------|-------------------------------|-----------|
 | Cliente (Internet)       | Load Balancer                 | HTTP      |
 | Load Balancer            | Frontend (ecommerce_fe)       | HTTP      |
 | Frontend                 | API Gateway (ecommerce_ag_us) | HTTP      |
-| API Gateway              | Backend Orders                | HTTP      |
-| API Gateway              | Backend Products              | HTTP      |
-| API Gateway              | Backend Inventory             | HTTP      |
-| API Gateway              | Payment Service               | MQTT      |
-| Cada Backend             | Su Base de Datos propia       | DB Connector |
+| API Gateway              | Backend Usuarios              | HTTP      |
+| API Gateway              | Backend Órdenes               | HTTP      |
+| API Gateway              | Backend Productos             | HTTP      |
+| API Gateway              | Backend Inventario            | HTTP      |
+| API Gateway              | Servicio de Pagos             | MQTT      |
+| Backend                  |Base de datos                  | DB Connector |
 
 ---
 
-# 🎯 Beneficios de esta arquitectura
+## 6.Beneficios de esta arquitectura
 
-- **Escalabilidad Horizontal**: cualquier backend o base de datos puede escalar independientemente según demanda.
+- **Escalabilidad Horizontal**: Los componentes del Backen se escalan de forma horizontalmente y de forma independiente según demanda.
 - **Alta disponibilidad**: Load Balancer y múltiples instancias aseguran operación continua.
 - **Seguridad**: 
   - Frontend no accede directamente a microservicios.
@@ -122,17 +131,8 @@ Cada servicio maneja su propio almacén de datos aislado:
 
 ---
 
-# 📈 Posibles mejoras a futuro
-
-- **Circuit Breakers** y **Retries** en API Gateway para manejo de fallos.
-- **Cacheo de productos** en CDN para mejorar performance de catálogos.
-- **Observabilidad** agregando tracing distribuido, logging estructurado y métricas por servicio.
-- **Sistema de colas** adicional (SQS, Kafka) para eventos como actualización de stock masiva.
 
 ---
-
-# 🖼️ Resumen final del flujo
-
 
 # Recordar eliminar la asignación de responsabilidades 
 
