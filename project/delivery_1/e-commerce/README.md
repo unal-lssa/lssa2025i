@@ -49,7 +49,7 @@ A continuación, se presenta un diagrama de arquitectura de componentes y conect
 
 - **Comunicación**:
   - HTTP hacia el Backend, es decir, los microservicios definidos en la arquitectura. 
-  - MQTP para el servicio de Pagos.
+  - MQTP para el servicio de pagos, para el procesamiento y cobro de estos. 
 
 ---
 
@@ -81,7 +81,8 @@ A continuación, se presenta un diagrama de arquitectura de componentes y conect
   - Permite consultar disponibilidad de productos.
 - Puede integrarse en tiempo real con almacenes físicos o ERPs externos mediante API REST o Webhooks en el futuro.
 
-### 3.5. Mircroservicio de pagos (ecommerce_be_pmt)
+### 3.5. Mircroservicios de pagos (ecommerce_be_pmt)
+- Recibe las solicitudes desde el API GateWay y las redirige a un Broker, para que sean consumidas y se realicen operaciones posteriores, referentes al procesamiento de los pagos. 
 - Servicio especializado en procesamiento de **pagos**.
 - Administra procesos como:
   - Validación de tarjetas.
