@@ -49,7 +49,7 @@ A continuación, se presenta un diagrama de arquitectura de componentes y conect
 
 - **Comunicación**:
   - HTTP hacia el Backend, es decir, los microservicios de usuarios, ódenes, productos e inventario.
-  - MQTT hacia el servicio de Pagos.
+  - MQTP hacia el servicio de Pagos.
 
 ---
 
@@ -83,9 +83,6 @@ A continuación, se presenta un diagrama de arquitectura de componentes y conect
 
 ### 3.5. Mircroservicio de pagos (ecommerce_be_pmt)
 - Servicio especializado en procesamiento de **pagos**.
-- Comunicación a través de **MQTT**, debido a:
-  - Naturaleza asíncrona de eventos de pago.
-  - Necesidad de procesamiento rápido, bajo consumo de ancho de banda.
 - Administra procesos como:
   - Validación de tarjetas.
   - Confirmación de pagos.
@@ -113,8 +110,8 @@ A continuación, se presenta un diagrama de arquitectura de componentes y conect
 | API Gateway              | Backend Órdenes               | HTTP         |
 | API Gateway              | Backend Productos             | HTTP         |
 | API Gateway              | Backend Inventario            | HTTP         |
-| API Gateway              | Servicio de Pagos             | MQTT         |
-| Backend                  |Base de datos                  | DB Connector |
+| API Gateway              | Servicio de Pagos             | HTTP y MQTT  |
+| Backend                  | Base de datos                 | DB Connector |
 
 ---
 
