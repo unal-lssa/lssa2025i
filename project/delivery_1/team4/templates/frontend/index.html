@@ -1,42 +1,50 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8" />
-  <title>WebSocket + Redis Chat</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    #controls, #login-section { margin-top: 20px; }
-    #controls button, #login-section button { margin-right: 10px; padding: 8px 12px; }
-    #service-response { white-space: pre-wrap; background: #f5f5f5; padding: 10px; border: 1px solid #ddd; margin-top: 10px; }
-    #login-status { margin-top: 10px; color: green; }
-  </style>
-</head>
-<body>
-  <!-- Chat Section -->
-  <div>
-    <input id="msg" placeholder="Type a message" />
-    <button id="btn-send">Send</button>
-  </div>
-  <ul id="chat"></ul>
+  <head>
+    <meta charset="utf-8" />
+    <title>Real Time Tic-Tac-Toe</title>
+    <style>
+      .board {
+        display: grid;
+        grid-template-columns: repeat(3, 100px);
+        grid-template-rows: repeat(3, 100px);
+        gap: 10px;
+        margin: 20px 0;
+      }
+      .cell {
+        width: 100px;
+        height: 100px;
+        background-color: #fff;
+        border: 2px solid #000;
+        font-size: 2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Game -->
+    <div class="game-container">
+      <h1>Tic Tac Toe</h1>
 
-  <!-- Login Section -->
-  <div id="login-section">
-    <input id="username" placeholder="Username" />
-    <input id="password" type="password" placeholder="Password" />
-    <button id="btn-login">Login</button>
-    <div id="login-status"></div>
-  </div>
+      <button id="startMatchmaking">Start Game!</button>
+      <div class="board" id="board">
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+      </div>
+    </div>
 
-  <!-- Service Test Controls -->
-  <div id="controls">
-    <button id="btn-ms1" disabled>Probar MS-1</button>
-    <button id="btn-ms2" disabled>Probar MS-2</button>
-  </div>
-  <pre id="service-response"></pre>
-
-  <!-- External JS Files -->
-  <script src="js/chat.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/service.js"></script>
-</body>
+    <!-- External JS Files -->
+    <script src="js/realTimeConnection.js"></script>
+    <script src="js/apiGatewayConnection.js"></script>
+  </body>
 </html>
