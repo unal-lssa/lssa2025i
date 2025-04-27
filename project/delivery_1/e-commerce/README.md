@@ -1,10 +1,10 @@
 # Arquitectura distribuida basada en microservicios para un e-commerce 
 
-### Sergio Andrés Cabezas
-### Jilkson Alejandro Pulido Cruz
-### Juan David Ramírez Ávila
-### Diego Alejandro Rodriguez Martinez
-### Yosman Alexis Arenas Jimenez
+#### Sergio Andrés Cabezas
+#### Jilkson Alejandro Pulido Cruz
+#### Juan David Ramírez Ávila
+#### Diego Alejandro Rodriguez Martinez
+#### Yosman Alexis Arenas Jimenez
 
 
 En esta entrega del proyecto, se enfoca en diseñar arquitectónicamente un sistema de software a gran escala desde un punto de vista estructural. Específicamente, se eligió el dominio de un e-commerce y se modeló como un sistema con un gran número de componentes. Por ello, se optó por una arquitectura distribuida basada en microservicios.
@@ -118,7 +118,7 @@ A continuación, se presenta un diagrama de arquitectura de componentes y conect
 
 ---
 
-## 6.Beneficios de esta arquitectura
+## 6.Beneficios de la arquitectura
 
 - **Escalabilidad Horizontal**: Los componentes del Backen se escalan de forma horizontalmente y de forma independiente según demanda.
 - **Alta disponibilidad**: Load Balancer y múltiples instancias aseguran operación continua.
