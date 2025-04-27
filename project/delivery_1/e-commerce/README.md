@@ -180,7 +180,7 @@ Este archivo muestra los componentes y conectores del sistema.
 - **DB**
 - **MQTP**
 
-### 7.5. Archivo model.arch 
+### 7.5. Archivo generation.py
 
 El archivo generation.py carga un modelo de arquitectura desde un archivo .arch y aplica transformaciones para generar el esqueleto del sistema utilizando un metamodelo.
 
