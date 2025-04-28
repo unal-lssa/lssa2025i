@@ -26,5 +26,5 @@ def generate_bucket(name):
 def move_file(src, dest):
     if not os.path.exists(src):
         raise FileNotFoundError(f'El archivo {src} no existe.')
-    shutil.move(src, os.path.join(dest, os.path.basename(src)))
+    shutil.copy(src, os.path.join(dest, os.path.basename(src)))
     print(f'Archivo {src} movido a {os.path.join(dest, os.path.basename(src))}')

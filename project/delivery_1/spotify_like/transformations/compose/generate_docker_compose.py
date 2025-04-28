@@ -26,6 +26,7 @@ def generate_docker_compose(components, replicas=None, load_balancer_config=None
                 db_type = db_types.get(name, 'mysql').lower()
                 
                 if db_type == 'mysql':
+                    port_counter += 1
                     f.write(f"  {name}:\n")
                     f.write("    image: mysql:8\n")
                     f.write("    environment:\n")
@@ -34,9 +35,10 @@ def generate_docker_compose(components, replicas=None, load_balancer_config=None
                     f.write("    volumes:\n")
                     f.write(f"      - ./{name}/init.sql:/docker-entrypoint-initdb.d/init.sql\n")
                     f.write("    ports:\n")
-                    f.write("      - '3306:3306'\n")
+                    f.write(f"      - '{port_counter}:{port_counter}'\n")
                 
                 elif db_type == 'postgresql':
+                    port_counter += 1
                     f.write(f"  {name}:\n")
                     f.write("    image: postgres:14\n")
                     f.write("    environment:\n")
@@ -45,9 +47,10 @@ def generate_docker_compose(components, replicas=None, load_balancer_config=None
                     f.write("    volumes:\n")
                     f.write(f"      - ./{name}/init.sql:/docker-entrypoint-initdb.d/init.sql\n")
                     f.write("    ports:\n")
-                    f.write("      - '5432:5432'\n")
+                    f.write(f"      - '{port_counter}:{port_counter}'\n")
                 
                 elif db_type == 'mongodb':
+                    port_counter += 1
                     f.write(f"  {name}:\n")
                     f.write("    image: mongo:6\n")
                     f.write("    environment:\n")
@@ -56,9 +59,10 @@ def generate_docker_compose(components, replicas=None, load_balancer_config=None
                     f.write("    volumes:\n")
                     f.write(f"      - ./{name}/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro\n")
                     f.write("    ports:\n")
-                    f.write("      - '27017:27017'\n")
+                    f.write(f"      - '{port_counter}:{port_counter}'\n")
                 
                 elif db_type == 'elasticsearch':
+                    port_counter += 1
                     f.write(f"  {name}:\n")
                     f.write("    image: elasticsearch:7.17.0\n")
                     f.write("    environment:\n")
@@ -69,7 +73,7 @@ def generate_docker_compose(components, replicas=None, load_balancer_config=None
                     f.write(f"      - ./{name}/init-es.sh:/init-es.sh:ro\n")
                     f.write("    command: [\"/bin/sh\", \"-c\", \"elasticsearch & /init-es.sh\"]\n")
                     f.write("    ports:\n")
-                    f.write("      - '9200:9200'\n")
+                    f.write(f"      - '{port_counter}:{port_counter}'\n")
         
         for name, ctype in sorted_components.items():
             if ctype == "database" or ctype == "db" or ctype == "bucket" or ctype == "cdn":
@@ -111,9 +115,10 @@ def generate_docker_compose(components, replicas=None, load_balancer_config=None
                             f.write(f"      - {backend_service}\n")
                     
                     if i == 0 and not is_balanced:
-                        f.write("    ports:\n")
-                        f.write(f"      - '{port_counter}:80'\n")
                         port_counter += 1
+                        f.write("    ports:\n")
+                        f.write(f"      - '{port_counter}:{port_counter}'\n")
+                        
             else:
                 f.write(f"  {name}:\n")
                 f.write(f"    build: ./{name}\n")
@@ -139,10 +144,11 @@ def generate_docker_compose(components, replicas=None, load_balancer_config=None
                     if backend_service:
                         f.write("    depends_on:\n")
                         f.write(f"      - {backend_service}\n")
-                
-                f.write("    ports:\n")
-                f.write(f"      - '{port_counter}:80'\n")
+                        
                 port_counter += 1
+                f.write("    ports:\n")
+                f.write(f"      - '{port_counter}:{port_counter}'\n")
+                
                 
             if ctype == "loadbalancer":
                 target_name = load_balancer_config.get(name)
