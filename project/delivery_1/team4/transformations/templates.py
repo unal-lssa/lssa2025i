@@ -13,6 +13,7 @@ def _make_component_dir(component_name: str, project_base: Path = PROJECT_BASE) 
 
 # Make a copy of the files in a template directory to the target location and replace
 # the parameters in templates.
+
 def _copy_template(
     template_path: Path, target_path: Path, params: dict | None = None
 ) -> None:
