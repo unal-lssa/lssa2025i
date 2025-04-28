@@ -223,7 +223,6 @@ architecture:
 
     connector http efact_ag -> users_lb
     connector http efact_ag -> efact_writing_lb
-    connector http efact_ag -> efact_writing_lb
     connector http efact_ag -> efact_reading_lb
 
     connector lb_conn users_lb -> users_be
