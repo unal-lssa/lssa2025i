@@ -1,26 +1,33 @@
 architecture TicTacToe :
-    component frontend WebApp
+    component frontend web_app
 
-    component gateway ApiGateway
-    component service UserService
-    component service GameMatchingService
-    component service GameEngineService
-    component service RealTimeService
+    component gateway api_gateway
 
-    component broker PubSubRealTimeBroker
-    component queue GameMatchingQueue
-    component cache OnlineGamesCache
+    component service matchmaking_service
+    {
+        endpoint get_match: POST "/new-match"
+    }
+    component service authentication_service
+    {
+        endpoint create_token: POST "/token"
+        endpoint validate_token: POST "/token/validate"
+    }
 
-    connector web_socket WebApp -> RealTimeService
+    component service game_engine
+    component service real_time_service
 
-    connector http WebApp -> ApiGateway
-    connector http ApiGateway -> UserService
-    connector http ApiGateway -> GameMatchingService
+    component broker pub_sub_broker
+    component queue matchmaking_queue
+    component cache game_cache
 
-    connector internal_call UserService -> GameEngineService
+    connector web_socket web_app -> real_time_service
 
-    connector queue_connector GameMatchingService -> GameMatchingQueue
-    connector db_connector GameEngineService -> OnlineGamesCache
+    connector http web_app -> api_gateway
+    connector http api_gateway -> authentication_service
+    connector http api_gateway -> matchmaking_service
 
-    connector broker_connector GameEngineService -> PubSubRealTimeBroker
-    connector broker_connector RealTimeService -> PubSubRealTimeBroker
+    connector queue_connector matchmaking_service -> matchmaking_queue
+    connector db_connector game_engine -> game_cache
+
+    connector broker_connector game_engine -> pub_sub_broker
+    connector broker_connector real_time_service -> pub_sub_broker

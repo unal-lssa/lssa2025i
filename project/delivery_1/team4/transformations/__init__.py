@@ -1,4 +1,4 @@
-from transformations import database, gateway, frontend
+from transformations import database, gateway, frontend, service
 
 
 def apply_transformations(model):
@@ -18,6 +18,8 @@ def apply_transformations(model):
             #     database.generate_database(e.name)
             if e.type == "gateway":
                 gateway.generate_gateway(e.name, model)
+            if e.type == "service":
+                service.generate_service(e)
             if e.type == "frontend":
                 api_gateway = next(
                     (
