@@ -1,0 +1,91 @@
+__all__ = ["PLAYER_X", "PLAYER_O", "TicTacToe"]
+
+PLAYER_X, PLAYER_O = "X", "O"
+
+class TicTacToe:
+    """
+    A Tic Tac Toe game.
+
+    Play moves with :meth:`play`.
+
+    Check for a winner with :attr:`winner`.
+
+    Check for a draw with :attr:`is_draw`.
+
+    Get the current board state with :attr:`board`.
+    """
+
+    PLAYER_X = 'X'
+    PLAYER_O = 'O'
+    EMPTY = ' '
+
+    def __init__(self):
+        """Initializes the Tic Tac Toe board."""
+        self.board = [[self.EMPTY for _ in range(3)] for _ in range(3)]
+        self.moves_made = 0
+        self.winner = None
+
+    @property
+    def current_player(self):
+        """Player whose turn it is."""
+        return self.PLAYER_X if self.moves_made % 2 else self.PLAYER_O
+
+    @property
+    def is_draw(self):
+        """Checks if the game is a draw."""
+        return self.moves_made == 9 and self.winner is None
+
+    def _check_win(self):
+        """
+        Checks if the last move resulted in a win.
+        Returns the winning player ('X' or 'O') or None.
+        """
+        # Determine the player who just moved
+        player = self.PLAYER_O if self.moves_made % 2 != 0 else self.PLAYER_X
+
+        # Check rows
+        for r in range(3):
+            if all(self.board[r][c] == player for c in range(3)):
+                return player
+
+        # Check columns
+        for c in range(3):
+            if all(self.board[r][c] == player for r in range(3)):
+                return player
+
+        # Check diagonals
+        if all(self.board[i][i] == player for i in range(3)):
+            return player
+        if all(self.board[i][2 - i] == player for i in range(3)):
+            return player
+
+        # No winner yet
+        return None
+
+    def play(self, player, row, col):
+        """
+        Play a move at the given row and column.
+
+        Raises:
+            ValueError: If the move is illegal (wrong player, cell occupied,
+                        invalid coordinates, game already over).
+        """
+        if self.winner:
+            raise ValueError(f"Game over. Winner is {self.winner}.")
+        if self.is_draw:
+             raise ValueError("Game over. It's a draw.")
+        if player != self.current_player:
+            raise ValueError(f"It isn't {player}'s turn (it's {self.current_player}'s).")
+        if not (0 <= row < 3 and 0 <= col < 3):
+            raise ValueError(f"Invalid coordinates ({row}, {col}). Must be 0, 1, or 2.")
+        if self.board[row][col] != self.EMPTY:
+            raise ValueError(f"Cell ({row}, {col}) is already occupied by {self.board[row][col]}.")
+
+        # Place the player's mark
+        self.board[row][col] = player
+        self.moves_made += 1
+
+        # Check for winner *after* the move
+        potential_winner = self._check_win()
+        if potential_winner:
+            self.winner = potential_winner
