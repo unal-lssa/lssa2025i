@@ -8,27 +8,6 @@ from .cdn.generate_cdn import generate_cdn
 from .bucket.generate_bucket import generate_bucket, move_file
 import os
 
-# def process_connectors(model):
-#     """Process all connectors in the model and return a mapping of component connections."""
-#     component_connections = {}
-    
-#     for e in model.elements:
-#         if e.__class__.__name__ == 'Connector':
-#             source_component = getattr(e, 'from').name
-#             conn_type = e.type
-#             targets = e.to if isinstance(e.to, list) else [e.to]  
-
-#             if source_component not in component_connections:
-#                 component_connections[source_component] = {}
-
-#             if conn_type not in component_connections[source_component]:
-#                 component_connections[source_component][conn_type] = []
-
-#             for target in targets:
-#                 component_connections[source_component][conn_type].append(target.name)
-    
-#     print(f"Component connections: {component_connections}")
-#     return component_connections
 
 def process_connectors(model):
     """Process all connectors in the model and return a mapping of component connections."""
@@ -39,11 +18,34 @@ def process_connectors(model):
             source_component = getattr(e, 'from').name
             to_component = e.to.name
             conn_type = e.type
+            
             if source_component not in component_connections:
                 component_connections[source_component] = {}
+            
             component_connections[source_component][conn_type] = to_component
+    
     return component_connections
 
+def process_api_gateway_connections(model):
+    """Process all API Gateway connections in the model and return a mapping of connections."""
+    api_gateway_connections = {}
+    
+    for e in model.elements:
+        if e.__class__.__name__ == 'Connector':
+            if getattr(e, 'from').name == 'api_gateway_comp':
+                source_component = getattr(e, 'from').name
+                conn_type = e.type
+                targets = e.to if isinstance(e.to, list) else [e.to]  # Always work with a list
+
+                if source_component not in api_gateway_connections:
+                    api_gateway_connections[source_component] = {}
+
+                if conn_type not in api_gateway_connections[source_component]:
+                    api_gateway_connections[source_component][conn_type] = []
+
+                for target in targets:
+                    api_gateway_connections[source_component][conn_type].append(target.name)
+    return api_gateway_connections
 
 
 def apply_transformations(model):
@@ -133,12 +135,9 @@ def apply_transformations(model):
                 replica_count = replicas.get(target_name, 1)
                 generate_loadbalancer(e.name, target_name, replica_count)
         elif e.__class__.__name__ == 'ApiGateway':
-            connections = component_connections.get(e.name, {})  
+            api_gateway_connection = process_api_gateway_connections(model)
             route_map = {}
-
-            http_targets = connections.get('http', [])
-
-            for target in http_targets:
+            for target in api_gateway_connection.get(e.name, {}).get('http', []):
                 route_map[target] = target 
                 
             generate_api_gateway(e.name, route_map)
