@@ -103,6 +103,10 @@ app.get('/home', async (req, res) => {
                     <button type="submit">Registrar</button>
                 </form>
 
+                <button type="button" onclick="window.location.href='/list-users?token=${token}'">
+                    Ir a Listar Usuarios
+                </button>
+
                 <script>
                 function toggleLegalName() {
                     const vendedorSelected = document.getElementById('vendedor').checked;
@@ -134,9 +138,43 @@ app.post('/register', async (req, res) => {
 
         // Si el registro es exitoso, redirigir a la pagina de inicio
         if (response.status === 201) {
-            res.redirect('/home?token=' + response.data.token);
+            res.redirect('/home?token=' + token);
         } else {
             res.status(500).send("Error registering user");
+        }
+    } catch (err) {
+        res.status(500).send("Error contacting backend" + err);
+    }
+});
+
+
+// Endpoint para listar los usuarios
+app.get('/list-users', async (req, res) => {
+    try {
+        // Obtener el token de la query string
+        const token = req.query.token;
+        console.log("Token: ", token);
+
+        // Llamada al API Gateway para listar los usuarios con el token
+        // Se agrega el token a la cabecera de la peticion
+        const headers = { Authorization: `Bearer ${token}` };
+        const response = await axios.get(`${API_GATEWAY_URL}/list-users`, { headers });
+        console.log("Response: ", response.data);
+
+        // Si la lista de usuarios es exitosa, mostrar la lista
+        if (response.status === 200) {
+            res.send(`
+                <html>
+                    <body>
+                        <h1>Lista de Usuarios</h1>
+                        <ul>
+                            ${response.data.map(user => `<li>${user.role_name} ${user.first_name} ${user.last_name} ${user.doc_type} ${user.doc_id} ${user.legal_name}</li>`).join('')}
+                        </ul>
+                    </body>
+                </html>
+            `);
+        } else {
+            res.status(500).send("Error listing users");
         }
     } catch (err) {
         res.status(500).send("Error contacting backend" + err);

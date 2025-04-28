@@ -122,6 +122,25 @@ def register():
     return jsonify(status="created"), 201
 
 
+# Endpoint para listar usuarios
+@app.route("/users", methods=["GET"])
+@token_required(role_name="admin")
+def list_users():
+    """Endpoint para listar usuarios"""
+    # user_data = { doc_type, doc_id, first_name, last_name, role_name, legal_name }
+    conn = mysql.connector.connect(
+        host=USERS_DB_HOST,
+        user='root',
+        password='root',
+        database='users_db'
+    )
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM users")
+    users = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return jsonify(users), 200
+
 
 # AJUSTAR
 # @app.route('/create', methods=['POST'])

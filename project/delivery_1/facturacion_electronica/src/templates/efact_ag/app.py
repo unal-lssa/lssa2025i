@@ -122,6 +122,28 @@ def register():
         return jsonify({"error": "Error en el servicio de registro"}), 500
 
 
+# Endpoint para listar usuarios
+@app.route("/list-users", methods=["GET"])
+@token_required(role_name="admin")
+def list_users():
+    """Endpoint para listar usuarios"""
+    # Obtener el token del header de la solicitud
+    token = request.headers.get("Authorization")
+    # Llamado al servicio de listado de usuarios
+    try:
+        # Enviar al request el token
+        headers = {"Authorization": token}
+        response = requests.get(
+            f"http://{USERS_LB_HOST}:{USERS_LB_PORT}/users",
+            headers=headers,
+        )
+        logging.debug(f"Response from user listing service: {response.json()}")
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error al conectar con el servicio de listado de usuarios: {e}")
+        return jsonify({"error": "Error en el servicio de listado de usuarios"}), 500
+
+
 if __name__ == "__main__":
     # Escucha en todas las interfaces para que Docker lo detecte
     app.run(host="0.0.0.0", port=API_GATEWAY_PORT)
