@@ -5,7 +5,7 @@
 - Edsson Bonilla
 - Nancy VianethVera Rodríguez
 - Sebastián Ríos Sabogal
-- Yilver Alirio Ramírez Ochoa
+- Yilver Alirio Ramírez Ochoa - 1015994056
 - Julián Ricardo Beltrán Lizarazo - 1023949483
 
 ## Contexto del Sistema de Software
@@ -16,6 +16,8 @@ El sistema de facturación electrónica es un sistema a gran escala porque tiene
 Aunque el sistema de facturación electrónica contempla diversas funcionalidades, para el prototipo a desarrollar se considera un flujo básico en donde es posible que un comprador o un vendedor se pueda registrar en el sistema; así mismo que sea posible registrar facturas electrónicas (con datos básicos), y que un rol administrador pueda consultar facturas bien sea por comprador o por vendedor.
 
 Este  flujo simplificado, se representa en el siguiente gráfico:
+
+![Flujo](Flujo.png)
 
 Para este prototipo, se consideró un modelo de datos sencillo que permita validar la funcionalidad general del sistema. Para ello se establecieron los datos básicos así:
 
@@ -349,3 +351,4 @@ Por lo tanto, una vez ejecutado el sistema, para comprobar la funcionalidad del 
 - Recargar el *Dashboard de administrador* y verificar que el usuario ingresado se encuentre en el listado.
 
 ### Conclusiones
+
