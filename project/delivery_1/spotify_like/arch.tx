@@ -36,7 +36,7 @@ ApiGateway:
 ;
 
 Queue:
-    'component' 'queue' name=ID ('replicationFactor' '=' replicationFactor=INT)?
+    'component' 'queue' name=ID
 ;
 
 Connector:
@@ -44,11 +44,7 @@ Connector:
 ;
 
 ConnectorType:
-    'http' | 'db_connector' | KafkaConnectorConfig
-;
-
-KafkaConnectorConfig:
-    'kafka_connector' 'topic' '=' topicName=ID 'group_id' '=' groupId=ID
+    'http' | 'db_connector' | 'kafka_connector'
 ;
 
 Network:
