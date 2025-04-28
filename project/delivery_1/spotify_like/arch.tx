@@ -8,7 +8,7 @@ Element:
 ;
 
 Component:
-    LoadBalancer | StandardComponent | Database | ApiGateway | Queue
+    LoadBalancer | StandardComponent | Database | ApiGateway
 ;
 
 StandardComponent:
@@ -20,7 +20,7 @@ LoadBalancer:
 ;
 
 StandardComponentType:
-    'frontend' | 'backend' | 'bucket' | 'cdn'
+    'frontend' | 'backend' | 'bucket' | 'cdn' | 'queue'
 ;
 
 Database:
@@ -33,10 +33,6 @@ DatabaseType:
 
 ApiGateway:
     'component' 'api_gateway' name=ID auth=Component
-;
-
-Queue:
-    'component' 'queue' name=ID
 ;
 
 Connector:
