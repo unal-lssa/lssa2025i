@@ -133,7 +133,10 @@ El proyecto está diseñado utilizando una arquitectura de microservicios, donde
 
 ### **Diagrama de Arquitectura**
 
+![diagrama](https://github.com/user-attachments/assets/329bba45-c3ac-4e66-968a-1bcae7dbc2fe)
+
 
 ## Docker
 
-docker build -t generator-app . && docker run --rm -v $(pwd)/skeleton:/app/skeleton generator-ap
+  ```bash
+  docker build -t generator-app . && docker run --rm -v $(pwd)/skeleton:/app/skeleton generator-ap
