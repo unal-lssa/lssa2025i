@@ -33,14 +33,14 @@ def generate_backend(name, database=None, database_type=None, connections=None):
     requirements = ["flask"]
 
     # Only add connection code if this is a "from" component in a connector
-    print(f"Connections: {connections}")
+    print("Generating backend with connections: " + str(connections))
     if connections:
         for conn_type, target in connections.items():
-            if conn_type == "kafka_connector" and target:
+            if conn_type == "kafka_connector_reverse" and target:
                 write_wait_for_it_script(path)
                 generate_consumer(name, target)
                 return
-            elif conn_type == "kafka_connector_reverse" and target:
+            elif conn_type == "kafka_connector" and target:
                 write_wait_for_it_script(path)
                 generate_producer(name, target)
                 return

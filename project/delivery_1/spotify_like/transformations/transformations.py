@@ -8,6 +8,7 @@ from .cdn.generate_cdn import generate_cdn
 from .bucket.generate_bucket import generate_bucket, move_file
 import os
 
+
 def process_connectors(model):
     """
     Procesa todos los conectores en el modelo y devuelve un diccionario donde la llave
@@ -22,14 +23,15 @@ def process_connectors(model):
     # Esto asegura que incluso los componentes sin conexiones aparezcan con listas vacías
     for element in model.elements:
         # Solo nos interesan los Elements que son Componentes
-        if element.__class__.__name__ in ["LoadBalancer", "StandardComponent", "Database", "ApiGateway"]:
-             component_name = element.name
-             if component_name not in component_connections:
-                 component_connections[component_name] = {
-                     'outgoing': [],
-                     'incoming': []
-                 }
-
+        if element.__class__.__name__ in [
+            "LoadBalancer",
+            "StandardComponent",
+            "Database",
+            "ApiGateway",
+        ]:
+            component_name = element.name
+            if component_name not in component_connections:
+                component_connections[component_name] = {"outgoing": [], "incoming": []}
 
     # Procesar los conectores
     for element in model.elements:
@@ -42,23 +44,28 @@ def process_connectors(model):
             # Asegurarse de que los componentes existan en el diccionario,
             # aunque ya los inicializamos antes, esto es una doble verificación útil.
             if source_component_name not in component_connections:
-                 component_connections[source_component_name] = {'outgoing': [], 'incoming': []}
+                component_connections[source_component_name] = {
+                    "outgoing": [],
+                    "incoming": [],
+                }
             if target_component_name not in component_connections:
-                 component_connections[target_component_name] = {'outgoing': [], 'incoming': []}
+                component_connections[target_component_name] = {
+                    "outgoing": [],
+                    "incoming": [],
+                }
 
             # Agregar la conexión saliente para el componente fuente
-            component_connections[source_component_name]['outgoing'].append({
-                'type': conn_type,
-                'target': target_component_name
-            })
+            component_connections[source_component_name]["outgoing"].append(
+                {"type": conn_type, "target": target_component_name}
+            )
 
             # Agregar la conexión entrante para el componente destino
-            component_connections[target_component_name]['incoming'].append({
-                'type': conn_type,
-                'source': source_component_name
-            })
+            component_connections[target_component_name]["incoming"].append(
+                {"type": conn_type, "source": source_component_name}
+            )
 
     return component_connections
+
 
 def extract_architecture_data(model):
     """
@@ -94,58 +101,64 @@ def extract_architecture_data(model):
         }
     """
     architecture_data = {
-        'components': {},
-        'connections': {}, # Esto se llenará llamando a process_connectors
-        'replicas': {}
+        "components": {},
+        "connections": {},  # Esto se llenará llamando a process_connectors
+        "replicas": {},
     }
 
     # Primera pasada: Identificar todos los componentes y sus detalles estáticos
     for element in model.elements:
         # Verificamos si es alguno de los tipos de Componente definidos
-        if element.__class__.__name__ in ["StandardComponent", "Database", "LoadBalancer", "ApiGateway"]:
+        if element.__class__.__name__ in [
+            "StandardComponent",
+            "Database",
+            "LoadBalancer",
+            "ApiGateway",
+        ]:
             component_name = element.name
             component_type = None
             details = {}
 
             if element.__class__.__name__ == "StandardComponent":
-                component_type = element.type # frontend, backend, bucket, cdn, queue
+                component_type = element.type  # frontend, backend, bucket, cdn, queue
             elif element.__class__.__name__ == "Database":
                 component_type = "db"
-                details['databaseType'] = element.databaseType
+                details["databaseType"] = element.databaseType
             elif element.__class__.__name__ == "LoadBalancer":
                 component_type = "loadbalancer"
-                details['instanceCount'] = element.instanceCount
+                details["instanceCount"] = element.instanceCount
                 # Almacenamos el nombre del componente target
-                if hasattr(element, 'target') and element.target:
-                     details['target'] = element.target.name
+                if hasattr(element, "target") and element.target:
+                    details["target"] = element.target.name
             elif element.__class__.__name__ == "ApiGateway":
                 component_type = "api_gateway"
-                 # Almacenamos el nombre del componente de autenticación
-                if hasattr(element, 'auth') and element.auth:
-                     details['auth'] = element.auth.name
+                # Almacenamos el nombre del componente de autenticación
+                if hasattr(element, "auth") and element.auth:
+                    details["auth"] = element.auth.name
 
             # Guardar la información básica del componente
-            architecture_data['components'][component_name] = {
-                'type': component_type,
-                'details': details
+            architecture_data["components"][component_name] = {
+                "type": component_type,
+                "details": details,
             }
 
     # Segunda parte: Procesar las conexiones usando la función mejorada
     # Esta función ya maneja la estructura 'outgoing'/'incoming'
-    architecture_data['connections'] = process_connectors(model)
+    architecture_data["connections"] = process_connectors(model)
 
     # Tercera parte: Extraer la información de réplicas de los LoadBalancers
     # Iteramos sobre los componentes que ya identificamos
-    for component_name, component_info in architecture_data['components'].items():
-        if component_info['type'] == 'loadbalancer':
-            details = component_info['details']
-            if 'target' in details and 'instanceCount' in details:
-                target_name = details['target']
-                instance_count = details['instanceCount']
+    for component_name, component_info in architecture_data["components"].items():
+        if component_info["type"] == "loadbalancer":
+            details = component_info["details"]
+            if "target" in details and "instanceCount" in details:
+                target_name = details["target"]
+                instance_count = details["instanceCount"]
                 # La cantidad de réplicas se asocia al componente target
-                architecture_data['replicas'][target_name] = instance_count
+                architecture_data["replicas"][target_name] = instance_count
 
     return architecture_data
+
 
 def generate_architecture(architecture):
     """
@@ -167,24 +180,29 @@ def generate_architecture(architecture):
 
     # Identificar backends que son productores (conexión saliente a una cola)
     # Basado en la interpretación estándar: un productor envía a la cola.
-    # La JSON de ejemplo 'file_consumer' envía a la cola 'upload_queue',
-    # mientras que 'file_producer' recibe de la cola.
-    # Seguiremos la interpretación estándar para construir este conjunto.
-    producer_backends_derived = set()
+    consumer_backends_derived = set()
+    source_backends_map = {}  # Mapeo de backends a sus fuentes
     for comp_name, comp_conn in connections_data.items():
-        for outgoing_conn in comp_conn.get("outgoing", []):
-             conn_type = outgoing_conn.get("type")
-             target_name = outgoing_conn.get("target")
-             if target_name:
-                 target_comp_data = components_data.get(target_name)
-                 # Si el objetivo es una cola y el tipo de conexión es apropiado
-                 if target_comp_data and target_comp_data.get("type") == "queue" and conn_type in ["kafka_connector", "queue_connector"]:
-                     producer_backends_derived.add(comp_name) # Este componente es un productor
-
-    # print("Producer backends derived:", producer_backends_derived) # Para depuración
+        for incoming_conn in comp_conn.get("incoming", []):
+            conn_type = incoming_conn.get("type")
+            source_name = incoming_conn.get("source")
+            if source_name:
+                source_comp_data = components_data.get(source_name)
+                # Si el objetivo es una cola y el tipo de conexión es apropiado
+                if (
+                    source_comp_data
+                    and source_comp_data.get("type") == "queue"
+                    and conn_type in ["kafka_connector", "queue_connector"]
+                ):
+                    consumer_backends_derived.add(
+                        comp_name
+                    )  # Este componente es un consumidor
+                    source_backends_map[comp_name] = (
+                        source_name  # Mapeo de origen a destino
+                    )
 
     # Preparar el mapa de rutas para los API Gateways
-    api_gateway_routes = {} # {gateway_name: {target: target, ...}}
+    api_gateway_routes = {}  # {gateway_name: {target: target, ...}}
     for comp_name, comp_data in components_data.items():
         if comp_data.get("type") == "api_gateway":
             # Buscar conexiones salientes HTTP para este API Gateway
@@ -193,7 +211,7 @@ def generate_architecture(architecture):
             for outgoing_conn in comp_conn.get("outgoing", []):
                 if outgoing_conn.get("type") == "http" and outgoing_conn.get("target"):
                     target_name = outgoing_conn.get("target")
-                    route_map[target_name] = target_name # Mapeo target a target
+                    route_map[target_name] = target_name  # Mapeo target a target
             api_gateway_routes[comp_name] = route_map
 
     # print("API Gateway routes:", api_gateway_routes) # Para depuración
@@ -203,7 +221,9 @@ def generate_architecture(architecture):
         comp_type = comp_data.get("type")
         details = comp_data.get("details", {})
         # Obtener las conexiones específicas para este componente
-        component_connections = connections_data.get(name, {}) # Estructura {outgoing: [...], incoming: [...]}
+        component_connections = connections_data.get(
+            name, {}
+        )  # Estructura {outgoing: [...], incoming: [...]}
 
         # Manejar diferentes tipos de componentes
         if comp_type in ["database", "db"]:
@@ -211,36 +231,39 @@ def generate_architecture(architecture):
             generate_database(name, db_type)
 
         elif comp_type == "backend":
-            backend_db_type = "mysql" # valor por defecto
-            connected_db_name = None # Nombre de la BD conectada
+            backend_db_type = "mysql"  # valor por defecto
+            connected_db_name = None  # Nombre de la BD conectada
 
             # Encontrar detalles de conexión a BD en las conexiones salientes
             for outgoing_conn in component_connections.get("outgoing", []):
-                if outgoing_conn.get("type") == "db_connector" and outgoing_conn.get("target"):
+                if outgoing_conn.get("type") == "db_connector" and outgoing_conn.get(
+                    "target"
+                ):
                     connected_db_name = outgoing_conn.get("target")
                     # Obtener el tipo de la BD conectada desde sus detalles de componente
                     db_comp_data = components_data.get(connected_db_name)
                     if db_comp_data and db_comp_data.get("type") in ["database", "db"]:
-                        backend_db_type = db_comp_data.get("details", {}).get("databaseType", "mysql")
-                    break # Asumiendo solo una conexión saliente db_connector por backend
+                        backend_db_type = db_comp_data.get("details", {}).get(
+                            "databaseType", "mysql"
+                        )
+                    break  # Asumiendo solo una conexión saliente db_connector por backend
 
             # Verificar si este backend es un productor (usando el conjunto derivado)
-            if name in producer_backends_derived:
-                # print("Generating producer for backend") # Conservar la impresión original
+            if name in consumer_backends_derived:
                 # Replicar la estructura de conexiones específica del fragmento original para productores
                 generate_backend(
                     name,
-                    connections={"kafka_connector_reverse": name}
+                    connections={"kafka_connector_reverse": source_backends_map[name]},
                 )
             else:
-                 # Backend no productor
-                 # Pasar el nombre de la BD conectada, su tipo, y las conexiones completas del componente.
-                 generate_backend(
-                     name,
-                     database=connected_db_name, # Nombre de la BD conectada si se encuentra
-                     database_type=backend_db_type,
-                     connections=component_connections, # Estructura {outgoing: [...], incoming: [...]}
-                 )
+                # Backend no productor
+                # Pasar el nombre de la BD conectada, su tipo, y las conexiones completas del componente.
+                generate_backend(
+                    name,
+                    database=connected_db_name,  # Nombre de la BD conectada si se encuentra
+                    database_type=backend_db_type,
+                    connections=component_connections,  # Estructura {outgoing: [...], incoming: [...]}
+                )
 
         elif comp_type == "frontend":
             api_gateway_target_name = None
@@ -252,9 +275,12 @@ def generate_architecture(architecture):
                 if target_name:
                     # Verificar si el componente objetivo existe y es de tipo 'api_gateway'.
                     target_comp_data = components_data.get(target_name)
-                    if target_comp_data and target_comp_data.get("type") == "api_gateway":
+                    if (
+                        target_comp_data
+                        and target_comp_data.get("type") == "api_gateway"
+                    ):
                         api_gateway_target_name = target_name
-                        break # Encontrado el API Gateway, detener la búsqueda.
+                        break  # Encontrado el API Gateway, detener la búsqueda.
 
             # Llamar a la función generate_frontend con solo el nombre del frontend
             # y el nombre del API Gateway, como se especificó.
@@ -285,14 +311,14 @@ def generate_architecture(architecture):
             # else: Ignorar si no hay objetivo configurado
 
         elif comp_type == "api_gateway":
-             # Usar el mapa de rutas pre-procesado para este API Gateway
-             route_map = api_gateway_routes.get(name, {})
+            # Usar el mapa de rutas pre-procesado para este API Gateway
+            route_map = api_gateway_routes.get(name, {})
 
-             generate_api_gateway(name, route_map)
+            generate_api_gateway(name, route_map)
 
         elif comp_type == "queue":
-             pass 
-    
+            pass
+
     generate_docker_compose(architecture)
     src = os.path.join(os.getcwd(), "song.mp3")
     dest = os.path.join(os.getcwd(), "skeleton/music_storage")
