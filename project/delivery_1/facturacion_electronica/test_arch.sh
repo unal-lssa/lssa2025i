@@ -34,7 +34,7 @@ if [ "$1" == "-c" ]; then
     echo "🧹 Limpiando contenedores y volúmenes..."
     # Ejecutar desde el directorio src/skeleton
     cd "$(dirname "$0")/src/skeleton"
-    docker compose down --remove-orphans
+    docker compose down --remove-orphans --volumes
     docker compose build
     docker compose up -d
     cd ../../

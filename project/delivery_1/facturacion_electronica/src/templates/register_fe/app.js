@@ -17,34 +17,68 @@ const API_GATEWAY_PORT = process.env.API_GATEWAY_PORT || 5000;
 const API_GATEWAY_URL = `http://${API_GATEWAY_HOST}:${API_GATEWAY_PORT}`;
 
 // Index
-app.get('/', async (req, res) => {
+app.get('/login', async (req, res) => {
     try {
         // Respuesta HTML
         res.send(`
             <html>
                 <body>
-                    <!--DEBUG-->
-                    <!-- Formulario para crear un nuevo vendedor -->
-                    <h2>Crear nuevo vendedor</h2>
-                    <form action="/seller" method="POST">
-                        <!-- Dummy -->
-                        <label for="name">Nombre:</label>
-                        <input type="text" id="name" name="name" required>
-                        <button type="submit">Crear</button>
-                    </form>
-                    <!-- Formulario para crear un nuevo comprador -->
-                    <h2>Crear nuevo comprador</h2>
-                    <form action="/buyer" method="POST">
-                        <!-- Dummy -->
-                        <label for="name">Nombre:</label>
-                        <input type="text" id="name" name="name" required>
-                        <button type="submit">Crear</button>
+                    <!--LOGIN-->
+                    <form action="/login" method="POST">
+                        <label for="doc_id">Doc ID:</label><br>
+                        <input type="text" id="doc_id" name="doc_id" required><br><br>
+                        <label for="password">Password:</label><br>
+                        <input type="password" id="password" name="password" required><br><br>
+                        <button type="submit">Login</button>
                     </form>
                 </body>
             </html>
         `);
     } catch (err) {
         res.status(500).send("Error contacting backend");
+    }
+});
+
+// Endpoint para el login
+app.post('/login', async (req, res) => {
+    try {
+        const { doc_id, password } = req.body;
+        console.log("doc_id: ", doc_id);
+        console.log("password: ", password);
+
+        // Llamada al API Gateway para autenticar al usuario
+        const response = await axios.post(`${API_GATEWAY_URL}/login`, { doc_id, password });
+        console.log("Response: ", response.data);
+
+        // Si la autenticacion es exitosa, redirigir a la pagina de inicio con el token
+        if (response.status === 200) {
+            res.redirect('/home?token=' + response.data.token);
+        } else if (response.status === 401) {
+            res.status(401).send("Invalid credentials");
+        }
+        else {
+            res.status(500).send("Error authenticating user");
+        }
+    } catch (err) {
+        res.status(500).send("Error contacting backend" + err);
+    }
+});
+
+// Endpoint para la pagina de inicio
+app.get('/home', async (req, res) => {
+    try {
+        const token = req.query.token;
+
+        // Respuesta HTML
+        res.send(`
+            <html>
+                <body>
+                    <p>Your token is ${token}</p>
+                </body>
+            </html>
+        `);
+    } catch (err) {
+        res.status(500).send("Error contacting backend" + err);
     }
 });
 
@@ -80,23 +114,6 @@ app.get('/ping-users', async (req, res) => {
     }
 });
 
-// Endpoint para crear un nuevo usuario con role seller
-// Ajustar el endpoint según la API del microservicio de usuarios
-app.post('/seller', async (req, res) => {
-    // Role seller
-    const seller = req.body.seller;
-    await axios.post(`${API_GATEWAY_URL}/user`, {seller});
-    res.redirect('/');
-});
-
-// Endpoint para crear un nuevo usuario con role buyer
-// Ajustar el endpoint según la API del microservicio de usuarios
-app.post('/buyer', async (req, res) => {
-    // Role buyer
-    const seller = req.body.seller;
-    await axios.post(`${API_GATEWAY_URL}/user`, {seller});
-    res.redirect('/');
-});
 
 // App listening
 app.listen(REGISTER_FRONTEND_PORT, () => console.log(`Frontend Register running on port ${REGISTER_FRONTEND_PORT}`));

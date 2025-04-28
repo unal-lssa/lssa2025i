@@ -1,40 +1,54 @@
-"""
-API Gateway - Punto único de entrada
-
-Controla:
-- Autenticación
-- Enrutamiento
-- Limitación de exposición
-"""
-from flask import Flask, request, jsonify
-from datetime import datetime, timedelta
-import requests
+import logging
 import os
-from templates.shared.auth_utils import token_required, limit_exposure, role_required, generate_token
 
+import requests
+from auth_utils import generate_token  # type: ignore
+from flask import Flask, jsonify, request
+
+# Configurar el nivel de logging
+logging.basicConfig(level=logging.DEBUG)
+
+# Configuración básica de la aplicación Flask
 app = Flask(__name__)
 
-users = {
-        'admin': {'password': os.getenv('ADMIN_PASS'), 'role': 'admin'},
-        'user1': {'password': os.getenv('USER_PASS'), 'role': 'user'},
-        'vendedor': {'password': os.getenv('VEN_PASS'), 'role': 'vendedor'},
-    }
+# Puerto de escucha del Servicio de Autenticación
+AUTH_BACKEND_PORT = os.getenv("AUTH_BACKEND_PORT", 8040)
 
-@app.route('/authenticate', methods=['GET'])
-@limit_exposure
+# Users Load Balancer host y puerto
+USERS_LB_HOST = os.getenv("USERS_LB_HOST", "users_lb")
+USERS_LB_PORT = os.getenv("USERS_LB_PORT", 5004)
+
+
+# Endpoint de autenticación
+@app.route("/auth", methods=["POST"])
 def authenticate():
     """Endpoint de autenticación"""
     auth_data = request.get_json()
-    if not auth_data or 'username' not in auth_data or 'password' not in auth_data:
-        return jsonify({"error": "Credenciales inválidas"}), 401
-    
-    # Obtiene los datos de autenticación del body de la solicitud  
-    user = users.get(auth_data.get('username'))    
-    # TODO: Realizar la conexión con base de datos para validar usuario
-    if user and user['password'] == auth_data.get('password'):
-        return jsonify({'username': auth_data['username'], 'role': user['role']}),200
-    return jsonify({"error": "Credenciales inválidas."}), 401
+    if not auth_data or "doc_id" not in auth_data or "password" not in auth_data:
+        return jsonify({"error": "Credenciales inválidas doc_id and password required"}), 401
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=os.getenv('AUTH_SERVICE_PORT', 5004))
-    print(f"Starting API Gateway on port {os.getenv('AUTH_SERVICE_PORT', 5004)}")
+    # Obtiene los datos de autenticación del body de la solicitud
+    doc_id = auth_data.get("doc_id")
+    password = auth_data.get("password")
+
+    # Llamado al servicio de autenticación
+    try:
+        response = requests.post(
+            f"http://{USERS_LB_HOST}:{USERS_LB_PORT}/auth",
+            json={"doc_id": doc_id, "password": password},
+        )
+        if response.status_code == 200:
+            # Si la autenticación es exitosa, se genera un token JWT
+            user_data = response.json()
+            token = generate_token({"doc_id": user_data["doc_id"], "role_name": user_data["role_name"]})
+            return jsonify({"token": token}), 200
+        else:
+            return jsonify({"error": "Credenciales inválidas"}), 401
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error al conectar con el servicio de autenticación: {e}")
+        return jsonify({"error": "Error en el servicio de autenticación"}), 500
+
+
+if __name__ == "__main__":
+    # Escucha en todas las interfaces para que Docker lo detecte
+    app.run(host="0.0.0.0", port=AUTH_BACKEND_PORT)

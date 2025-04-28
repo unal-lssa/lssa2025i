@@ -13,13 +13,12 @@ CREATE TABLE users (
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
     legal_name VARCHAR(100) NOT NULL,
+    pwd VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Insertar datos iniciales
-INSERT INTO users (role_name, doc_id, doc_type, first_name, last_name, legal_name) VALUES
-('seller', '111111111', 'CC', 'Juan', 'Pérez', 'Juan'),
-('buyer', '222222222', 'CC', 'María', 'Gómez', 'María Gómez'),
-('admin', '333333333', 'CC', 'Carlos', 'López', 'Carlos López'),
-('seller', '444444444', 'CC', 'Ana', 'Martínez', 'Ana Martínez'),
-('buyer', '555555555', 'CC', 'Luis', 'Fernández', 'Luis Fernández');
+INSERT INTO users (role_name, doc_id, doc_type, first_name, last_name, legal_name, pwd) VALUES
+('admin', '000000', 'CC', 'Sebaxtian', 'Bach', 'TI', 'e10adc3949ba59abbe56e057f20f883e'),
+('seller', '111111', 'NIT', 'Vendedor', 'Uno', 'S.A.S', 'e10adc3949ba59abbe56e057f20f883e'),
+('buyer', '222222', 'CC', 'Comprador', 'Uno', 'NA', 'e10adc3949ba59abbe56e057f20f883e');

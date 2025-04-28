@@ -14,13 +14,12 @@ logging.basicConfig(level=logging.DEBUG)
 # Configuración básica de la aplicación Flask
 app = Flask(__name__)
 
-# Secretos desde variables de entorno
-SECRET_KEY = os.getenv("SECRET_KEY", "default_key")
-INTERNAL_SECRET = os.getenv("INTERNAL_SECRET", "internal_default")
-AUTHORIZED_IP = os.getenv("AUTHORIZED_IP", "127.0.0.1")
-
 # Puerto de escucha del API Gateway
 API_GATEWAY_PORT = os.getenv("API_GATEWAY_PORT", 5000)
+
+# Auth host y puerto
+AUTH_BACKEND_HOST = os.getenv("AUTH_BACKEND_HOST", "auth_be")
+AUTH_BACKEND_PORT = os.getenv("AUTH_BACKEND_PORT", 8040)
 
 # Users Load Balancer host y puerto
 USERS_LB_HOST = os.getenv("USERS_LB_HOST", "users_lb")
@@ -33,40 +32,6 @@ EFACT_READING_LB_PORT = os.getenv("EFACT_READING_LB_PORT", 5005)
 # Invoice Writing Load Balancer host y puerto
 EFACT_WRITING_LB_HOST = os.getenv("EFACT_WRITING_LB_HOST", "efact_writing_lb")
 EFACT_WRITING_LB_PORT = os.getenv("EFACT_WRITING_LB_PORT", 5006)
-
-
-# Táctica de seguridad: Limita acceso por IP
-def limit_exposure(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if request.remote_addr != AUTHORIZED_IP:
-            return jsonify({"message": f"Unauthorized IP {request.remote_addr}"}), 403
-        return f(*args, **kwargs)
-
-    return decorated
-
-
-# Táctica de seguridad: Verifica token y roles (JWT)
-def token_required(role=None):
-    def decorator(f):
-        @wraps(f)
-        def decorated(*args, **kwargs):
-            token = request.headers.get("Authorization")
-            if not token:
-                return jsonify({"message": "Missing token"}), 403
-            try:
-                token = token.split(" ")[1] if " " in token else token
-                data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-                if role and data.get("role") != role:
-                    return jsonify({"message": "Forbidden: Insufficient role"}), 403
-                request.user = data
-            except:
-                return jsonify({"message": "Invalid token"}), 403
-            return f(*args, **kwargs)
-
-        return decorated
-
-    return decorator
 
 
 # Endpoint ping para verificar la comunicacion con el API Gateway
@@ -87,25 +52,34 @@ def ping():
     )
 
 
-# Endpoint de autenticación y autorización, genera token JWT
-@app.route("/auth", methods=["POST"])
-def auth():
-    auth = request.get_json()
-    # LLamado a endpoint para consultar usuario por DOC_ID
-    user, res = get_user(auth.get("doc_id"))
-    if res.status_code != 200:
-        return jsonify({"message": "User not found"}), 404
-    # Validacion del password con md5
-    md5_password = hashlib.md5(auth.get("password").encode()).hexdigest()
-    # Autenticación de usuario
-    if user and user["password"] == md5_password:
-        token = jwt.encode(
-            {"username": user["doc_id"], "role": user["role"]},
-            SECRET_KEY,
-            algorithm="HS256",
+# Endpoint para login
+@app.route("/login", methods=["POST"])
+def login():
+    """Endpoint de autenticación"""
+    auth_data = request.get_json()
+    if not auth_data or "doc_id" not in auth_data or "password" not in auth_data:
+        return jsonify({"error": "Credenciales inválidas doc_id and password required"}), 401
+
+    # Obtiene los datos de autenticación del body de la solicitud
+    doc_id = auth_data.get("doc_id")
+    password = auth_data.get("password")
+
+    # Llamado al servicio de autenticación
+    try:
+        logging.debug(f"Requesting auth for doc_id: {doc_id}")
+        response = requests.post(
+            f"http://{AUTH_BACKEND_HOST}:{AUTH_BACKEND_PORT}/auth",
+            json={"doc_id": doc_id, "password": password},
         )
-        return jsonify({"token": token})
-    return jsonify({"message": "Invalid credentials"}), 401
+        logging.debug(f"Response from auth service: {response.json()}")
+        if response.status_code == 200:
+            # Si la autenticación es exitosa, se genera un token JWT
+            return response.json()
+        else:
+            return jsonify({"error": "Credenciales inválidas"}), 401
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error al conectar con el servicio de autenticación: {e}")
+        return jsonify({"error": "Error en el servicio de autenticación"}), 500
 
 
 # Endpoint ping para verificar la comunicacion con el microservicio de usuarios
@@ -114,108 +88,6 @@ def ping_users():
     # Peticion al microservicio de usuarios atraves de un balanceador de carga
     res = requests.get(
         f"http://{USERS_LB_HOST}:{USERS_LB_PORT}/ping"
-    )
-    return jsonify(res.json()), res.status_code
-
-
-# Endpoint para registrar usuarios
-# Ajustar el endpoint segun el microservicio de registro de usuarios
-@app.route("/user", methods=["POST"])
-@limit_exposure
-@token_required()
-def register_user():
-    # Paso 1: Peticion al microservicion de registro de usuarios atraves de un balanceador de carga
-    # Paso 2: Retornar el resultado al cliente
-    # Simulación de registro de un usuario
-    internal_token = jwt.encode({}, INTERNAL_SECRET, algorithm="HS256")
-    res = requests.post(
-        f"http://{USERS_LB_HOST}:{USERS_LB_PORT}/user",
-        headers={"X-Internal-Token": internal_token},
-    )
-    return jsonify(res.json()), res.status_code
-
-
-# Endpoint para consultar usuarios, solo para admin
-# Ajustar el endpoint segun el microservicio de consulta de usuarios
-@app.route("/users", methods=["GET"])
-@limit_exposure
-@token_required(role="admin")
-def get_users():
-    # Paso 1: Peticion al microservicio de usuarios atraves de un balanceador de carga
-    # Paso 2: Retornar el resultado al cliente
-    # Simulación de consulta de usuarios
-    internal_token = jwt.encode({}, INTERNAL_SECRET, algorithm="HS256")
-    res = requests.get(
-        f"http://{USERS_LB_HOST}:{USERS_LB_PORT}/users",
-        headers={"X-Internal-Token": internal_token},
-    )
-    return jsonify(res.json()), res.status_code
-
-
-# Endpoint para consultar un usuario por DOC_ID
-# Ajustar el endpoint segun el microservicio de consulta de usuarios
-@app.route("/user/<string:doc_id>", methods=["GET"])
-@limit_exposure
-@token_required()
-def get_user(doc_id):
-    # Paso 1: Peticion al microservicio de consulta de usuarios atraves de un balanceador de carga
-    # Paso 2: Retornar el resultado al cliente
-    # Simulación de consulta de un usuario por DOC_ID
-    internal_token = jwt.encode({}, INTERNAL_SECRET, algorithm="HS256")
-    res = requests.get(
-        f"http://{USERS_LB_HOST}:{USERS_LB_PORT}/user/{doc_id}",
-        headers={"X-Internal-Token": internal_token},
-    )
-    return jsonify(res.json()), res.status_code
-
-
-# Endpoint para registrar facturas
-# Ajustar el endpoint segun el microservicio de registro de facturas
-@app.route("/invoice", methods=["POST"])
-@limit_exposure
-@token_required()
-def register_invoice():
-    # Paso 1: Peticion al microservicio de registro de facturas atraves de un balanceador de carga
-    # Paso 2: Retornar el resultado al cliente
-    # Simulación de registro de una factura
-    internal_token = jwt.encode({}, INTERNAL_SECRET, algorithm="HS256")
-    res = requests.post(
-        f"http://{EFACT_WRITING_LB_HOST}:{EFACT_WRITING_LB_PORT}/invoice",
-        headers={"X-Internal-Token": internal_token},
-    )
-    return jsonify(res.json()), res.status_code
-
-
-# Endpoint para consultar facturas
-# Ajustar el endpoint segun el microservicio de consulta de facturas
-@app.route("/invoices", methods=["GET"])
-@limit_exposure
-@token_required(role="admin")
-def get_invoices():
-    # Paso 1: Peticion al microservicio de consulta de facturas atraves de un balanceador de carga
-    # Paso 2: Retornar el resultado al cliente
-    # Simulación de consulta de facturas
-    internal_token = jwt.encode({}, INTERNAL_SECRET, algorithm="HS256")
-    res = requests.get(
-        f"http://{EFACT_READING_LB_HOST}:{EFACT_READING_LB_PORT}/invoices",
-        headers={"X-Internal-Token": internal_token},
-    )
-    return jsonify(res.json()), res.status_code
-
-
-# Endpoint para consultar una factura por ID_INVOICE
-# Ajustar el endpoint segun el microservicio de consulta de facturas
-@app.route("/invoice/<string:id_invoice>", methods=["GET"])
-@limit_exposure
-@token_required(role="admin")
-def get_invoice(id_invoice):
-    # Paso 1: Peticion al microservicio de consulta de factura por ID_INVOICE atraves de un balanceador de carga
-    # Paso 2: Retornar el resultado al cliente
-    # Simulación de consulta de una factura por ID_INVOICE
-    internal_token = jwt.encode({}, INTERNAL_SECRET, algorithm="HS256")
-    res = requests.get(
-        f"http://{EFACT_READING_LB_HOST}:{EFACT_READING_LB_PORT}/invoice/{id_invoice}",
-        headers={"X-Internal-Token": internal_token},
     )
     return jsonify(res.json()), res.status_code
 

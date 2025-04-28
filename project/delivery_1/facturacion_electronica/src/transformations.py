@@ -99,6 +99,9 @@ def generate_api_gateway(element):
     # Guardar el archivo generado
     with open(os.path.join(skeleton_dir, "requirements.txt"), "w") as output_file:
         output_file.write(template)
+    
+    # Copiar utils compartidos
+    copy_shared_utils(skeleton_dir)
 
 
 def generate_load_balancer(element, target):
@@ -197,6 +200,9 @@ def generate_backend(element):
     # Guardar el archivo generado
     with open(os.path.join(skeleton_dir, "requirements.txt"), "w") as output_file:
         output_file.write(template)
+
+    # Copiar utils compartidos
+    copy_shared_utils(skeleton_dir)
 
 
 def generate_database(element):
@@ -563,3 +569,21 @@ def read_template(directory, template_name):
         return ""
     with open(template_path, "r") as f:
         return f.read()
+
+def copy_shared_utils(skeleton_dir):
+    """Copia los utils compartidos en el directorio de salida.
+
+    Args:
+        skeleton_dir: Directorio de salida
+    """
+    # Obtener la ruta del directorio de plantillas
+    templates_dir = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "templates", "shared")
+    )
+    # Copiar el archivo auth_utils.py
+    template_path = os.path.join(templates_dir, "auth_utils.py")
+    with open(template_path, "r") as template_file:
+        template = template_file.read()
+    # Guardar el archivo generado
+    with open(os.path.join(skeleton_dir, "auth_utils.py"), "w") as output_file:
+        output_file.write(template)
