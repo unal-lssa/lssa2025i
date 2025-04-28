@@ -7,6 +7,9 @@ Element: Component | Connector;
 
 Component:
     'component' type=ComponentType name=ID
+    ('{' 
+        (endpoints*=Endpoint)?
+    '}')?
 ;
 
 Connector:
@@ -19,4 +22,12 @@ ComponentType:
 
 ConnectorType:
     'http' | 'web_socket' | 'queue_connector' | 'broker_connector' | 'db_connector' | 'internal_call'
+;
+
+Endpoint:
+    'endpoint' name=ID ':' method=HttpMethod path=STRING
+;
+
+HttpMethod:
+    'GET' | 'POST' | 'PUT' | 'DELETE'
 ;

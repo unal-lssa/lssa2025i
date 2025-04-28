@@ -3,6 +3,11 @@ architecture TicTacToe :
 
     component gateway ApiGateway
     component service UserService
+    {
+        endpoint getUser: GET "/users/{id}"
+        endpoint createUser: POST "/users"
+    }
+
     component service GameMatchingService
     component service GameEngineService
     component service RealTimeService
