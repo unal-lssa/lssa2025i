@@ -201,6 +201,19 @@ def generate_architecture(architecture):
                         source_name  # Mapeo de origen a destino
                     )
 
+    producer_backends = set()  # Conjuntos de backends productores
+    producer_backends_map = {}  # Mapeo de backends a sus productores
+    for comp_name, comp_conn in connections_data.items():
+        for incoming_conn in comp_conn.get("outgoing", []):
+            if incoming_conn.get("type") != "kafka_connector":
+                continue
+            target_name = incoming_conn.get("target")
+            if target_name and target_name in components_data:
+                target_comp_data = components_data.get(target_name)
+                if target_comp_data and target_comp_data.get("type") == "queue":
+                    producer_backends.add(comp_name)
+                    producer_backends_map[comp_name] = target_name
+
     # Preparar el mapa de rutas para los API Gateways
     api_gateway_routes = {}  # {gateway_name: {target: target, ...}}
     for comp_name, comp_data in components_data.items():
@@ -254,6 +267,12 @@ def generate_architecture(architecture):
                 generate_backend(
                     name,
                     connections={"kafka_connector_reverse": source_backends_map[name]},
+                )
+            elif name in producer_backends:
+                # Replicar la estructura de conexiones específica del fragmento original para productores
+                generate_backend(
+                    name,
+                    connections={"kafka_connector": producer_backends_map[name]},
                 )
             else:
                 # Backend no productor
