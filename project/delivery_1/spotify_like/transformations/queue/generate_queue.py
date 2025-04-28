@@ -1,6 +1,8 @@
 import os, textwrap
 
 
+# Src: https://github.com/vishnubob/wait-for-it
+# Used to wait for Kafka to be ready before starting the consumer/producer
 def write_wait_for_it_script(path):
     wait_for_it_code = textwrap.dedent(
         """

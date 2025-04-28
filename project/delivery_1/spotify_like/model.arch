@@ -36,11 +36,11 @@ architecture:
     connector db_connector auth_service -> auth_db
     connector db_connector playlist_service -> playlist_db
     
-    component backend uploader
-    component backend fileSaver
-    component queue uploadQueue
-    connector kafka_connector uploader -> uploadQueue 
-    connector kafka_connector uploadQueue -> fileSaver
+    component backend file_consumer
+    component backend file_producer
+    component queue upload_queue
+    connector kafka_connector file_consumer -> upload_queue
+    connector kafka_connector upload_queue -> file_producer
 
     component bucket music_storage
     component cdn songs_cdn
