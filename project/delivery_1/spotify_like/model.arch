@@ -37,9 +37,8 @@ architecture:
     connector db_connector playlist_service -> playlist_db
     
     component backend uploader
-    component backend fileSaver
-    connector kafka_connector topic=upload_topic group_id=uploader_group uploader -> uploadQueue 
-    connector kafka_connector topic=upload_topic group_id=saver_group uploadQueue -> fileSaver
+    component backend filesaver
+
 
     component bucket music_storage
     component cdn songs_cdn

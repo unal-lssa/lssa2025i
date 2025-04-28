@@ -103,6 +103,10 @@ def apply_transformations(model):
                 connections = component_connections.get(e.name, {})
                 generate_frontend(e.name, backend=backend_service if backend_service else target_name,
                                  connections=connections)
+            elif e.type == 'cdn':
+                generate_cdn(e.name)
+            elif e.type == 'bucket':
+                generate_bucket(e.name)
         
         elif e.__class__.__name__ == 'Database':
             generate_database(e.name, e.databaseType if hasattr(e, 'databaseType') else 'mysql')
@@ -123,10 +127,6 @@ def apply_transformations(model):
                 
             generate_api_gateway(e.name, route_map)
 
-        elif e.type == 'cdn':
-            generate_cdn(e.name)
-        elif e.type == 'bucket':
-            generate_bucket(e.name)
 
     generate_docker_compose(components, replicas, load_balancer_config, db_types)
     src = os.path.join(os.getcwd(), 'song.mp3')
