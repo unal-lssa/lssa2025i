@@ -141,6 +141,7 @@ graph TD
 Para el metamodelo se mantuvo un diseño simple de la gramática, que permite definir componentes y conectores, cada uno con su tipo respectivo. Para el alcance actual del proyecto, esta gramática es suficiente para describir la arquitectura del sistema.
 
 mermaid
+graph TD
 
 Model:
     'architecture' ':' elements*=Element
