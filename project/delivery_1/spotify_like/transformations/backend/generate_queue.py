@@ -5,7 +5,7 @@ import os, textwrap
 # Used to wait for Kafka to be ready before starting the consumer/producer
 def write_wait_for_it_script(path):
     wait_for_it_code = textwrap.dedent(
-"""
+        """
 #!/usr/bin/env bash
 # Use this script to test if a given TCP host/port are available
 
@@ -196,12 +196,12 @@ fi
     os.chmod(os.path.join(path, "wait-for-it.sh"), 0o755)  # Make it executable
 
 
-def generate_consumer(name):
+def generate_consumer(name, target):
     path = f"skeleton/{name}"
     os.makedirs(path, exist_ok=True)
 
     app_code = textwrap.dedent(
-"""
+        f"""
 from flask import Flask
 from kafka import KafkaConsumer
 import os
@@ -209,7 +209,7 @@ import threading
 
 app = Flask(__name__)
 
-KAFKA_BROKER = os.getenv("KAFKA_BROKER", "kafka:9092")
+KAFKA_BROKER = os.getenv("KAFKA_BROKER", "{target}:9092")
 KAFKA_TOPIC = os.getenv("KAFKA_TOPIC", "upload-topic")
 GROUP_ID = os.getenv("GROUP_ID", "saver-group")
 SAVE_PATH = os.getenv("SAVE_PATH", "/tmp")
@@ -224,8 +224,8 @@ consumer = KafkaConsumer(
 
 def consume_loop():
     for message in consumer:
-        filename = os.path.join(SAVE_PATH, "received_file")
-        print(f"Saving file to {filename}")
+        filename = os.path.join(SAVE_PATH, "received_file " + str(message.offset))
+        print(f"Saving file to " + filename)
         with open(filename, "wb") as f:
             f.write(message.value)
 
@@ -236,7 +236,7 @@ threading.Thread(target=consume_loop, daemon=True).start()
 
 @app.route("/health", methods=["GET"])
 def health_check():
-    return {"status": "consumer running"}, 200
+    return {{"status": "consumer running"}}, 200
 
 
 if __name__ == "__main__":
@@ -255,7 +255,7 @@ if __name__ == "__main__":
         requirements_str = "\n".join([f"RUN pip install {req}" for req in requirements])
         f.write(
             textwrap.dedent(
-f"""
+                f"""
 FROM python:3.11-slim
 WORKDIR /app
 COPY . /app
@@ -265,25 +265,25 @@ RUN chmod +x /app/wait-for-it.sh
 RUN apt-get update && apt-get install -y netcat-traditional
 {requirements_str}
 
-ENTRYPOINT ["/app/wait-for-it.sh", "kafka:9092", "--timeout=30", "--strict", "--"]
+ENTRYPOINT ["/app/wait-for-it.sh", "{target}:9092", "--timeout=30", "--strict", "--"]
 """
             )
         )
 
 
-def generate_producer(name):
+def generate_producer(name, target):
     path = f"skeleton/{name}"
     os.makedirs(path, exist_ok=True)
 
     app_code = textwrap.dedent(
-        """
+        f"""
 from flask import Flask, request, jsonify
 from kafka import KafkaProducer
 import os
 
 app = Flask(__name__)
 
-KAFKA_BROKER = os.getenv("KAFKA_BROKER", "kafka:9092")
+KAFKA_BROKER = os.getenv("KAFKA_BROKER", "{target}:9092")
 KAFKA_TOPIC = os.getenv("KAFKA_TOPIC", "upload-topic")
 
 producer = KafkaProducer(bootstrap_servers=KAFKA_BROKER)
@@ -294,8 +294,8 @@ def upload_file():
     file = request.files.get("file")
     if file:
         producer.send(KAFKA_TOPIC, file.read())
-        return jsonify({"status": "file uploaded"}), 200
-    return jsonify({"error": "No file provided"}), 400
+        return jsonify({{"status": "file uploaded"}}), 200
+    return jsonify({{"error": "No file provided"}}), 400
 
 
 if __name__ == "__main__":
@@ -314,7 +314,7 @@ if __name__ == "__main__":
         requirements_str = "\n".join([f"RUN pip install {req}" for req in requirements])
         f.write(
             textwrap.dedent(
-f"""
+                f"""
 FROM python:3.11-slim
 WORKDIR /app
 COPY . /app
@@ -324,7 +324,7 @@ RUN chmod +x /app/wait-for-it.sh
 RUN apt-get update && apt-get install -y netcat-traditional
 {requirements_str}
 
-ENTRYPOINT ["/app/wait-for-it.sh", "kafka:9092", "--timeout=30", "--strict", "--"]
+ENTRYPOINT ["/app/wait-for-it.sh", "{target}:9092", "--timeout=30", "--strict", "--"]
 """
             )
         )

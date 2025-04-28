@@ -27,10 +27,6 @@ def generate_docker_compose(
 
         db = None
         port_counter = 8001
-        network_name = sorted_components.get("network", "architecture_network")
-        print("SORTED COMPONENTS")
-        print("=====================================")
-        print(sorted_components)
 
         for name, ctype in sorted_components.items():
             if ctype == "database" or ctype == "db":
@@ -229,8 +225,6 @@ def generate_docker_compose(
             f.write("      ZOOKEEPER_TICK_TIME: 2000\n")
             f.write("    ports:\n")
             f.write("      - '2181:2181'\n")
-            f.write("    networks:\n")
-            f.write(f"      - {network_name}\n")
 
         queue_id = 1
         for name in queues:
@@ -246,17 +240,11 @@ def generate_docker_compose(
             f.write(f"      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'\n")
             f.write("    ports:\n")
             f.write(f"      - '{9092 + (queue_id - 1)}:{9092 + (queue_id - 1)}'\n")
-            f.write("    networks:\n")
-            f.write(f"      - {network_name}\n")
             f.write("    depends_on:\n")
             f.write("      - zookeeper\n")
             queue_id += 1
 
         # this MUST be at the end of the file
-        f.write("\nnetworks:\n")
-        f.write(f"  {network_name}:\n")
-        f.write("    driver: bridge\n")
-
         if has_cdn:
             f.write("\nvolumes:\n")
             f.write("  nginx_cache:\n")
