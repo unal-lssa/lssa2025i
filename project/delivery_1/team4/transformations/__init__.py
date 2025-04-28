@@ -1,4 +1,4 @@
-from transformations import database, gateway, frontend, service
+from transformations import database, gateway, frontend, service, broker
 
 
 def apply_transformations(model):
@@ -10,12 +10,12 @@ def apply_transformations(model):
             connectors.append(
                 {"from": e.from_.name, "to": e.to_.name, "type": e.to_.type}
             )
-            
+
     for e in model.elements:
         if e.__class__.__name__ == "Component":
             components[e.name] = e
             # if e.type == "database":
-            #     database.generate_database(e.name)
+            #    database.generate_database(e.name)
             if e.type == "gateway":
                 gateway.generate_gateway(e.name, model)
             if e.type == "service":
@@ -44,4 +44,6 @@ def apply_transformations(model):
                     None,
                 )
                 frontend.generate_frontend(e.name, api_gateway, real_time_service)
+            if e.type == "broker":
+                broker.generate_broker(e.name)
     # generate_docker_compose(components)
