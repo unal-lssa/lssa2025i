@@ -224,7 +224,7 @@ def generate_docker_compose(
 
         queues = {name: ctype for name, ctype in components.items() if ctype == "queue"}
         if len(queues) > 0:
-            f.write("\n  zookeper:\n")
+            f.write("\n  zookeeper:\n")
             f.write("    image: confluentinc/cp-zookeeper:7.9.0\n")
             f.write("    container_name: zookeeper\n")
             f.write("    environment:\n")
