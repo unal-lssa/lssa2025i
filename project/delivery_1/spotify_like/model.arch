@@ -10,6 +10,10 @@ architecture:
     component backend playlist_service
     component api_gateway api_gateway_comp
 
+    component backend file_consumer
+    component backend file_producer
+    component queue upload_queue
+
     component db catalog_db elasticsearch
     component db user_db postgresql
     component db auth_db postgresql
@@ -25,6 +29,7 @@ architecture:
     connector http api_gateway_comp -> user_lb
     connector http api_gateway_comp -> auth_lb
     connector http api_gateway_comp -> playlist_lb
+    connector http api_gateway_comp ->file_producer
 
     connector http catalog_lb -> catalog_service
     connector http user_lb -> user_service  
@@ -36,9 +41,6 @@ architecture:
     connector db_connector auth_service -> auth_db
     connector db_connector playlist_service -> playlist_db
     
-    component backend file_consumer
-    component backend file_producer
-    component queue upload_queue
     connector kafka_connector file_consumer -> upload_queue
     connector kafka_connector upload_queue -> file_producer
 
