@@ -4,7 +4,7 @@ Model:
 ;
 
 Element:
-    Component | Connector | Network
+    Component | Connector
 ;
 
 Component:
@@ -43,7 +43,4 @@ ConnectorType:
     'http' | 'db_connector' | 'kafka_connector'
 ;
 
-Network:
-    'network' networkName=ID
-;
 

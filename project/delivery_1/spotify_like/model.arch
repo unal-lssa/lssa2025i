@@ -1,7 +1,5 @@
 architecture:
 
-    network arch_network
-
     component frontend app_fe
 
     component backend catalog_service
