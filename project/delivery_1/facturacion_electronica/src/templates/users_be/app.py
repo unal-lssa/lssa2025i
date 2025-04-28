@@ -1,9 +1,14 @@
 import hashlib
+import logging
 import os
 import socket
 
 import mysql.connector
+from auth_utils import limit_exposure, token_required  # type: ignore
 from flask import Flask, jsonify, request
+
+# Configurar el nivel de logging
+logging.basicConfig(level=logging.DEBUG)
 
 # Configurar el entorno de Flask
 app = Flask(__name__)
@@ -40,6 +45,23 @@ def ping():
     )
 
 
+# Endpoint para listar las tablas de la base de datos
+@app.route("/list-tables", methods=["GET"])
+def list_tables():
+    conn = mysql.connector.connect(
+        host=USERS_DB_HOST,
+        user='root',
+        password='root',
+        database='users_db'
+    )
+    cursor = conn.cursor()
+    cursor.execute("SHOW TABLES")
+    tables = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return jsonify(tables=[table[0] for table in tables]), 200
+
+
 # Endpoint de autenticación
 @app.route("/auth", methods=["POST"])
 def authenticate():
@@ -74,9 +96,16 @@ def authenticate():
     return jsonify({"doc_id": user["doc_id"], "role_name": user["role_name"]}), 200
 
 
-# Endpoint para listar las tablas de la base de datos
-@app.route("/list-tables", methods=["GET"])
-def list_tables():
+# Endpoint para registrar un usuario
+@app.route("/register", methods=["POST"])
+#@limit_exposure()
+@token_required(role_name="admin")
+def register():
+    """Endpoint de registro de usuario"""
+    # user_data = { doc_type, doc_id, first_name, last_name, role_name, legal_name }
+    user_data = request.get_json()
+    # Pendiente agregar validaciones de los datos del usuario
+    # Llamado al servicio de registro
     conn = mysql.connector.connect(
         host=USERS_DB_HOST,
         user='root',
@@ -84,11 +113,13 @@ def list_tables():
         database='users_db'
     )
     cursor = conn.cursor()
-    cursor.execute("SHOW TABLES")
-    tables = cursor.fetchall()
+    cursor.execute("INSERT INTO users (doc_type, doc_id, first_name, last_name, role_name, legal_name, pwd) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                   (user_data["doc_type"], user_data["doc_id"], user_data["first_name"], user_data["last_name"], user_data["role_name"], user_data["legal_name"], "123456"))
+    conn.commit()
     cursor.close()
     conn.close()
-    return jsonify(tables=[table[0] for table in tables]), 200
+    logging.debug(f"User registered: {user_data}")
+    return jsonify(status="created"), 201
 
 
 

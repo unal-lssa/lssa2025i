@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from functools import wraps
 
 import jwt
-from flask import Flask, jsonify, request
+from flask import jsonify, request
 
 # Configurar el nivel de logging
 logging.basicConfig(level=logging.DEBUG)
@@ -37,6 +37,7 @@ def token_required(role_name=None):
         @wraps(f)
         def decorated(*args, **kwargs):
             token = request.headers.get("Authorization")
+            logging.debug(f"Token received: {token}")
             if not token:
                 logging.warning("Missing token in request headers")
                 return jsonify({"message": "Missing token"}), 403

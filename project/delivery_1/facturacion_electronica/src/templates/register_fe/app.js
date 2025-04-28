@@ -43,8 +43,6 @@ app.get('/login', async (req, res) => {
 app.post('/login', async (req, res) => {
     try {
         const { doc_id, password } = req.body;
-        console.log("doc_id: ", doc_id);
-        console.log("password: ", password);
 
         // Llamada al API Gateway para autenticar al usuario
         const response = await axios.post(`${API_GATEWAY_URL}/login`, { doc_id, password });
@@ -75,8 +73,71 @@ app.get('/home', async (req, res) => {
                 <body>
                     <p>Your token is ${token}</p>
                 </body>
+                <form action="/register?token=${token}" method="POST">
+                    <label>Tipo de registro:</label><br>
+                    <input type="radio" id="comprador" name="role_name" value="Comprador" onclick="toggleLegalName()" required>
+                    <label for="comprador">Comprador</label><br>
+                    <input type="radio" id="vendedor" name="role_name" value="Vendedor" onclick="toggleLegalName()" required>
+                    <label for="vendedor">Vendedor</label><br><br>
+
+                    <label>Tipo de documento:</label><br>
+                    <input type="radio" id="cc" name="doc_type" value="C.C" required>
+                    <label for="cc">C.C</label><br>
+                    <input type="radio" id="nit" name="doc_type" value="NIT" required>
+                    <label for="nit">NIT</label><br><br>
+
+                    <label for="doc_id">Número de documento:</label><br>
+                    <input type="text" id="doc_id" name="doc_id" required><br><br>
+
+                    <label for="first_name">Nombres:</label><br>
+                    <input type="text" id="first_name" name="first_name" required><br><br>
+
+                    <label for="last_name">Apellidos:</label><br>
+                    <input type="text" id="last_name" name="last_name" required><br><br>
+
+                    <div id="legal_name_field" style="display: none;">
+                        <label for="legal_name">Razón Social:</label><br>
+                        <input type="text" id="legal_name" name="legal_name"><br><br>
+                    </div>
+
+                    <button type="submit">Registrar</button>
+                </form>
+
+                <script>
+                function toggleLegalName() {
+                    const vendedorSelected = document.getElementById('vendedor').checked;
+                    const legalNameField = document.getElementById('legal_name_field');
+                    legalNameField.style.display = vendedorSelected ? 'block' : 'none';
+                }
+                </script>
             </html>
         `);
+    } catch (err) {
+        res.status(500).send("Error contacting backend" + err);
+    }
+});
+
+// Endpoint para el registro
+app.post('/register', async (req, res) => {
+    try {
+        const { doc_type, doc_id, first_name, last_name, role_name, legal_name } = req.body;
+
+        // Obtener el token de la query string
+        const token = req.query.token;
+        console.log("Token: ", token);
+
+        // Llamada al API Gateway para registrar al usuario con el token
+        // Se agrega el token a la cabecera de la peticion
+        const headers = { Authorization: `Bearer ${token}` };
+        const response = await axios.post(`${API_GATEWAY_URL}/register`, { doc_type, doc_id, first_name, last_name, role_name, legal_name }, { headers });
+        console.log("Response: ", response.data);
+
+        // Si el registro es exitoso, redirigir a la pagina de inicio
+        if (response.status === 201) {
+            res.redirect('/home?token=' + response.data.token);
+        } else {
+            res.status(500).send("Error registering user");
+        }
     } catch (err) {
         res.status(500).send("Error contacting backend" + err);
     }

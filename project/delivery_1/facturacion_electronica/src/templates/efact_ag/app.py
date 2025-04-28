@@ -1,11 +1,9 @@
-import hashlib
 import logging
 import os
 import socket
-from functools import wraps
 
-import jwt
 import requests
+from auth_utils import limit_exposure, token_required  # type: ignore
 from flask import Flask, jsonify, request
 
 # Configurar el nivel de logging
@@ -52,6 +50,16 @@ def ping():
     )
 
 
+# Endpoint ping para verificar la comunicacion con el microservicio de usuarios
+@app.route("/ping-users", methods=["GET"])
+def ping_users():
+    # Peticion al microservicio de usuarios atraves de un balanceador de carga
+    res = requests.get(
+        f"http://{USERS_LB_HOST}:{USERS_LB_PORT}/ping"
+    )
+    return jsonify(res.json()), res.status_code
+
+
 # Endpoint para login
 @app.route("/login", methods=["POST"])
 def login():
@@ -82,14 +90,36 @@ def login():
         return jsonify({"error": "Error en el servicio de autenticación"}), 500
 
 
-# Endpoint ping para verificar la comunicacion con el microservicio de usuarios
-@app.route("/ping-users", methods=["GET"])
-def ping_users():
-    # Peticion al microservicio de usuarios atraves de un balanceador de carga
-    res = requests.get(
-        f"http://{USERS_LB_HOST}:{USERS_LB_PORT}/ping"
-    )
-    return jsonify(res.json()), res.status_code
+# Endpoint para registrar un usuario
+@app.route("/register", methods=["POST"])
+#@limit_exposure()
+@token_required(role_name="admin")
+def register():
+    """Endpoint de registro de usuario"""
+    # Obtener el token del header de la solicitud
+    token = request.headers.get("Authorization")
+    # user_data = { doc_type, doc_id, first_name, last_name, role_name, legal_name }
+    user_data = request.get_json()
+    # Pendiente agregar validaciones de los datos del usuario
+    logging.debug(f"Registering user: {user_data}")
+
+    # Llamado al servicio de registro
+    try:
+        # Enviar al request el token
+        headers = {"Authorization": token}
+        response = requests.post(
+            f"http://{USERS_LB_HOST}:{USERS_LB_PORT}/register",
+            json=user_data,
+            headers=headers,
+        )
+        logging.debug(f"Response from registration service: {response.json()}")
+        if response.status_code == 201:
+            return jsonify(status="created"), 201
+        else:
+            return jsonify({"error": "Error en el registro"}), 400
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error al conectar con el servicio de registro: {e}")
+        return jsonify({"error": "Error en el servicio de registro"}), 500
 
 
 if __name__ == "__main__":
