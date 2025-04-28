@@ -2,11 +2,13 @@ architecture:
 
     component frontend app_fe
 
+    component api_gateway api_gateway_comp
+     
+    component backend test_service 
     component backend catalog_service
     component backend user_service
     component backend auth_service
     component backend playlist_service
-    component api_gateway api_gateway_comp
 
     component db catalog_db elasticsearch
     component db user_db postgresql

@@ -11,12 +11,12 @@ Component:
     LoadBalancer | StandardComponent | Database | ApiGateway
 ;
 
-StandardComponent:
-    'component' type=StandardComponentType name=ID
-;
-
 LoadBalancer:
     'component' 'loadbalancer' name=ID instanceCount=INT target=[Component]
+;
+
+StandardComponent:
+    'component' type=StandardComponentType name=ID
 ;
 
 StandardComponentType:
