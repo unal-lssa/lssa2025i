@@ -5,7 +5,7 @@ FROM node:18-alpine
 WORKDIR /app
 
 # Copiar archivos de configuración
-COPY . .
+COPY . /app
 
 # Instalar dependencias
 RUN npm install

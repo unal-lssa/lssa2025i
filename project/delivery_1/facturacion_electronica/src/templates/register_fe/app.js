@@ -23,20 +23,15 @@ app.get('/', async (req, res) => {
         res.send(`
             <html>
                 <body>
-                    <!-- Formulario para crear un nuevo vendedor -->
-                    <h2>Crear nuevo vendedor</h2>
-                    <form action="/seller" method="POST">
-                        <!-- Dummy -->
+                    <!-- Formulario para crear un nuevo usuario -->
+                    <h2>Crear nuevo usuario</h2>
+                    <form action="/user" method="POST">
                         <label for="name">Nombre:</label>
                         <input type="text" id="name" name="name" required>
-                        <button type="submit">Crear</button>
-                    </form>
-                    <!-- Formulario para crear un nuevo comprador -->
-                    <h2>Crear nuevo comprador</h2>
-                    <form action="/buyer" method="POST">
-                        <!-- Dummy -->
-                        <label for="name">Nombre:</label>
-                        <input type="text" id="name" name="name" required>
+                        <label for="role_name">Rol:</label>
+                        <input type="text" id="role_name" name="role_name" required>
+                        <label for="doc_id">ID Documento:</label>
+                        <input type="text" id="doc_id" name="doc_id" required>
                         <button type="submit">Crear</button>
                     </form>
                 </body>
@@ -48,18 +43,9 @@ app.get('/', async (req, res) => {
 });
 
 // Endpoint para crear un nuevo usuario con role seller
-app.post('/seller', async (req, res) => {
-    // Role seller
-    const seller = req.body.seller;
-    await axios.post(`${API_GATEWAY_URL}/user`, {seller});
-    res.redirect('/');
-});
-
-// Endpoint para crear un nuevo usuario con role buyer
-app.post('/buyer', async (req, res) => {
-    // Role buyer
-    const seller = req.body.seller;
-    await axios.post(`${API_GATEWAY_URL}/user`, {seller});
+app.post('/user', async (req, res) => {
+    const { name, role_name, doc_id } = req.body;
+    await axios.post(`${API_GATEWAY_URL}/users`, { name, role_name, doc_id });
     res.redirect('/');
 });
 

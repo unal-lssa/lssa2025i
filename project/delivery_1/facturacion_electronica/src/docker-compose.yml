@@ -1,0 +1,95 @@
+services:
+
+  register_fe:
+    image: register_fe_img
+    build:
+      context: skeleton/register_fe
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5001"
+    env_file: .env
+    networks:
+      - public_network
+    container_name: register_fe
+
+  admin_fe:
+    image: admin_fe_img
+    build:
+      context: skeleton/admin_fe
+      dockerfile: Dockerfile
+    ports:
+      - "5003:5003"
+    env_file: .env
+    networks:
+      - public_network
+    container_name: admin_fe
+
+  api_gateway:
+    image: afact_ag_img
+    build:
+      context: skeleton/efact_ag
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    env_file: .env
+    networks:
+      - private_network
+      - public_network
+    container_name: afact_ag
+
+  auth_service:
+    image: auth_be_img
+    build:
+      context: skeleton/auth_be
+      dockerfile: Dockerfile
+    env_file: .env
+    networks:
+      - private_network
+    container_name: auth_be
+
+  users_lb:
+    image: users_lb_img
+    build:
+      context: skeleton/users_lb
+      dockerfile: Dockerfile
+    ports:
+      - "5004:5004"
+    env_file: .env
+    networks:
+      - private_network
+    container_name: users_lb
+    depends_on:
+      - users_be
+
+  users_be:
+    image: users_be_img
+    build:
+      context: skeleton/users_be
+      dockerfile: Dockerfile
+    ports:
+      - "5007:5007"
+    env_file: .env
+    networks:
+      - private_network
+    container_name: users_be
+    depends_on:
+      - users_db
+
+  users_db:
+    image: mysql:8
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=users_db
+    volumes:
+      - ./templates/users_db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - '3306:3306'
+    container_name: users_db
+    networks:
+      - private_network
+
+networks:
+  private_network:
+    driver: bridge
+  public_network:
+    driver: bridge

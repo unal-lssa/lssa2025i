@@ -8,7 +8,6 @@ Element:
 
 Component:
     'component' type=ComponentType name=ID
-    ('instances' instances=INT)?
 ;
 
 Connector:

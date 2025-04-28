@@ -19,46 +19,23 @@ const API_GATEWAY_URL = `http://${API_GATEWAY_HOST}:${API_GATEWAY_PORT}`;
 // Index
 app.get('/', async (req, res) => {
     try {
-        // Respuesta HTML
+        // Fetch users from the API Gateway
+        const response = await axios.get(`${API_GATEWAY_URL}/users`);
+        const users = response.data.users;
+
+        // Generate HTML to display the list of users
+        let usersList = '<ul>';
+        users.forEach(user => {
+            usersList += `<li>Nombre: ${user.name}, Rol: ${user.role_name}, ID Documento: ${user.doc_id}</li>`;
+        });
+        usersList += '</ul>';
+
+        // Send the response with the list of users
         res.send(`
             <html>
                 <body>
-                    <!-- Formulario para leer facturas -->
-                    <h2>Leer facturas</h2>
-                    <form action="/invoice" method="GET">
-                        <!-- Dummy -->
-                        <label for="name">ID Factura:</label>
-                        <input type="text" id="name" name="name" required>
-                        <button type="submit">Leer</button>
-                    </form>
-                </body>
-            </html>
-        `);
-    } catch (err) {
-        res.status(500).send("Error contacting backend");
-    }
-});
-
-// Endpoint para leer facturas
-app.get('/invoice', async (req, res) => {
-    // Dummy
-    await axios.get(`${API_GATEWAY_URL}/invoice`);
-    res.redirect('/');
-});
-
-// Endpoint para leer factura por id
-app.get('/invoice/:id', async (req, res) => {
-    // Dummy
-    const { id } = req.params;
-    try {
-        // Llamada al API Gateway
-        const response = await axios.get(`${API_GATEWAY_URL}/invoice/${id}`);
-        // Respuesta HTML
-        res.send(`
-            <html>
-                <body>
-                    <h2>Factura ${id}</h2>
-                    <pre>${JSON.stringify(response.data, null, 2)}</pre>
+                    <h2>Lista de Usuarios</h2>
+                    ${usersList}
                 </body>
             </html>
         `);
