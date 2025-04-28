@@ -15,11 +15,11 @@ def apply_transformations(model):
         if e.__class__.__name__ == "Component":
             components[e.name] = e
             # if e.type == "database":
-            #     database.generate_database(e.name)
-            """ if e.type == "gateway":
+            #    database.generate_database(e.name)
+            if e.type == "gateway":
                 gateway.generate_gateway(e.name, model)
             if e.type == "service":
-                service.generate_service(e) """
+                service.generate_service(e)
             if e.type == "frontend":
                 api_gateway = next(
                     (
