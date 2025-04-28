@@ -295,6 +295,25 @@ def generate_docker_compose(architecture):
                  f.write("      - zookeeper\n") # Dependencia explícita de Zookeeper en depends_on
                  queue_id += 1 # Incrementar para la próxima cola
 
+        # --- Sexta pasada: Generar servicios del bucket ---
+        buckets = {name: comp_data for name, comp_data in components_data.items() if comp_data.get("type") == "bucket"}
+        # Inicializar un contador de puertos específico para buckets
+        bucket_port_counter = 4566
+        if len(buckets) > 0:
+            for name, comp_data in buckets.items():
+                f.write(f"  {name}:\n")
+                f.write(f"    container_name: ${{LOCALSTACK_DOCKER_NAME:-{name}}}\n")
+                f.write(f"    build:\n")
+                f.write(f"      context: ./{name}\n")
+                f.write(f"    ports:\n")
+                f.write(f"      - '{bucket_port_counter}:4566'\n")
+                f.write(f"    environment:\n")
+                f.write(f"      - DEBUG=${{DEBUG:-0}}\n")
+                f.write(f"    volumes:\n")
+                f.write(f"      - ${{LOCALSTACK_VOLUME_DIR:-./volume}}:/var/lib/localstack\n")
+                f.write(f"      - /var/run/docker.sock:/var/run/docker.sock\n")
+                bucket_port_counter += 1
+
         # --- Sección de Volumes (debe estar al final del archivo docker-compose) ---
         if has_cdn:
              f.write("\nvolumes:\n")

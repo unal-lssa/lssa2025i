@@ -181,7 +181,7 @@ def generate_architecture(architecture):
                  if target_comp_data and target_comp_data.get("type") == "queue" and conn_type in ["kafka_connector", "queue_connector"]:
                      producer_backends_derived.add(comp_name) # Este componente es un productor
 
-    print("Producer backends derived:", producer_backends_derived) # Para depuración
+    # print("Producer backends derived:", producer_backends_derived) # Para depuración
 
     # Preparar el mapa de rutas para los API Gateways
     api_gateway_routes = {} # {gateway_name: {target: target, ...}}
@@ -196,7 +196,7 @@ def generate_architecture(architecture):
                     route_map[target_name] = target_name # Mapeo target a target
             api_gateway_routes[comp_name] = route_map
 
-    print("API Gateway routes:", api_gateway_routes) # Para depuración
+    # print("API Gateway routes:", api_gateway_routes) # Para depuración
 
     # Iterar sobre cada componente definido en el diccionario de arquitectura
     for name, comp_data in components_data.items():
@@ -226,7 +226,7 @@ def generate_architecture(architecture):
 
             # Verificar si este backend es un productor (usando el conjunto derivado)
             if name in producer_backends_derived:
-                print("Generating producer for backend") # Conservar la impresión original
+                # print("Generating producer for backend") # Conservar la impresión original
                 # Replicar la estructura de conexiones específica del fragmento original para productores
                 generate_backend(
                     name,
