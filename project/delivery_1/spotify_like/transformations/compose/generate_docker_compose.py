@@ -72,7 +72,7 @@ def generate_docker_compose(components, replicas=None, load_balancer_config=None
                     f.write("      - '9200:9200'\n")
         
         for name, ctype in sorted_components.items():
-            if ctype == "database" or ctype == "db":
+            if ctype == "database" or ctype == "db" or ctype == "bucket" or ctype == "cdn":
                 continue
                 
             # Check if the component has replicas defined
