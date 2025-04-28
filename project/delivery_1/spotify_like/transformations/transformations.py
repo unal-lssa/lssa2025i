@@ -100,15 +100,12 @@ def apply_transformations(model):
                 generate_database(e.name, db_types.get(e.name, 'mysql'))
             elif e.type == 'backend':
                 connections = component_connections.get(e.name, {})
-                
                 # Determine database type based on connection
                 backend_db_type = 'mysql'  # default
                 if connections and 'db_connector' in connections:
                     connected_db = connections['db_connector']
-                    for db in connected_db:
-                        if db in db_types:
-                            backend_db_type = db_types[db]
-                            break
+                    if connected_db in db_types:
+                        backend_db_type = db_types[connected_db]
                 generate_backend(e.name, database=database_name, database_type=backend_db_type, connections=connections)
             elif e.type == 'frontend':
                 # Connect frontend to load balancer if it exists, otherwise connect to backend
