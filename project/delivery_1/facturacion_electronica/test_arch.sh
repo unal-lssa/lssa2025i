@@ -41,7 +41,7 @@ if [ "$1" == "-c" ]; then
 fi
 
 # # === Configuración de Pruebas ===
-REGISTER_FRONTEND_URL="http://localhost:5001/"
+#REGISTER_FRONTEND_URL="http://localhost:5001/"
 # GATEWAY_URL="http://localhost:5000"
 # USER="user1"
 # USER_PASSWORD="password123"

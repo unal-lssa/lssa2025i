@@ -69,7 +69,7 @@ def token_required(role=None):
     return decorator
 
 
-# Endpoint ping
+# Endpoint ping para verificar la comunicacion con el API Gateway
 @app.route("/ping", methods=["GET"])
 def ping():
     return (
@@ -77,7 +77,7 @@ def ping():
             {
                 "status": 200,
                 "data": {
-                    "Client IP": request.remote_addr,
+                    "Frontend IP": request.remote_addr,
                     "API Gateway IP": socket.gethostbyname(socket.gethostname()),
                 },
                 "message": "Pong desde el API Gateway",
@@ -108,7 +108,18 @@ def auth():
     return jsonify({"message": "Invalid credentials"}), 401
 
 
+# Endpoint ping para verificar la comunicacion con el microservicio de usuarios
+@app.route("/ping-users", methods=["GET"])
+def ping_users():
+    # Peticion al microservicio de usuarios atraves de un balanceador de carga
+    res = requests.get(
+        f"http://{USERS_LB_HOST}:{USERS_LB_PORT}/ping"
+    )
+    return jsonify(res.json()), res.status_code
+
+
 # Endpoint para registrar usuarios
+# Ajustar el endpoint segun el microservicio de registro de usuarios
 @app.route("/user", methods=["POST"])
 @limit_exposure
 @token_required()
@@ -125,6 +136,7 @@ def register_user():
 
 
 # Endpoint para consultar usuarios, solo para admin
+# Ajustar el endpoint segun el microservicio de consulta de usuarios
 @app.route("/users", methods=["GET"])
 @limit_exposure
 @token_required(role="admin")
@@ -141,6 +153,7 @@ def get_users():
 
 
 # Endpoint para consultar un usuario por DOC_ID
+# Ajustar el endpoint segun el microservicio de consulta de usuarios
 @app.route("/user/<string:doc_id>", methods=["GET"])
 @limit_exposure
 @token_required()
@@ -157,6 +170,7 @@ def get_user(doc_id):
 
 
 # Endpoint para registrar facturas
+# Ajustar el endpoint segun el microservicio de registro de facturas
 @app.route("/invoice", methods=["POST"])
 @limit_exposure
 @token_required()
@@ -173,6 +187,7 @@ def register_invoice():
 
 
 # Endpoint para consultar facturas
+# Ajustar el endpoint segun el microservicio de consulta de facturas
 @app.route("/invoices", methods=["GET"])
 @limit_exposure
 @token_required(role="admin")
@@ -189,6 +204,7 @@ def get_invoices():
 
 
 # Endpoint para consultar una factura por ID_INVOICE
+# Ajustar el endpoint segun el microservicio de consulta de facturas
 @app.route("/invoice/<string:id_invoice>", methods=["GET"])
 @limit_exposure
 @token_required(role="admin")

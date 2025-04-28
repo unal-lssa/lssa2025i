@@ -129,12 +129,16 @@ def generate_load_balancer(element, target):
     # Reemplazar los marcadores de posición en la plantilla
     VALOR = (
         ";\n".join(
-            f"server {target['name']}_{i}" + f":{int(target['port']) + i}"
+            #f"server {target['name']}_{i}" + f":{int(target['port']) + i}"
+            #f"server {target['name']}_{i}" + f":{get_load_balancer_ports(name)}"
+            f"server {target['name']}_{i}" + f":{get_backend_ports(target['name'])}"
             for i in range(target["instances"])
         )
         + ";"
     )
     template = template.replace("###Targets###", VALOR)
+    VALOR = get_load_balancer_ports(name)
+    template = template.replace("###Load Balancer Port###", str(VALOR))
 
     # Guardar el archivo generado
     with open(os.path.join(skeleton_dir, "nginx.conf"), "w") as output_file:
@@ -259,6 +263,7 @@ def generate_docker_compose(skeleton):
                 networks = f"    networks:\n" f"      - private_net\n"
             if instances > 1:
                 for i in range(instances):
+                    environment = f"    environment:\n      - MYSQL_ROOT_PASSWORD=root\n      - MYSQL_DATABASE={component['name']}_{i}\n" if components in "database" else ""
                     template_compose += (
                         f"  {component['name']}_{i}:\n"
                         f"    build: ./{component['name']}\n"
@@ -266,9 +271,11 @@ def generate_docker_compose(skeleton):
                         f"    ports:\n"
                         f"      - {int(component['port']) + i}:{component['port']}\n"
                         f"    env_file: .env\n"
+                        f"{environment}"
                         f"{networks}\n"
                     )
             else:
+                environment = f"    environment:\n      - MYSQL_ROOT_PASSWORD=root\n      - MYSQL_DATABASE={component['name']}\n" if components in "database" else ""
                 template_compose += (
                     f"  {component['name']}:\n"
                     f"    build: ./{component['name']}\n"
@@ -276,6 +283,7 @@ def generate_docker_compose(skeleton):
                     f"    ports:\n"
                     f"      - {component['port']}:{component['port']}\n"
                     f"    env_file: .env\n"
+                    f"{environment}"
                     f"{networks}\n"
                 )
     # Networks

@@ -24,7 +24,6 @@ app.get('/', async (req, res) => {
             <html>
                 <body>
                     <!--DEBUG-->
-                    
                     <!-- Formulario para crear un nuevo vendedor -->
                     <h2>Crear nuevo vendedor</h2>
                     <form action="/seller" method="POST">
@@ -49,7 +48,7 @@ app.get('/', async (req, res) => {
     }
 });
 
-// Endpoint ping
+// Endpoint ping para verificar la comunicacion con el API Gateway
 app.get('/ping', async (req, res) => {
     try {
         const response = await axios.get(`${API_GATEWAY_URL}/ping`);
@@ -65,7 +64,24 @@ app.get('/ping', async (req, res) => {
     }
 });
 
+// Endpoint ping para verificar la comunicacion con el Microservicio de Users
+app.get('/ping-users', async (req, res) => {
+    try {
+        const response = await axios.get(`${API_GATEWAY_URL}/ping-users`);
+        res.send(
+            {
+                status: response.status,
+                data: response.data,
+                message: "Ping to User Microservice successful"
+            }
+        );
+    } catch (err) {
+        res.status(500).send("Error contacting User Microservice" + err);
+    }
+});
+
 // Endpoint para crear un nuevo usuario con role seller
+// Ajustar el endpoint según la API del microservicio de usuarios
 app.post('/seller', async (req, res) => {
     // Role seller
     const seller = req.body.seller;
@@ -74,6 +90,7 @@ app.post('/seller', async (req, res) => {
 });
 
 // Endpoint para crear un nuevo usuario con role buyer
+// Ajustar el endpoint según la API del microservicio de usuarios
 app.post('/buyer', async (req, res) => {
     // Role buyer
     const seller = req.body.seller;
