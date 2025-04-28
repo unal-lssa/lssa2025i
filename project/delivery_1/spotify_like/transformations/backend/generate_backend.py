@@ -1,7 +1,8 @@
 import os, textwrap
 from .index_routes import INDEX_ROUTES
 
-def generate_backend(name, database=None, database_type='mysql', connections=None):
+def generate_backend(name, database=None, database_type=None, connections=None):
+    print(f"Generating backend for {name} with database {database} and type {database_type}")
     path = f'skeleton/{name}'
     os.makedirs(path, exist_ok=True)
     
@@ -29,29 +30,29 @@ def generate_backend(name, database=None, database_type='mysql', connections=Non
                     index_route_data = INDEX_ROUTES[database_type.lower()]
                     requirements.extend(index_route_data['requirements'])
                     app_code = textwrap.dedent(f"""
-                        from flask import Flask, jsonify
-                        
+from flask import Flask, jsonify
 
-                        app = Flask(__name__)
-                        
-                        {index_route_data['code'](target)}
 
-                        if __name__ == '__main__':
-                            app.run(host='0.0.0.0', port=80)
+app = Flask(__name__)
+
+{index_route_data['code'](target)}
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=80)
                     """)
                 except KeyError:
                     requirements.append("mysql-connector-python")
                     app_code = textwrap.dedent("""
-                        from flask import Flask, jsonify
+from flask import Flask, jsonify
 
-                        app = Flask(__name__)
-                        
-                        @app.route('/')
-                        def hello():
-                            return jsonify({{"message": "Hello World from Backend", "database_connection": "not configured", "type": "Unknown"}})
+app = Flask(__name__)
 
-                        if __name__ == '__main__':
-                            app.run(host='0.0.0.0', port=80)
+@app.route('/')
+def hello():
+    return jsonify({{"message": "Hello World from Backend", "database_connection": "not configured", "type": "Unknown"}})
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=80)
                     """)
 
     with open(os.path.join(path, 'app.py'), 'w', encoding='utf8') as f:

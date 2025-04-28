@@ -8,27 +8,43 @@ from .cdn.generate_cdn import generate_cdn
 from .bucket.generate_bucket import generate_bucket, move_file
 import os
 
+# def process_connectors(model):
+#     """Process all connectors in the model and return a mapping of component connections."""
+#     component_connections = {}
+    
+#     for e in model.elements:
+#         if e.__class__.__name__ == 'Connector':
+#             source_component = getattr(e, 'from').name
+#             conn_type = e.type
+#             targets = e.to if isinstance(e.to, list) else [e.to]  
+
+#             if source_component not in component_connections:
+#                 component_connections[source_component] = {}
+
+#             if conn_type not in component_connections[source_component]:
+#                 component_connections[source_component][conn_type] = []
+
+#             for target in targets:
+#                 component_connections[source_component][conn_type].append(target.name)
+    
+#     print(f"Component connections: {component_connections}")
+#     return component_connections
+
 def process_connectors(model):
     """Process all connectors in the model and return a mapping of component connections."""
     component_connections = {}
-    
     for e in model.elements:
         if e.__class__.__name__ == 'Connector':
+            # Use getattr to avoid 'from' reserved keyword issue
             source_component = getattr(e, 'from').name
+            to_component = e.to.name
             conn_type = e.type
-            targets = e.to if isinstance(e.to, list) else [e.to]  # Always work with a list
-
             if source_component not in component_connections:
                 component_connections[source_component] = {}
-
-            if conn_type not in component_connections[source_component]:
-                component_connections[source_component][conn_type] = []
-
-            for target in targets:
-                component_connections[source_component][conn_type].append(target.name)
-    
-    print(f"Component connections: {component_connections}")
+            component_connections[source_component][conn_type] = to_component
     return component_connections
+
+
 
 def apply_transformations(model):
     components = {}
