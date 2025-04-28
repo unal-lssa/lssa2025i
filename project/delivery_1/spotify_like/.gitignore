@@ -1,0 +1,22 @@
+/skeleton
+
+// python cache
+__pycache__
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.egg-info
+*.egg
+*.whl
+*.mypy_cache
+*.pytest_cache
+*.coverage
+*.cover
+*.hypothesis
+*.tox
+
+# Environment
+.env
+env/
+venv/

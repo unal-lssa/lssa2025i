@@ -1,0 +1,46 @@
+Model:
+    'architecture' ':'
+        elements*=Element
+;
+
+Element:
+    Component | Connector
+;
+
+Component:
+    LoadBalancer | StandardComponent | Database | ApiGateway
+;
+
+StandardComponent:
+    'component' type=StandardComponentType name=ID
+;
+
+LoadBalancer:
+    'component' 'loadbalancer' name=ID instanceCount=INT target=[Component]
+;
+
+StandardComponentType:
+    'frontend' | 'backend' | 'bucket' | 'cdn' | 'queue'
+;
+
+Database:
+    'component' 'db' name=ID databaseType=DatabaseType
+;
+
+DatabaseType:
+    'postgresql' | 'mongodb' | 'elasticsearch'
+;
+
+ApiGateway:
+    'component' 'api_gateway' name=ID auth=Component
+;
+
+Connector:
+    'connector' type=ConnectorType from=[Component] '->' to=[Component]
+;
+
+ConnectorType:
+    'http' | 'db_connector' | 'kafka_connector'
+;
+
+
