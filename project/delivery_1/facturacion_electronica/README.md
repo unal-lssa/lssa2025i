@@ -139,6 +139,9 @@ graph TD
 
 ### Metamodelo
 Para el metamodelo se mantuvo un diseño simple de la gramática, que permite definir componentes y conectores, cada uno con su tipo respectivo. Para el alcance actual del proyecto, esta gramática es suficiente para describir la arquitectura del sistema.
+
+mermaid
+
 Model:
     'architecture' ':' elements*=Element
 ;
@@ -162,6 +165,8 @@ ComponentType:
 ConnectorType:
      'http' | 'db_conn' | 'lb_conn'
  ;
+
+ end
 
 La siguiente imagen describe el metamodelo:
 
