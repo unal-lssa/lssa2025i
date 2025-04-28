@@ -167,7 +167,6 @@ ConnectorType:
      'http' | 'db_conn' | 'lb_conn'
  ;
 
- end
 
 La siguiente imagen describe el metamodelo:
 
