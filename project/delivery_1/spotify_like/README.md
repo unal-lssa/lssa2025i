@@ -44,12 +44,16 @@ When a component is defined as the "from" side of a connector, appropriate code 
 ## Usage
 
 1. Define your architecture in `model.arch`
-2. Run the generator:
+2. Install the required dependencies:
+   ```
+   pip install textx 
+   ```
+3. Run the generator:
    ```
    python generation.py
    ```
-3. The generated skeleton will be available in the `skeleton` directory
-4. To run the system:
+4. The generated skeleton will be available in the `skeleton` directory
+5. To run the system:
    ```
    cd skeleton
    docker-compose up
