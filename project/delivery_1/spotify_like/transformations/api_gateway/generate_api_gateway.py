@@ -26,7 +26,10 @@ def generate_api_gateway(name, route_map):
 
             path_parts = full_path.split("/", 1)
             if not path_parts or path_parts[0] == '':
-                raise HTTPException(status_code=404, detail="Service not specified.")
+                return {{
+                    "status_code": 200,
+                    "content": "API-GATEWAY RUNNING CORRECTLY"
+                }}
 
             service = path_parts[0]
             remaining_path = path_parts[1] if len(path_parts) > 1 else ""

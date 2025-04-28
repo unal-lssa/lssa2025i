@@ -176,7 +176,10 @@ def generate_docker_compose(
 
                 port_counter += 1
                 f.write("    ports:\n")
-                f.write(f"      - '{port_counter}:{port_counter}'\n")
+                if ctype == "frontend" or ctype == "api_gateway":
+                    f.write(f"      - '{port_counter}:80'\n")
+                else:
+                    f.write(f"      - '{port_counter}:{port_counter}'\n")
 
             if ctype == "loadbalancer":
                 target_name = load_balancer_config.get(name)
