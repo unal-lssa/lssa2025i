@@ -139,4 +139,5 @@ El proyecto está diseñado utilizando una arquitectura de microservicios, donde
 ## Docker
 
   ```bash
-  docker build -t generator-app . && docker run --rm -v $(pwd)/skeleton:/app/skeleton generator-ap
+  docker build -t generator-app .
+  docker run --rm -v $(pwd)/skeleton:/app/skeleton generator-ap
