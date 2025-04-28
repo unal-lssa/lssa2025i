@@ -1,0 +1,106 @@
+
+
+services:
+  db:
+    image: postgres:15
+    container_name: agenda_postgres_db
+    environment:
+      POSTGRES_USER: agenda_user
+      POSTGRES_PASSWORD: your_strong_password
+      POSTGRES_DB: agenda
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - agenda_db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U agenda_user -d agenda"]
+        interval: 5s
+        timeout: 5s
+        retries: 5
+    networks:
+      - db_net
+  
+  # Define the new Flask API service
+  meetings_ms:
+    build:
+      context: ./meetings-ms
+    environment:
+      DB_HOST: db # Use the service name 'db' as the hostname
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-agenda} 
+      DB_USER: ${POSTGRES_USER:-agenda_user}
+      DB_PASS: ${POSTGRES_PASSWORD:-your_strong_password}
+      FLASK_DEBUG: 1 
+    depends_on:
+      db:
+        condition: service_healthy # Use this if you have a healthcheck in 'db'
+    networks:
+      - internal
+      - db_net
+  
+    restart: unless-stopped
+  
+  secret_meetings_ms:
+    build:
+      context: ./secret-ms
+    environment:
+      DB_HOST: db # Use the service name 'db' as the hostname
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-agenda} 
+      DB_USER: ${POSTGRES_USER:-agenda_user}
+      DB_PASS: ${POSTGRES_PASSWORD:-your_strong_password}
+      FLASK_DEBUG: 1 
+    depends_on:
+      db:
+        condition: service_healthy # Use this if you have a healthcheck in 'db'
+    networks:
+      - internal
+      - db_net
+
+    restart: unless-stopped
+
+  api_gateway:
+    build:
+      context: ./api-gateway
+    ports:
+      - "5001:5050"
+    environment:
+      CORS_ALLOWED_ORIGINS: http://localhost:8080 # URL to the frontend service
+      AUTHORIZED_IP: 172.30.0
+      AGENDA_API_URL: http://meetings_ms:5000 # URL to the meetings_ms service
+      SECRET_AGENDA_API_URL: http://secret_meetings_ms:5001 # URL to the secret_meetings_ms service
+      FLASK_DEBUG: 1 
+    networks:
+      - public
+      - internal  # To communicate with the 'api' service
+    depends_on:
+      - meetings_ms
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "8080:80"
+    networks:
+      - public # To be accessible externally
+    depends_on:
+      - api_gateway
+    restart: unless-stopped
+
+
+volumes:
+  agenda_db_data:
+    driver: local
+
+networks:
+  public:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16
+          gateway: 172.30.0.1
+  internal:
+    internal: true
+  db_net:
+    internal: true

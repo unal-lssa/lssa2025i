@@ -1,0 +1,5 @@
+# requirements.txt
+flask==2.3.3 # Or a newer compatible version
+requests==2.31.0
+pyjwt==2.10.1
+flask-cors==4.0.0

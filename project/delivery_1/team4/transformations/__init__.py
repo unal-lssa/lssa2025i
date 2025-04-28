@@ -1,10 +1,16 @@
-from transformations import database, gateway
+from transformations import database, gateway, frontend
+
 
 def apply_transformations(model):
     components = {}
 
-    # print(model.elements)
-
+    connectors = []
+    for e in model.elements:
+        if e.__class__.__name__ == "Connector":
+            connectors.append(
+                {"from": e.from_.name, "to": e.to_.name, "type": e.to_.type}
+            )
+            
     for e in model.elements:
         if e.__class__.__name__ == "Component":
             components[e.name] = e
@@ -12,9 +18,28 @@ def apply_transformations(model):
             #     database.generate_database(e.name)
             if e.type == "gateway":
                 gateway.generate_gateway(e.name, model)
-            # if e.type == "service":
-            #     generate_database(e.name)
-            # if e.type == "frontend":
-            #     generate_database(e.name)
-
+            if e.type == "frontend":
+                api_gateway = next(
+                    (
+                        connector["to"]
+                        for connector in connectors
+                        if (
+                            connector["from"] == e.name
+                            and connector["type"] == "gateway"
+                        )
+                    ),
+                    None,
+                )
+                real_time_service = next(
+                    (
+                        connector["to"]
+                        for connector in connectors
+                        if (
+                            connector["from"] == e.name
+                            and connector["type"] == "service"
+                        )
+                    ),
+                    None,
+                )
+                frontend.generate_frontend(e.name, api_gateway, real_time_service)
     # generate_docker_compose(components)
