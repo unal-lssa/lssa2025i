@@ -25,7 +25,7 @@ def generate_frontend(name, backend=None, connections=None):
                     const axios = require('axios');
                     const app = express();
                     
-                    const BACKEND_URL = 'http://{target[0]}:80';
+                    const BACKEND_URL = 'http://{target}:80';
 
                     app.get('/', async (req, res) => {{
                         try {{
