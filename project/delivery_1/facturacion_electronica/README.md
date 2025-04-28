@@ -140,9 +140,7 @@ graph TD
 ### Metamodelo
 Para el metamodelo se mantuvo un diseño simple de la gramática, que permite definir componentes y conectores, cada uno con su tipo respectivo. Para el alcance actual del proyecto, esta gramática es suficiente para describir la arquitectura del sistema.
 
-mermaid
-graph TD
-
+```plaintext
 Model:
     'architecture' ':' elements*=Element
 ;
@@ -166,7 +164,7 @@ ComponentType:
 ConnectorType:
      'http' | 'db_conn' | 'lb_conn'
  ;
-
+```
 
 La siguiente imagen describe el metamodelo:
 
@@ -357,3 +355,8 @@ Por lo tanto, una vez ejecutado el sistema, para comprobar la funcionalidad del 
 
 ### Conclusiones
 
+Este enfoque MDE permitió:
+- Asegurar la **trazabilidad** entre el modelo de arquitectura y los artefactos generados.
+- **Reducir errores manuales** en la configuración de servicios y sus interconexiones.
+- **Facilitar la escalabilidad** y el mantenimiento futuro del sistema, al permitir modificar o extender el modelo para reflejar cambios de negocio sin rehacer manualmente la infraestructura.
+- **Optimizar la productividad** en el desarrollo de soluciones de software a gran escala, permitiendo pasar de diseño conceptual a implementación ejecutable de manera automatizada.
