@@ -22,11 +22,8 @@ def generate_docker_compose(model):
                 component_config = components[element.name]
                 component_config.name = element.name
                 component_config.port = element.port
-                if element.visibility == "public":
-                    component_config.public = element.visibility == "public"
-                    component_config.networks.add("public")
-                if element.visibility == "internal":
-                    component_config.networks.add("internal")
+                component_config.public = element.visibility == "public"
+                component_config.networks.add(element.visibility)
 
             case "Connector":
                 from_component = components[element.from_.name]

@@ -1,8 +1,12 @@
-architecture TicTacToe :
+architecture tic_tac_toe:
     component frontend web_app
+    {
+        visibility public at port 80
+    }
 
-    component gateway api_gateway {
-        visibility public at port 8000
+    component gateway api_gateway
+    {
+        visibility public at port 5000
     }
 
     component service matchmaking_service
@@ -23,20 +27,12 @@ architecture TicTacToe :
     }
     component service real_time_service
     {
-        visibility internal at port 8004
+        visibility public at port 8004
     }
 
     component broker pub_sub_broker
     {
         visibility internal at port 8005
-    }
-    component queue matchmaking_queue
-    {
-        visibility internal at port 8006
-    }
-    component cache game_cache
-    {
-        visibility internal at port 8007
     }
 
     connector web_socket web_app -> real_time_service
@@ -44,9 +40,6 @@ architecture TicTacToe :
     connector http web_app -> api_gateway
     connector http api_gateway -> authentication_service
     connector http api_gateway -> matchmaking_service
-
-    connector queue_connector matchmaking_service -> matchmaking_queue
-    connector db_connector game_engine -> game_cache
 
     connector broker_connector game_engine -> pub_sub_broker
     connector broker_connector real_time_service -> pub_sub_broker
