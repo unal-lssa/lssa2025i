@@ -4,8 +4,8 @@ def generate_api_gateway(name, route_map):
     path = f'skeleton/{name}'
     os.makedirs(path, exist_ok=True)
 
-    route_entries = ",\n            ".join(
-        [f'"{service}": "http://{lb_name}:80"' for service, lb_name in route_map.items()]
+    route_entries = ",\n          ".join(
+        [f'"{service.replace("_lb", "")}": "http://{lb_name}:80"' for service, lb_name in route_map.items()]
     )
 
     main_py = textwrap.dedent(f"""
@@ -26,7 +26,10 @@ def generate_api_gateway(name, route_map):
 
             path_parts = full_path.split("/", 1)
             if not path_parts or path_parts[0] == '':
-                raise HTTPException(status_code=404, detail="Service not specified.")
+                return {{
+                    "status_code": 200,
+                    "content": "API-GATEWAY RUNNING CORRECTLY"
+                }}
 
             service = path_parts[0]
             remaining_path = path_parts[1] if len(path_parts) > 1 else ""
