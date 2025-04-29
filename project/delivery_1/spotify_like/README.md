@@ -19,6 +19,7 @@ The system uses a model-driven approach to generate the necessary components and
 -  **LocalStorage (S3 Emulation)**: Localstack-based S3-compatible storage service used to emulate AWS S3 buckets during development, enabling local upload, retrieval, and management of song files.
 - **Music Storage Bucket**: Specific S3 bucket inside the LocalStorage instance dedicated to storing and organizing user-uploaded songs for retrieval by the CDN and other system components.
 - **API Gateway**: Simple FastAPI API gateway
+- **Queue**: A messaging broker that is used for communication between services in charge of receiving and asynchronous uploading of songs to the S3 bucket.
 
 
 ## Metamodel
@@ -29,19 +30,19 @@ Model:
 ;
 
 Element:
-    Component | Connector | Network
+    Component | Connector
 ;
 
 Component:
     LoadBalancer | StandardComponent | Database | ApiGateway
 ;
 
-StandardComponent:
-    'component' type=StandardComponentType name=ID
-;
-
 LoadBalancer:
     'component' 'loadbalancer' name=ID instanceCount=INT target=[Component]
+;
+
+StandardComponent:
+    'component' type=StandardComponentType name=ID
 ;
 
 StandardComponentType:
@@ -67,16 +68,11 @@ Connector:
 ConnectorType:
     'http' | 'db_connector' | 'kafka_connector'
 ;
-
-Network:
-    'network' networkName=ID
-;
 ```
 
 ## Elements
 - **Component**: Represents a component in the architecture. It can be a standard component, load balancer, or database.
 - **Connector**: Represents a connection link between two components. It can be an HTTP connection, database connection, or Kafka connection.
-- **Network**: Represents a network configuration. 
 
 ## Component Types
 - **StandardComponent**: Represents a basic deployable service. It can be a frontend, backend, bucket, CDN, or queue.
@@ -92,7 +88,7 @@ The architecture supports the following connection types:
 
 - **http**: HTTP connection between components (e.g., frontend to backend)
 - **db_connector**: Database connection (e.g., backend to database)
-- **kafka_connector**: Kafka connection for event streaming (placeholder)
+- **kafka_connector**: Kafka connection for event streaming (A logic for matching producer and consumer services is included in the connectors)
 
 ## Database Support
 
@@ -175,6 +171,17 @@ It creates a folder containing:
    2. A Dockerfile that builds a container from the nginx:alpine image, copying the custom configuration and launching Nginx.
 
    This transformation enables caching of static content (like songs) and reduces the load on the underlying storage by serving frequently accessed resources directly from the cache.
+
+- **Queue Transformation Rule**:
+- This transformation generates the structure for a queue service using Kafka. It creates a folder containing:
+
+   1. A Dockerfile that builds a container from the confluentinc/cp-kafka and confluentinc/cp-zookeeper images, setting up the necessary environment variables for Kafka and Zookeeper.
+
+   2. A docker-compose.yml file that defines the Kafka and Zookeeper services, ensuring they are started together.
+
+   3. Analysis of connectors in the model to adapt the backend services according to their connection with the queue.
+
+   This transformation allows for asynchronous communication between services, enabling efficient handling of events and messages in the system.
 
 
 ## Usage
