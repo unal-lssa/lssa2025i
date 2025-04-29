@@ -7,7 +7,7 @@ Element: Component | Connector;
 
 Component:
     'component' type=ComponentType name=ID
-    ('{' 
+    ('{'
         (endpoints*=Endpoint)?
         ('visibility' visibility=NetworkScope 'at port' port=INT)?
     '}')?
@@ -18,7 +18,7 @@ Connector:
 ;
 
 ComponentType:
-    'frontend' | 'gateway' | 'service' | 'broker' | 'queue' | 'cache' | 'database' | 'loadbalancer'
+    'frontend' | 'gateway' | 'service'| 'real-time-service' | 'broker' | 'queue' | 'cache' | 'database' | 'loadbalancer'
 ;
 
 ConnectorType:
@@ -36,4 +36,3 @@ HttpMethod:
 NetworkScope:
     'public' | 'internal' | 'private'
 ;
-
