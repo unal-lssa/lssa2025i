@@ -243,12 +243,6 @@ architecture:
 
 This defines a frontend that connects to a backend, which in turn connects to a MongoDB database.
 
-
-# How to run
-1. docker run --rm -v "$(Get-Location):/app" app_delivery1
-2. cd .\skeleton\ && docker compose up --build
-3. Go to http://localhost:8001/ (frontend)
-
 # Testing the connections
 To test the connections, you can use the following commands:
 
