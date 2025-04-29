@@ -1,4 +1,4 @@
-from transformations import database, gateway, frontend, service, broker, dockercompose
+from transformations import gateway, frontend, rt_service, service, broker, dockercompose
 
 def apply_transformations(model):
     components = {}
@@ -19,6 +19,8 @@ def apply_transformations(model):
                 gateway.generate_gateway(e.name, model)
             if e.type == "service":
                 service.generate_service(e)
+            if e.type == "real-time-service":
+                rt_service.generate_real_time_service(e.name)
             if e.type == "frontend":
                 api_gateway = next(
                     (

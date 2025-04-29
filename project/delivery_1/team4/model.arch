@@ -25,7 +25,7 @@ architecture tic_tac_toe:
     {
         visibility internal at port 8003
     }
-    component service real_time_service
+    component real-time-service real_time_service
     {
         visibility public at port 8000
     }
