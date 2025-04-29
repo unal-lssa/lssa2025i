@@ -12,7 +12,7 @@ def generate_gateway(name, model):
     routes = ""
     for s in services:
         service = services[s]
-        routes += f"""\n  /{service.name}:\n    backend: "http://{service.name}:5000"\n"""
+        routes += f"""\n  /{service.name}:\n    backend: "http://{service.name}:8000"\n"""
 
     generate_templated_component(
         name,
