@@ -221,7 +221,28 @@ This defines a frontend that connects to a backend, which in turn connects to a 
 
 
 # How to run
-1. 
-2. docker run --rm -v "$(Get-Location):/app" app_delivery1
-3. cd .\skeleton\ && docker compose up --build
-4. Go to http://localhost:8001/ (frontend)
+1. docker run --rm -v "$(Get-Location):/app" app_delivery1
+2. cd .\skeleton\ && docker compose up --build
+3. Go to http://localhost:8001/ (frontend)
+
+# Testing the connections
+To test the connections, you can use the following commands:
+
+``` bash
+curl --location 'localhost:8007/user'
+```
+``` bash
+curl --location 'localhost:8007/playlist'
+```
+``` bash
+curl --location 'localhost:8007/auth'
+```
+``` bash
+curl --location 'localhost:8007/catalog
+```
+This commands will return some basic information about the backend and the database connection.
+
+Example output:
+``` json
+{"status_code":200,"content":{"database_connection":"success","message":"Hello World from Backend","type":"PostgreSQL"}}
+```
