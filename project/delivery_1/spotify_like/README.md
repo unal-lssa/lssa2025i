@@ -6,6 +6,9 @@ This project provides a DSL (Domain-Specific Language) and transformation toolse
 
 The system uses a model-driven approach to generate the necessary components and connections for a microservices architecture. The generated components are minimal "hello world" implementations.
 
+## Diagram
+![Architecture Diagram](SpotifyLikeDiag.png)
+
 ## Components
 
 - **Frontend**: Simple Node.js/Express web interface
@@ -15,6 +18,73 @@ The system uses a model-driven approach to generate the necessary components and
 -  **CDN**: Nginx-based caching layer responsible for storing and serving song files efficiently to users.
 -  **LocalStorage (S3 Emulation)**: Localstack-based S3-compatible storage service used to emulate AWS S3 buckets during development, enabling local upload, retrieval, and management of song files.
 - **Music Storage Bucket**: Specific S3 bucket inside the LocalStorage instance dedicated to storing and organizing user-uploaded songs for retrieval by the CDN and other system components.
+- **API Gateway**: Simple FastAPI API gateway
+
+
+## Metamodel
+```
+Model:
+    'architecture' ':'
+        elements*=Element
+;
+
+Element:
+    Component | Connector | Network
+;
+
+Component:
+    LoadBalancer | StandardComponent | Database | ApiGateway
+;
+
+StandardComponent:
+    'component' type=StandardComponentType name=ID
+;
+
+LoadBalancer:
+    'component' 'loadbalancer' name=ID instanceCount=INT target=[Component]
+;
+
+StandardComponentType:
+    'frontend' | 'backend' | 'bucket' | 'cdn' | 'queue'
+;
+
+Database:
+    'component' 'db' name=ID databaseType=DatabaseType
+;
+
+DatabaseType:
+    'postgresql' | 'mongodb' | 'elasticsearch'
+;
+
+ApiGateway:
+    'component' 'api_gateway' name=ID auth=Component
+;
+
+Connector:
+    'connector' type=ConnectorType from=[Component] '->' to=[Component]
+;
+
+ConnectorType:
+    'http' | 'db_connector' | 'kafka_connector'
+;
+
+Network:
+    'network' networkName=ID
+;
+```
+
+## Elements
+- **Component**: Represents a component in the architecture. It can be a standard component, load balancer, or database.
+- **Connector**: Represents a connection link between two components. It can be an HTTP connection, database connection, or Kafka connection.
+- **Network**: Represents a network configuration. 
+
+## Component Types
+- **StandardComponent**: Represents a basic deployable service. It can be a frontend, backend, bucket, CDN, or queue.
+- **LoadBalancer**: It can be configured with an instance count and a target component to distribute traffic accross multiple instancers of target `Component`.
+- **Database**: It can be configured with a specific database type.
+- **ApiGateway**: API gateway component that proxies requests to the backend components.
+
+
 
 ## Connectors
 
@@ -26,7 +96,7 @@ The architecture supports the following connection types:
 
 ## Database Support
 
-The system now supports multiple database types:
+The system supports multiple database types:
 - **mysql**: Default MySQL database 
 - **mongodb**: MongoDB NoSQL database
 - **postgresql**: PostgreSQL relational database
