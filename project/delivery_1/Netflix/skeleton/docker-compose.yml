@@ -1,0 +1,76 @@
+services:
+  ms_streamer:
+    build: ./ms_streamer
+    restart: always
+    ports:
+    - 8001:8001
+  ms_recommender:
+    build: ./ms_recommender
+    restart: always
+    ports:
+    - 8002:8002
+  ms_auth:
+    build: ./ms_auth
+    restart: always
+    ports:
+    - 8003:8003
+  ms_accounts:
+    build: ./ms_accounts
+    restart: always
+    ports:
+    - 8004:8004
+  ms_payment:
+    build: ./ms_payment
+    restart: always
+    ports:
+    - 8005:8005
+  ms_content:
+    build: ./ms_content
+    restart: always
+    ports:
+    - 8006:8006
+  streamer_lb:
+    build: ./streamer_lb
+    restart: always
+    ports:
+    - 443:443
+  media_storage:
+    build: ./media_storage
+    restart: always
+  recommender_db:
+    image: mongo:latest
+    ports:
+    - 27017:27017
+    restart: always
+  auth_db:
+    image: mongo:latest
+    ports:
+    - 27017:27017
+    restart: always
+  accounts_db:
+    image: mysql:latest
+    ports:
+    - 3306:3306
+    restart: always
+  payment_db:
+    image: mongo:latest
+    ports:
+    - 27017:27017
+    restart: always
+  content_db:
+    image: mongo:latest
+    ports:
+    - 27017:27017
+    restart: always
+  content_cache:
+    image: redis:latest
+    ports:
+    - 6379:6379
+    restart: always
+  kafka_service:
+    image: apache/kafka
+    ports:
+    - 9092:9092
+    restart: always
+    environment:
+      KAFKA_PARTITIONS: '3'

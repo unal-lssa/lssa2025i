@@ -15,18 +15,17 @@ architecture = {
         {"name": "ms_content", "port": 8006},
     ],
     "loadbalancers": [
-        {"name": "streamer_lb", "port": 443},
-        {"name": "auth_lb", "port": 443}
+        {"name": "streamer_lb", "port": 443}
     ],
     "storage": [
         {"name": "media_storage", "size": "500gb"}
     ],
     "databases": [
-        {"type": "mongodb", "name": "recommender_db"},
-        {"type": "mongodb", "name": "payment_db"},
-        {"type": "mongodb", "name": "auth_db"},
+        {"type": "mongo", "name": "recommender_db"},
+        {"type": "mongo", "name": "payment_db"},
+        {"type": "mongo", "name": "auth_db"},
         {"type": "mysql", "name": "accounts_db"},
-        {"type": "mongodb", "name": "content_db"},
+        {"type": "mongo", "name": "content_db"},
     ],
     "caches": [
         {"type": "redis", "name": "content_cache", "size": "1gb"}
@@ -110,7 +109,7 @@ CMD ["npm", "start"]
 FROM python:3.11-slim
 WORKDIR /app
 COPY . .
-RUN pip install -r requirements.txt
+RUN pip install flask 
 EXPOSE {component.get("port", "8000")}
 CMD ["python", "app.py"]
 """
@@ -149,6 +148,56 @@ CMD ["echo", "Componente {component['name']} de tipo {category}"]
 """
 
     return dockerfile.strip()
+
+def generate_docker_compose(architecture):
+    services = {}
+
+    for category in ["frontend", "services", "components"]:
+        for component in architecture.get(category, []):
+            service = {
+                "build": f"./{component['name']}",
+                "restart": "always"
+            }
+            if "port" in component:
+                service["ports"] = [f"{component['port']}:{component['port']}"]
+            services[component["name"]] = service
+    
+    for db in architecture.get("databases", []):
+        port = {
+            "mongo": "27017",
+            "mysql": "3306"
+        }.get(db["category"], "0000")
+        
+        services[db["name"]] = {
+            "image": f'{db["category"]}:latest',
+            "ports": [f"{port}:{port}"],
+            "restart": "always",
+        }
+
+    for cache in architecture.get("caches", []):
+        services[cache["name"]] = {
+            "image": f"{cache['category']}:latest",
+            "ports": ["6379:6379"],
+            "restart": "always"
+        }
+
+    for stream in architecture.get("event_streams", []):
+        services[stream["name"]] = {
+            "image": "apache/kafka",
+            "ports": ["9092:9092"],
+            "restart": "always",
+            "environment": {
+                "KAFKA_PARTITIONS": str(stream["partitions"])
+            }
+        }
+
+    compose = {
+        "services": services
+    }
+
+    os.makedirs("skeleton", exist_ok=True)
+    with open("skeleton/docker-compose.yml", "w") as f:
+        yaml.dump(compose, f, sort_keys=False, default_flow_style=False)
 
 def apply_transformations(architecture):
     os.makedirs('skeleton', exist_ok=True)
@@ -203,3 +252,4 @@ def apply_transformations(architecture):
                     f.write(dockerfile_content)
 
 
+    generate_docker_compose(architecture)

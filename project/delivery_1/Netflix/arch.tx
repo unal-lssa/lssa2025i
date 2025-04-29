@@ -31,7 +31,7 @@ ConnectorType:
     'http' | 'hls' | 's3' | 'mongoose' | 'db_connector' | 'kafka' | 'redis'
 ;
 DatabaseType:
-    'mongodb' | 'mysql' | 'storage'
+    'mongo' | 'mysql' | 'storage'
 ;
 CacheType:
     'redis'

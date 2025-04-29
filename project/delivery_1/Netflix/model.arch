@@ -7,19 +7,17 @@ architecture:
   component services ms_payment port="8005"
   component services ms_content port="8006"
   component loadbalancer streamer_lb port="443"
-  component loadbalancer auth_lb port="443"
   component storage media_storage size="500gb"
-  database mongodb recommender_db
-  database mongodb auth_db
+  database mongo recommender_db
+  database mongo auth_db
   database mysql accounts_db
-  database mongodb payment_db
-  database mongodb content_db
+  database mongo payment_db
+  database mongo content_db
   cache redis content_cache size="1gb"
   event_stream kafka kafka_service partitions="3"
   connector http frontend_streamer web_frontend -> streamer_lb timeout="10s"
-  connector http frontend_auth web_frontend -> auth_lb timeout="5s"
+  connector http frontend_auth web_frontend -> ms_auth timeout="5s"
   connector http streamer_ms streamer_lb -> ms_streamer timeout="15s"
-  connector http auth_ms auth_lb -> ms_auth timeout="5s"
   connector http frontend_ms_recommender web_frontend -> ms_recommender timeout="10s"
   connector http frontend_ms_accounts web_frontend -> ms_accounts timeout="5s"
   connector http frontend_ms_payment web_frontend -> ms_payment timeout="5s"
