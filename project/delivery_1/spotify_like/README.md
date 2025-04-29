@@ -227,28 +227,6 @@ This transformation generates the structure for the user interface component of 
    cd skeleton
    docker-compose up --build
 
-## Example Architecture
-
-```
-architecture:
-    component frontend app_fe
-    component backend app_be
-    component db app_db mongodb
-
-    connector http app_fe -> app_be
-    connector db_connector app_be -> app_db
-    component bucket music_storage
-    component cdn songs_cdn
-```
-
-This defines a frontend that connects to a backend, which in turn connects to a MongoDB database.
-
-
-# How to run
-1. docker run --rm -v "$(Get-Location):/app" app_delivery1
-2. cd .\skeleton\ && docker compose up --build
-3. Go to http://localhost:8001/ (frontend)
-
 # Testing the connections
 To test the connections, you can use the following commands:
 
