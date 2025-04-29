@@ -9,6 +9,7 @@ Component:
     'component' type=ComponentType name=ID
     ('{' 
         (endpoints*=Endpoint)?
+        ('visibility' visibility=NetworkScope 'at port' port=INT)?
     '}')?
 ;
 
@@ -31,3 +32,8 @@ Endpoint:
 HttpMethod:
     'GET' | 'POST' | 'PUT' | 'DELETE'
 ;
+
+NetworkScope:
+    'public' | 'internal' | 'private'
+;
+

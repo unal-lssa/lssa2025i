@@ -1,33 +1,45 @@
-architecture TicTacToe :
+architecture tic_tac_toe:
     component frontend web_app
+    {
+        visibility public at port 80
+    }
 
     component gateway api_gateway
+    {
+        visibility public at port 5000
+    }
 
     component service matchmaking_service
     {
         endpoint get_match: POST "/new-match"
+        visibility internal at port 8001
     }
     component service authentication_service
     {
         endpoint create_token: POST "/token"
         endpoint validate_token: POST "/token/validate"
+        visibility internal at port 8002
     }
 
     component service game_engine
+    {
+        visibility internal at port 8003
+    }
     component service real_time_service
+    {
+        visibility public at port 8004
+    }
 
     component broker pub_sub_broker
-    component queue matchmaking_queue
-    component cache game_cache
+    {
+        visibility internal at port 8005
+    }
 
     connector web_socket web_app -> real_time_service
 
     connector http web_app -> api_gateway
     connector http api_gateway -> authentication_service
     connector http api_gateway -> matchmaking_service
-
-    connector queue_connector matchmaking_service -> matchmaking_queue
-    connector db_connector game_engine -> game_cache
 
     connector broker_connector game_engine -> pub_sub_broker
     connector broker_connector real_time_service -> pub_sub_broker

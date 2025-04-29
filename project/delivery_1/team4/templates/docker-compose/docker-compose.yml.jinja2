@@ -1,0 +1,27 @@
+version: "3.8"
+
+name: {{ name }}
+
+services:
+  {% for component in components %}
+  {{ component.name }}:
+    build: 
+      context: ./{{ component.name }}
+    {% if component.public %}
+    ports:
+      - "{{ component.port }}:{{ component.port }}"
+    {% endif %}
+    {% if component.networks %}
+    networks:
+      {% for network in component.networks %}
+      - {{ network }}
+      {% endfor %}
+    {% endif %}
+  {% endfor %}
+
+networks:
+  public:
+    driver: bridge
+  internal:
+    driver: bridge
+    internal: true

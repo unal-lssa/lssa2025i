@@ -1,5 +1,4 @@
-from transformations import database, gateway, frontend, service, broker
-
+from transformations import database, gateway, frontend, service, broker, dockercompose
 
 def apply_transformations(model):
     components = {}
@@ -46,4 +45,5 @@ def apply_transformations(model):
                 frontend.generate_frontend(e.name, api_gateway, real_time_service)
             if e.type == "broker":
                 broker.generate_broker(e.name)
-    # generate_docker_compose(components)
+
+    dockercompose.generate_docker_compose(model)
