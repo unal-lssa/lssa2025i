@@ -27,7 +27,7 @@ architecture tic_tac_toe:
     }
     component service real_time_service
     {
-        visibility public at port 8004
+        visibility public at port 8000
     }
 
     component broker pub_sub_broker

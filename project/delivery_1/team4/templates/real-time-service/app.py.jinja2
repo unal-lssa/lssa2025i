@@ -1,336 +1,105 @@
-import asyncio
+import uvicorn
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.responses import HTMLResponse
+import random
+import string
 
-import json
+app = FastAPI()
 
-import secrets
+rooms = {}  # room_id -> {"players": [ws1, ws2], "board": list, "turn": "X"}
+players_online = set()
 
+def generate_room_code(length=5):
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
 
-from websockets.asyncio.server import broadcast, serve
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    players_online.add(websocket)
+    await broadcast_players_online()
 
+    room_id = None
+    player_mark = None
 
-from tictactoe import PLAYER_X, PLAYER_O, TicTacToe
+    try:
+        # Find or create room
+        for rid, room in rooms.items():
+            if len(room["players"]) < 2:
+                room_id = rid
+                break
+        if not room_id:
+            room_id = generate_room_code()
+            rooms[room_id] = {"players": [], "board": [""] * 9, "turn": "X"}
 
+        room = rooms[room_id]
+        room["players"].append(websocket)
+        await websocket.send_text(f"ROOM,{room_id}")
 
+        if len(room["players"]) == 1:
+            player_mark = "X"
+            await websocket.send_text(f"PLAYER,{player_mark}")
+        elif len(room["players"]) == 2:
+            player_mark = "O"
+            await websocket.send_text(f"PLAYER,{player_mark}")
 
-JOIN = {}
+            # Notify both players that game starts
+            for player in room["players"]:
+                await player.send_text("START")
 
+        while True:
+            data = await websocket.receive_text()
+            index_str, mark = data.split(",")
+            index = int(index_str)
 
-WATCH = {}
+            if room["board"][index] == "" and room["turn"] == mark:
+                room["board"][index] = mark
+                # Switch turn
+                room["turn"] = "O" if mark == "X" else "X"
 
+                for player in room["players"]:
+                    await player.send_text(f"{index},{mark}")
 
+                result = check_winner(room["board"])
+                if result:
+                    for player in room["players"]:
+                        await player.send_text(f"END,{result}")
+                    room["board"] = [""] * 9
+                    room["turn"] = "X"  # Reset turn after game
+    except WebSocketDisconnect:
+        players_online.discard(websocket)
+        if room_id and room_id in rooms:
+            room = rooms[room_id]
+            if websocket in room["players"]:
+                room["players"].remove(websocket)
+            if not room["players"]:
+                del rooms[room_id]
+        await broadcast_players_online()
 
-async def error(websocket, message):
-
-    """
-
-    Send an error message.
-
-
-    """
-
-    event = {
-
-        "type": "error",
-
-        "message": message,
-
-    }
-
-    await websocket.send(json.dumps(event))
-
-
-
-async def replay(websocket, game):
-
-    """
-
-    Send previous moves.
-
-
-    """
-
-    # Make a copy to avoid an exception if game.moves changes while iteration
-
-    # is in progress. If a move is played while replay is running, moves will
-
-    # be sent out of order but each move will be sent once and eventually the
-
-    # UI will be consistent.
-
-    for player, column, row in game.moves.copy():
-
-        event = {
-
-            "type": "play",
-
-            "player": player,
-
-            "column": column,
-
-            "row": row,
-
-        }
-
-        await websocket.send(json.dumps(event))
-
-
-
-async def play(websocket, game, player, connected):
-
-    """
-
-    Receive and process moves from a player.
-
-
-    """
-
-    async for message in websocket:
-
-        # Parse a "play" event from the UI.
-
-        event = json.loads(message)
-
-        assert event["type"] == "play"
-
-        column = event["column"]
-
-
+async def broadcast_players_online():
+    count = len(players_online)
+    disconnected = []
+    for player in players_online:
         try:
-
-            # Play the move.
-
-            row = game.play(player, column)
-
-        except ValueError as exc:
-
-            # Send an "error" event if the move was illegal.
-
-            await error(websocket, str(exc))
-
-            continue
-
-
-        # Send a "play" event to update the UI.
-
-        event = {
-
-            "type": "play",
-
-            "player": player,
-
-            "column": column,
-
-            "row": row,
-
-        }
-
-        broadcast(connected, json.dumps(event))
-
-
-        # If move is winning, send a "win" event.
-
-        if game.winner is not None:
-
-            event = {
-
-                "type": "win",
-
-                "player": game.winner,
-
-            }
-
-            broadcast(connected, json.dumps(event))
-
-
-
-async def start(websocket):
-
-    """
-
-    Handle a connection from the first player: start a new game.
-
-
-    """
-
-    # Initialize a Connect Four game, the set of WebSocket connections
-
-    # receiving moves from this game, and secret access tokens.
-
-    game = TicTacToe()
-
-    connected = {websocket}
-
-
-    join_key = secrets.token_urlsafe(12)
-
-    JOIN[join_key] = game, connected
-
-
-    watch_key = secrets.token_urlsafe(12)
-
-    WATCH[watch_key] = game, connected
-
-
-    try:
-
-        # Send the secret access tokens to the browser of the first player,
-
-        # where they'll be used for building "join" and "watch" links.
-
-        event = {
-
-            "type": "init",
-
-            "join": join_key,
-
-            "watch": watch_key,
-
-        }
-
-        await websocket.send(json.dumps(event))
-
-        # Receive and process moves from the first player.
-
-        await play(websocket, game, PLAYER_O, connected)
-
-    finally:
-
-        del JOIN[join_key]
-
-        del WATCH[watch_key]
-
-
-
-async def join(websocket, join_key):
-
-    """
-
-    Handle a connection from the second player: join an existing game.
-
-
-    """
-
-    # Find the Tic Tac Toe game.
-
-    try:
-
-        game, connected = JOIN[join_key]
-
-    except KeyError:
-
-        await error(websocket, "Game not found.")
-
-        return
-
-
-    # Register to receive moves from this game.
-
-    connected.add(websocket)
-
-    try:
-
-        # Send the first move, in case the first player already played it.
-
-        await replay(websocket, game)
-
-        # Receive and process moves from the second player.
-
-        await play(websocket, game, PLAYER_X, connected)
-
-    finally:
-
-        connected.remove(websocket)
-
-
-
-async def watch(websocket, watch_key):
-
-    """
-
-    Handle a connection from a spectator: watch an existing game.
-
-
-    """
-
-    # Find the Connect Four game.
-
-    try:
-
-        game, connected = WATCH[watch_key]
-
-    except KeyError:
-
-        await error(websocket, "Game not found.")
-
-        return
-
-
-    # Register to receive moves from this game.
-
-    connected.add(websocket)
-
-    try:
-
-        # Send previous moves, in case the game already started.
-
-        await replay(websocket, game)
-
-        # Keep the connection open, but don't receive any messages.
-
-        await websocket.wait_closed()
-
-    finally:
-
-        connected.remove(websocket)
-
-
-
-async def handler(websocket):
-
-    """
-
-    Handle a connection and dispatch it according to who is connecting.
-
-
-    """
-
-    # Receive and parse the "init" event from the UI.
-
-    message = await websocket.recv()
-
-    event = json.loads(message)
-
-    assert event["type"] == "init"
-
-
-    if "join" in event:
-
-        # Second player joins an existing game.
-
-        await join(websocket, event["join"])
-
-    elif "watch" in event:
-
-        # Spectator watches an existing game.
-
-        await watch(websocket, event["watch"])
-
-    else:
-
-        # First player starts a new game.
-
-        await start(websocket)
-
-
-
-async def main():
-
-    async with serve(handler, "", 8001) as server:
-
-        await server.serve_forever()
-
-
+            await player.send_text(f"PLAYERS,{count}")
+        except:
+            disconnected.append(player)
+    for player in disconnected:
+        players_online.discard(player)
+
+def check_winner(board):
+    win_positions = [
+        (0,1,2), (3,4,5), (6,7,8),
+        (0,3,6), (1,4,7), (2,5,8),
+        (0,4,8), (2,4,6)
+    ]
+    for a,b,c in win_positions:
+        if board[a] == board[b] == board[c] and board[a] != "":
+            return f"{board[a]} wins!"
+
+    if all(cell != "" for cell in board):
+        return "Draw!"
+
+    return None
 
 if __name__ == "__main__":
-
-    asyncio.run(main())
+    uvicorn.run("server:app", host="0.0.0.0", port=8000, reload=True)
