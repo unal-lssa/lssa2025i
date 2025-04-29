@@ -44,8 +44,10 @@ def generate_backend(name, database=None, database_type=None, connections=None):
                 write_wait_for_it_script(path)
                 generate_producer(name, target)
                 return
-            elif conn_type == "db_connector" and target:
+            elif target[0]['type'] == "db_connector":
                 try:
+                    target = target[0]["target"]
+                    print(f"Database type: {database_type} for {name}")
                     index_route_data = INDEX_ROUTES[database_type.lower()]
                     requirements.extend(index_route_data["requirements"])
                     app_code = textwrap.dedent(
