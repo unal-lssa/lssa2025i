@@ -207,7 +207,7 @@ docker build -t lssa-delivery1 .
 c.  Cree un contenedor de Docker para ejecutar el programa y generar el sistema de software modelado.
 
 ```
-docker run --rm -v "$PWD:/app lssa-delivery1" 
+docker run --rm -v "$PWD:/app" lssa-delivery1 
 ```
 
 Después de ejecutar el comando anterior, se debería crear un directorio llamado `skeleton`.
@@ -229,8 +229,6 @@ docker ps -a
 
 ---
 
-# Recordar eliminar la asignación de responsabilidades 
-
 ## E-commerce
 
 ### Components: 
@@ -246,13 +244,13 @@ docker ps -a
  ## Domain
 
 (Authentication, User Info) -> SQL, REST, API GAteway
- User -> id (Juan David)
-        name
-        isCustomer
-        isSeller
+ User -> id
+         name
+         isCustomer
+         isSeller
 
 CRUD -> REST, SQL
- Product -> id (Alejandro)
+ Product ->  id
              name
              price
              type
@@ -260,25 +258,25 @@ CRUD -> REST, SQL
 
 
 CRUD -> REST, SQL  
-Inventory -> product_id (Diego)
+Inventory -> product_id
              Quantity
              Region
 
 
  [Read, Update] -> SQL
-Order -> id (Sergio)
+Order -> id
          customer_id
          status
         
 
-order_detail -> order_id (Sergio)
+order_detail -> order_id
                 product_id
                 quantity
                 total_price
 
 
 Read/MQTP -> SQL, REST
-Payments -> payment_id (Yosman)
+Payments -> payment_id
             order_id
             payment_method
             total_payment
