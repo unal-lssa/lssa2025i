@@ -45,16 +45,17 @@ This metamodel describes the structural architecture of a real-time multiplayer 
 
 ### Component types
 
-| Type           | Description                                                                                              |
-| -------------- | -------------------------------------------------------------------------------------------------------- |
-| `frontend`     | User interface component, typically running in the browser or mobile app.                                |
-| `gateway`      | Entry point to backend services; handles routing, authentication, and request forwarding.                |
-| `service`      | Core logic or application component; performs specific tasks such as matchmaking or game logic.          |
-| `broker`       | Messaging mediator that supports publish-subscribe communication (e.g., MQTT, Kafka, Redis).             |
-| `queue`        | Manages message queues for asynchronous processing (e.g., RabbitMQ, Azure Queue).                        |
-| `cache`        | Fast, volatile storage for temporary data (e.g., Redis) used to improve performance.                     |
-| `database`     | Persistent storage system for long-term data retention and queries (e.g., PostgreSQL).                   |
-| `loadbalancer` | Distributes incoming traffic across multiple instances of a service for scalability and fault tolerance. |
+| Type                | Description                                                                                              |
+| ------------------- | -------------------------------------------------------------------------------------------------------- |
+| `frontend`          | User interface component, typically running in the browser or mobile app.                                |
+| `gateway`           | Entry point to backend services; handles routing, authentication, and request forwarding.                |
+| `service`           | Core logic or application component; performs specific tasks such as matchmaking or game logic.          |
+| `real-time-service` | Application component to handle interaction between the frontend and the broker during a game.           |
+| `broker`            | Messaging mediator that supports publish-subscribe communication (e.g., MQTT, Kafka, Redis).             |
+| `queue`             | Manages message queues for asynchronous processing (e.g., RabbitMQ, Azure Queue).                        |
+| `cache`             | Fast, volatile storage for temporary data (e.g., Redis) used to improve performance.                     |
+| `database`          | Persistent storage system for long-term data retention and queries (e.g., PostgreSQL).                   |
+| `loadbalancer`      | Distributes incoming traffic across multiple instances of a service for scalability and fault tolerance. |
 
 ### Connector types
 
@@ -72,15 +73,45 @@ This metamodel describes the structural architecture of a real-time multiplayer 
 - This metamodel intentionally omits ports and low-level interaction details for simplicity.
 - It supports quick modeling and visualization of software architectures with low overhead.
 
-### Metamodel diagram
+### Metamodel Diagram
 
+ACTUALIZAR SANTIAGO
 ![Metamodel-diagram](assets/metamodel.png)
 
 ---
 
 ## Model
 
+### Description
+
+TODO
+
+### Diagram
+
+ACTUALIZAR SANTIAGO
 ![Model-diagram](assets/model.png)
+
+## Transformations
+
+The corresponding transformations for the different component types follow the next structure:
+
+- In the templates folder, the different files and folders for each component type template are stored.
+
+- In the transformations folder we have a file name templates.py, in this file we have three different util functions for handling the templates during the different transformations.
+
+  - \_make_dir: Create the storage location for a given component.
+
+  - \_copy_template: Copy the file and folder structure of a given component template into the component directory. Replace into the template files the different parameters given as input.
+
+  - generate_templated_component: Use \_make_dir and \_copy_template functions to create a component.
+
+- In the transformations folder, there is a transformation file for each component, each of these files implements a function that decorates over the generate_templated_component function for each particular case.
+
+- In the **init**.py file inside the transformations folder the apply_transformations functions are specified. In this function, given a model, we iterate over each of its components and connectors. Calling the corresponding transformation for each component, passing the different connections as parameters for each component in the model.
+
+## Skeleton Description
+
+TODO
 
 ## Architecture Diagram
 
@@ -92,7 +123,7 @@ graph
 
     subgraph Microservices
 		MS[Matchmaking service]
-		US[User service]
+		US[Authentication service]
 	end
 
     GS[Game engine service]
@@ -110,30 +141,5 @@ graph
 
     RTS --> Broker1
     GS --> Broker1
-
-```
-
----
-
-### Arquitectura simplificada (Carpeta template)
-
-```mermaid
-graph
-	CL[Frontend]
-    GW[API Gateway]
-    RTS[Real-Time Server]
-
-    subgraph Microservices
-		MS1[Microservice 1]
-		MS2[Microservice 2]
-	end
-
-    Broker1[(RT-Broker)]
-
-    CL --> GW
-    CL --> RTS
-    GW --> MS1
-    GW --> MS2
-    RTS --> Broker1
 
 ```
