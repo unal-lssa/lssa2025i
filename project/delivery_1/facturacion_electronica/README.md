@@ -3,19 +3,19 @@
 #### Integrantes
 - Carlos Alberto Arevalo Martinez - 1072026839
 - Edsson Yannick Bonilla Hernandez - 79817391
-- Nancy VianethVera Rodríguez
+- Nancy Vianeth Vera Rodríguez - 52363149
 - Sebastian Rios Sabogal - 1143825130
 - Yilver Alirio Ramírez Ochoa - 1015994056
 - Julián Ricardo Beltrán Lizarazo - 1023949483
 
 ## Contexto del Sistema de Software
-Para el proyecto se trabajará con prototipo simple del sistema de facturación electrónica, entendiendo este como el conjunto de procesos que permiten detallar las transacciones entre compradores y vendedores. El objetivo de este sistema es consolidar las obligaciones tributarias de los vendedores y por otra parte, permitir a los compradores conocer las facturas emitidas a su nombre a fin de poder usarlas para beneficios tributarios.
+Para el proyecto se trabajará con un prototipo simple del sistema de facturación electrónica, entendiendo este como el conjunto de procesos que permiten detallar las transacciones entre compradores y vendedores. El objetivo de este sistema es consolidar las obligaciones tributarias de los vendedores y por otra parte, permitir a los compradores conocer las facturas emitidas a su nombre a fin de poder usarlas para beneficios tributarios.
 
 El sistema de facturación electrónica es un sistema a gran escala porque tiene alta transaccionalidad. De acuerdo con los datos de la entidad, entre julio y noviembre del año pasado se reportaron a la Dian más de tres mil millones de facturas electrónicas, lo cual equivale a más de 20 millones de facturas diarias. Esta cantidad está en aumento, dado que se seguirán incluyendo documentos equivalentes y tipos de transacción como: comprobantes de peaje, impuesto nacional de consumo, todas las actividades comerciales de personas o entidades, todas las actividades que ejerzan profesiones liberales, transacciones relacionadas con venta de bienes derivados de la actividad agrícola, entre otros. 
 
 Aunque el sistema de facturación electrónica contempla diversas funcionalidades, para el prototipo a desarrollar se considera un flujo básico en donde es posible que un comprador o un vendedor se pueda registrar en el sistema; así mismo que sea posible registrar facturas electrónicas (con datos básicos), y que un rol administrador pueda consultar facturas bien sea por comprador o por vendedor.
 
-Este  flujo simplificado, se representa en el siguiente gráfico:
+Este flujo simplificado, se representa en el siguiente gráfico:
 
 ![Flujo](Flujo.png)
 
@@ -46,7 +46,7 @@ El diseño arquitectónico para este prototipo se ilustra a continuación
 
 ### Diagrama de Componentes
 
-mermaid
+```mermaid
 graph TD
     Start@{ shape: circle, label: "Client" }
     
@@ -105,6 +105,7 @@ graph TD
             efact_reading_be --> |db_conn| efact_reading_db
         end
     end
+```
 
 ### Tabla de componentes
 | Tipo               | Componente                | Descripción                                   |
@@ -183,9 +184,9 @@ Estas funciones son utilizadas de acuerdo con el siguiente flujo:
 - appy_transformations es llamada y se encarga de iterar a través de todos los elementos (componentes y conectores) del modelo.
 - Dependiendo del elemento que se tenga en cada iteración, se llama la función correspondiente, que genera una carpeta skeleton/componente, con base en el template adecuado
     - generate_microservice: Genera el código para el microservicio, utilizando variables de ambiente para realizar los reemplazos necesarios.
-    - generate_dabase: Genera el código para la base de datos, que incluye los scripts de inicialización.
+    - generate_database: Genera el código para la base de datos, que incluye los scripts de inicialización.
     - generate_api_gateway: Genera el código para el API Gateway.
-    - generate_load_balancers: Identifica las relaciones entre los componentes a través de los conectores y genera el código correspondiente para manejarlas según corresponda.
+    - generate_load_balancer: Identifica las relaciones entre los componentes a través de los conectores y genera el código correspondiente para manejarlas según corresponda.
 
 Para cada una de estas funciones, se hace uso de plantillas que contienen el código para cada componente, lo cual permite una mantenibilidad y legibilidad mayor del sistema.
 
@@ -241,7 +242,7 @@ El proyecto está configurado para ser ejecutado en Docker a través de Docker-c
 #### Requisitos
 - Python 3.x
 - Docker compose
-- Dotenv
+- python-dotenv
 - Textx
 #### Ejecución
 Considerando la carpeta facturacion_electronica como la raíz del proyecto, situándose en la ruta /src, ejecutar los siguientes comandos:
@@ -262,7 +263,8 @@ Cada microservicio está diseñado para ser escalable, lo que significa que si u
 Para la primera entrega del prototipo, se implementó la estructura general que permitirá la generación automática del skeleton, asegurándose de que se realice la creación de elementos de diferente tipo: Front end, Api Gateway, Load Balancer, Back end y Bases de datos. 
 
 De forma inicial, los componentes que se encuentran implementados son los resaltados en verde en el diagrama, también listados en la tabla.
-mermaid
+
+```mermaid
 graph TD
     Start@{ shape: circle, label: "Client" }
     
@@ -330,7 +332,7 @@ graph TD
     style users_lb stroke:#14a636,stroke-width:2px
     style users_be stroke:#14a636,stroke-width:2px
     style users_db stroke:#14a636,stroke-width:2px
-
+```
 
 | Tipo               | Componente                | Descripción                                   |
 |--------------------|---------------------------|-----------------------------------------------|
