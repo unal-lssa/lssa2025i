@@ -1,19 +1,29 @@
-architecture:
+component frontend ecommerce_fe
+component backend ecommerce_be_usr
+component backend ecommerce_be_or
+component backend ecommerce_be_pd
+component backend ecommerce_be_inv
+component mqtp ecommerce_be_pmt
+component mqtp ecommerce_be_pmt_rep
+component api_gateway ecommerce_ag_us
+component load_balancer ecommerce_lb
+component database ecommerce_be_usr_db
+component database ecommerce_be_or_db
+component database ecommerce_be_pd_db
+component database ecommerce_be_inv_db
+component database ecommerce_be_pmt_db
 
-    component frontend ecommerce_fe
-    component backend ecommerce_be_usr
-    component backend ecommerce_be_or
-    component backend ecommerce_be_pd
-    component backend ecommerce_be_inv
-    component mqtp ecommerce_be_pmt
-    component mqtp ecommerce_be_pmt_rep
-    component api_gateway ecommerce_ag_us
-    component database ecommerce_be_or_db
-    component database ecommerce_be_pd_db
-    component database ecommerce_be_inv_db
-    component database ecommerce_be_pmt_db
-    component load_balancer ecommerce_lb
+connector http ecommerce_fe -> ecommerce_ag_us
+connector http ecommerce_ag_us -> ecommerce_lb
+connector http ecommerce_lb -> ecommerce_be_usr
+connector http ecommerce_lb -> ecommerce_be_or
+connector http ecommerce_lb -> ecommerce_be_pd
+connector http ecommerce_lb -> ecommerce_be_inv
+connector http ecommerce_lb -> ecommerce_be_pmt
+connector mq_connector ecommerce_be_pmt -> ecommerce_be_pmt_rep
 
-    connector http ecommerce_lb -> ecommerce_fe
-    connector http ecommerce_fe -> ecommerce_ag_us
-    connector db_connector ecommerce_be_or -> ecommerce_be_or_db
+connector db_connector ecommerce_be_usr -> ecommerce_be_usr_db
+connector db_connector ecommerce_be_or -> ecommerce_be_or_db
+connector db_connector ecommerce_be_pd -> ecommerce_be_pd_db
+connector db_connector ecommerce_be_inv -> ecommerce_be_inv_db
+connector db_connector ecommerce_be_pmt -> ecommerce_be_pmt_db
