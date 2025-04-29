@@ -287,6 +287,44 @@ The generated skeleton provides the basic structure for the system, organized in
 
 ---
 
+## Prototype
+
+This delivery contains a functional prototype of the game. It has the next functionality:
+
+
+### Front-end
+
+A web application has been created with a board to allow user to play Tic Tac Toe:
+
+**Characteristics**
+
+- A 3x3 grid as a standard Tic Tac Toe board
+- Connection to the back-end for matchmaking via websockets 
+- Count of online players
+
+
+### Back-end
+
+Functionalites have been created to control the game.
+
+**Characteristics**
+
+- Room handling - Automatchmaking
+	- If there is not room available for joining, it will create a new one, and will wait for a second
+	- If there is a room available for join, the player will be matched with the creator one. The players will be able to play by turns.
+- Turn management
+	The back-end sends a message to the players to activate/disactivate the option to pick a cell
+- Victory detection	
+	Once a player gets 3 marks in a row, he gets a win and game is over.
+	
+
+The next screenshot shows the game in execution:
+
+
+![Prototype](assets/prototype.png)
+
+---
+
 ## Architecture Diagram
 
 ```mermaid
