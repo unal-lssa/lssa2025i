@@ -1,11 +1,11 @@
 # Large-Scale Software Architecture - Universidad Nacional de Colombia 
 ## Project - Delivery 1 - Team 1
 #### Integrantes
-- Carlos Arévalo
-- Edsson Bonilla
+- Carlos Alberto Arevalo Martinez - 1072026839
+- Edsson Yannick Bonilla Hernandez - 79817391
 - Nancy VianethVera Rodríguez
-- Sebastián Ríos Sabogal
-- Yilver Alirio Ramírez Ochoa
+- Sebastian Rios Sabogal - 1143825130
+- Yilver Alirio Ramírez Ochoa - 1015994056
 - Julián Ricardo Beltrán Lizarazo - 1023949483
 
 ## Contexto del Sistema de Software
@@ -16,6 +16,8 @@ El sistema de facturación electrónica es un sistema a gran escala porque tiene
 Aunque el sistema de facturación electrónica contempla diversas funcionalidades, para el prototipo a desarrollar se considera un flujo básico en donde es posible que un comprador o un vendedor se pueda registrar en el sistema; así mismo que sea posible registrar facturas electrónicas (con datos básicos), y que un rol administrador pueda consultar facturas bien sea por comprador o por vendedor.
 
 Este  flujo simplificado, se representa en el siguiente gráfico:
+
+![Flujo](Flujo.png)
 
 Para este prototipo, se consideró un modelo de datos sencillo que permita validar la funcionalidad general del sistema. Para ello se establecieron los datos básicos así:
 
@@ -44,7 +46,7 @@ El diseño arquitectónico para este prototipo se ilustra a continuación
 
 ### Diagrama de Componentes
 
-```mermaid
+mermaid
 graph TD
     Start@{ shape: circle, label: "Client" }
     
@@ -103,7 +105,7 @@ graph TD
             efact_reading_be --> |db_conn| efact_reading_db
         end
     end
-```
+
 ### Tabla de componentes
 | Tipo               | Componente                | Descripción                                   |
 |--------------------|---------------------------|-----------------------------------------------|
@@ -137,7 +139,8 @@ graph TD
 
 ### Metamodelo
 Para el metamodelo se mantuvo un diseño simple de la gramática, que permite definir componentes y conectores, cada uno con su tipo respectivo. Para el alcance actual del proyecto, esta gramática es suficiente para describir la arquitectura del sistema.
-```
+
+```plaintext
 Model:
     'architecture' ':' elements*=Element
 ;
@@ -162,6 +165,7 @@ ConnectorType:
      'http' | 'db_conn' | 'lb_conn'
  ;
 ```
+
 La siguiente imagen describe el metamodelo:
 
 ![Metamodelo](metamodel.png)
@@ -176,8 +180,8 @@ En cuanto a las reglas de transformación, de forma general se cuenta con las si
 - Otras funciones auxiliares
 
 Estas funciones son utilizadas de acuerdo con el siguiente flujo:
-- appy_transformations es llamada y se encarga de terar a través de todos los elementos (componentes y conectores) del modelo.
-- Dependiendo del elemento que se tenga en cada iteración, se llama la función correspondiente.
+- appy_transformations es llamada y se encarga de iterar a través de todos los elementos (componentes y conectores) del modelo.
+- Dependiendo del elemento que se tenga en cada iteración, se llama la función correspondiente, que genera una carpeta skeleton/componente, con base en el template adecuado
     - generate_microservice: Genera el código para el microservicio, utilizando variables de ambiente para realizar los reemplazos necesarios.
     - generate_dabase: Genera el código para la base de datos, que incluye los scripts de inicialización.
     - generate_api_gateway: Genera el código para el API Gateway.
@@ -189,7 +193,6 @@ Esto nos permite realizar una práctica transformación de nuestro modelo a un a
 
 ### Modelo
 El modelo describe la arquitectura diseñada de acuerdo con el metamodelo definido.
-```
 architecture:
 
     component frontend register_fe
@@ -220,7 +223,6 @@ architecture:
 
     connector http efact_ag -> users_lb
     connector http efact_ag -> efact_writing_lb
-    connector http efact_ag -> efact_writing_lb
     connector http efact_ag -> efact_reading_lb
 
     connector lb_conn users_lb -> users_be
@@ -230,25 +232,37 @@ architecture:
     connector db_conn users_be -> users_db
     connector db_conn efact_writing_be -> efact_writing_db
     connector db_conn efact_reading_be -> efact_reading_db
-```
+
 
 ### Skeleton
+Una vez que se ejecuta el generador, se crea la carpeta skeleton/, que contiene todos los archivos y directorios necesarios para la creación de los  microservicios.
 ### Instrucciones de ejecución
 El proyecto está configurado para ser ejecutado en Docker a través de Docker-compose.
 #### Requisitos
 - Python 3.x
 - Docker compose
-- TODO: Listar resto de dependencias y/o crear dockerfile para ejecutar el generation.py
+- Dotenv
+- Textx
 #### Ejecución
-Considerando la carpeta `facturacion_electronica` como la raíz del proyecto, situándose en la ruta `/src`, ejecutar los siguientes comandos:
-- `py .\generation.py`
-- `docker-compose up --build`
+Considerando la carpeta facturacion_electronica como la raíz del proyecto, situándose en la ruta /src, ejecutar los siguientes comandos:
+- py .\generation.py
+- docker-compose up --build
 ### Uso/Pruebas
+#### Características Principales del Prototipo
+- Escalabilidad:
+Cada microservicio está diseñado para ser escalable, lo que significa que si uno de los servicios experimenta una carga alta, se pueden agregar más instancias del servicio de forma dinámica. Esto está habilitado por el uso de balanceadores de carga y la distribución de servicios en contenedores.
+- Desacoplamiento de Servicios: Los diferentes servicios están desacoplados, lo que permite que cada uno de ellos se desarrolle, mantenga y actualice de manera independiente. Esto promueve la flexibilidad y la facilidad de mantenimiento.
+- Seguridad: Se diseñó la arquitectura con un componente que implementa un servicio de autenticación (con JWT) para validar las solicitudes y garantizar que solo los usuarios autorizados tengan acceso a los servicios.
+- Orquestación con Docker: Este prototipo utiliza Docker y Docker Compose para definir y gestionar los contenedores, lo que permite una implementación rápida y fácil del sistema.
+- API Gateway Centralizado: El uso de un API Gateway centralizado simplifica la gestión de rutas y la autenticación de las solicitudes. Todos los servicios del frontend se comunican a través del API Gateway, que luego redirige las solicitudes a los microservicios backend apropiados.
+- Flexibilidad de la Base de Datos: Cada servicio tiene su propia base de datos, lo que permite que cada microservicio esté optimizado para su propio tipo de datos y no dependa de un único sistema de bases de datos. Esto facilita la implementación de políticas de respaldo, escalabilidad y recuperación ante fallos.
+- Optimización de la Comunicación entre Componentes: Las conexiones HTTP entre el frontend y el API Gateway, así como entre los servicios de backend y las bases de datos, permiten una comunicación eficiente entre los diferentes componentes del sistema.
+
 #### Prototipo
 Para la primera entrega del prototipo, se implementó la estructura general que permitirá la generación automática del skeleton, asegurándose de que se realice la creación de elementos de diferente tipo: Front end, Api Gateway, Load Balancer, Back end y Bases de datos. 
 
 De forma inicial, los componentes que se encuentran implementados son los resaltados en verde en el diagrama, también listados en la tabla.
-```mermaid
+mermaid
 graph TD
     Start@{ shape: circle, label: "Client" }
     
@@ -316,7 +330,7 @@ graph TD
     style users_lb stroke:#14a636,stroke-width:2px
     style users_be stroke:#14a636,stroke-width:2px
     style users_db stroke:#14a636,stroke-width:2px
-```
+
 
 | Tipo               | Componente                | Descripción                                   |
 |--------------------|---------------------------|-----------------------------------------------|
@@ -351,3 +365,9 @@ Por lo tanto, una vez ejecutado el sistema, para comprobar la funcionalidad del 
 - Recargar el *Dashboard de administrador* y verificar que el usuario ingresado se encuentre en el listado.
 
 ### Conclusiones
+
+Este enfoque MDE permitió:
+- Asegurar la **trazabilidad** entre el modelo de arquitectura y los artefactos generados.
+- **Reducir errores manuales** en la configuración de servicios y sus interconexiones.
+- **Facilitar la escalabilidad** y el mantenimiento futuro del sistema, al permitir modificar o extender el modelo para reflejar cambios de negocio sin rehacer manualmente la infraestructura.
+- **Optimizar la productividad** en el desarrollo de soluciones de software a gran escala, permitiendo pasar de diseño conceptual a implementación ejecutable de manera automatizada.
