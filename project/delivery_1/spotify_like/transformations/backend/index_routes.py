@@ -71,7 +71,7 @@ def hello():
 from elasticsearch import Elasticsearch
 
 def get_db_connection():
-	return Elasticsearch([{'host': '{target}', 'port': 9200}])
+	return Elasticsearch([{{'host': '{target}', 'port': 9200}}])
 
 @app.route('/')
 def hello():
