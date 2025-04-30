@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+
+  # Balanceador de carga entre las dos instancias del API Gateway
+  load_balancer:
+    build: ./load_balancer
+    ports:
+      - "8000:8000"
+    depends_on:
+      - api_gateway1
+      - api_gateway2
+
+  # Primera instancia del API Gateway
+  api_gateway1:
+    build: ./api_gateway
+    ports:
+      - "5000:5000"
+    depends_on:
+      - cache
+      - database
+      - worker
+      - parallel_worker
+
+  # Segunda instancia del API Gateway (mismo código, distinto puerto externo)
+  api_gateway2:
+    build: ./api_gateway
+    ports:
+      - "5003:5000"
+    depends_on:
+      - cache
+      - database
+      - worker
+      - parallel_worker
+
+  # Servicio de caché en memoria
+  cache:
+    build: ./cache
+    ports:
+      - "5004:5004"
+
+  # Base de datos simulada
+  database:
+    build: ./database
+    ports:
+      - "5002:5002"
+
+  # Microservicio funcional (no usado directamente por el gateway, pero útil para extensiones)
+  microservice:
+    build: ./microservice
+    ports:
+      - "5001:5001"
+
+  # Worker asincrónico con hilos
+  worker:
+    build: ./worker
+    ports:
+      - "5005:5005"
+
+  # Worker para tareas pesadas con procesos
+  parallel_worker:
+    build: ./parallel_worker
+    ports:
+      - "5006:5006"
