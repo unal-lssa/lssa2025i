@@ -37,97 +37,76 @@ architecture:
     # Componentes frontend
     component frontend app_fe
         network public_net
-        ports 80:80, 443:443
 
     # Componentes de backend
     component backend catalog_service
         network catalog_service_net
-        ports: 80
 
     component backend user_service
         network user_service_net
-        ports: 80
 
     component backend auth_service
         network auth_service_net
-        ports: 80
 
     component backend playlist_service
         network playlist_service_net
-        ports: 80
 
     component backend file_producer
         network file_processor_net
-        ports: 80
 
     component backend file_consumer
         network file_processor_net
-        ports: 80
 
     # Componentes de datos
     component db metadata_db postgresql
         network file_processor_net
-        ports: 81
 
     component db catalog_db elasticsearch
         network catalog_service_net
-        ports: 81
 
     component db user_db postgresql
         network user_service_net
-        ports: 81
 
     component db auth_db postgresql
         network auth_service_net
-        ports: 81
 
     component db playlist_db mongodb
         network playlist_service_net
-        ports: 81
 
     # Componentes de cola
     component queue upload_queue
         partitions 1
         replication 1
         network file_processor_net
-        ports: 82
 
     # Componentes de balanceo de carga
     component loadbalancer catalog_lb 1 catalog_service
         network catalog_service_net
-        ports: 83
 
     component loadbalancer user_lb 1 user_service
         network user_service_net
-        ports: 83
 
     component loadbalancer auth_lb 1 auth_service
         network auth_service_net
-        ports: 83
 
     component loadbalancer playlist_lb 1 playlist_service
         network playlist_service_net
-        ports: 83
 
     component loadbalancer file_producer_lb 1 file_producer
         network file_processor_net
-        ports: 83
 
     # Api Gateway
     component api_gateway api_gateway_comp
-        ports: 84
         auth auth_lb
         networks api_gateway_net, catalog_service_net, user_service_net, auth_service_net, playlist_service_net, file_processor_net
 
     # CDN
     component cdn songs_cdn
         network public_net
-        ports: 85
 
     # Bucket
     component bucket music_storage
         network public_net
-        ports: 86
 
     # Conectores
     ## Front -> Api Gateway
