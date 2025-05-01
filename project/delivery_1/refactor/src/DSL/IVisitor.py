@@ -9,7 +9,7 @@ from .Queue import Queue
 from .Connector import Connector
 
 
-class Visitor(ABC):
+class IVisitor(ABC):
     @abstractmethod
     def visit_model(self, model: Model) -> None:
         pass
