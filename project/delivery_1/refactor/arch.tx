@@ -25,7 +25,6 @@ LoadBalancer:
         instanceCount=INT
         target=[Component]
         'network' network=[Network]
-        ('ports' ':' portMappings+=PortMapping (',' portMappings+=PortMapping)*)?
 ;
 
 PortMapping:
@@ -37,7 +36,6 @@ StandardComponent:
     'component' type=StandardComponentType
         name=ID
         'network' network=[Network]
-        ('ports' ':' portMappings+=PortMapping (',' portMappings+=PortMapping)*)?
 ;
 
 StandardComponentType:
@@ -49,7 +47,6 @@ Database:
         name=ID
         databaseType=DatabaseType
         'network' network=[Network]
-        ('ports' ':' portMappings+=PortMapping (',' portMappings+=PortMapping)*)?
 ;
 
 DatabaseType:
@@ -61,7 +58,6 @@ ApiGateway:
         name=ID
         'auth' auth=[Component]
         'networks' networks+=[Network] (',' networks+=[Network])*
-        ('ports' ':' portMappings+=PortMapping (',' portMappings+=PortMapping)*)?
 ;
 
 Queue:
@@ -69,7 +65,6 @@ Queue:
         'partitions' partitions=INT
         'replication' replication=INT
         'network' network=[Network]
-        ('ports' ':' portMappings+=PortMapping (',' portMappings+=PortMapping)*)?
 ;
 
 ConnectorType:
