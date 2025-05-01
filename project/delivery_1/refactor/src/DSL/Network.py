@@ -1,9 +1,9 @@
 from typing import Optional
-from .AElement import AElement
+from .IElement import IElement
 from .IVisitor import IVisitor
 
 
-class Network(AElement):
+class Network(IElement):
     def __init__(
         self,
         name: str,

@@ -1,9 +1,9 @@
 from abc import ABC
-from .AElement import AElement
+from .IElement import IElement
 from .Network import Network
 
 
-class AComponent(AElement, ABC):
+class AComponent(IElement, ABC):
     def __init__(self, name: str, network: Network):
         super().__init__(name)
         self._network = network
@@ -16,3 +16,11 @@ class AComponent(AElement, ABC):
         # Ensure network association exists
         if self._network is None:
             raise ValueError(f"Component '{self.name}' must belong to a network.")
+        if not isinstance(self._network, Network):
+            raise TypeError(
+                f"Network must be of type 'Network', got {type(self._network).__name__}."
+            )
+
+        # Ensure the component name is not empty
+        if not self.name:
+            raise ValueError("Component name cannot be empty.")

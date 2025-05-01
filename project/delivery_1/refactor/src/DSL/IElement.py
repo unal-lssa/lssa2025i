@@ -2,7 +2,7 @@ from abc import abstractmethod, ABCMeta
 from .IVisitor import IVisitor
 
 
-class AElement(metaclass=ABCMeta):
+class IElement(metaclass=ABCMeta):
     """Abstract base class for all elements in the DSL."""
 
     def __init__(self, name: str):

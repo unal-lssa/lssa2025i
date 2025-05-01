@@ -22,3 +22,8 @@ class StandardComponent(AComponent):
 
     def accept(self, visitor: IVisitor) -> None:
         visitor.visit_standard_component(self)
+
+    def validate(self):
+        super().validate()
+        if not isinstance(self.type, StandardComponentType):
+            raise ValueError("Invalid standard component type.")

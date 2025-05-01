@@ -26,3 +26,10 @@ class Queue(AComponent):
 
     def accept(self, visitor: IVisitor) -> None:
         visitor.visit_queue(self)
+
+    def validate(self) -> None:
+        super().validate()
+        if not isinstance(self.partitions, int) or self.partitions <= 0:
+            raise ValueError("Partitions must be a positive integer.")
+        if not isinstance(self.replication, int) or self.replication <= 0:
+            raise ValueError("Replication must be a positive integer.")

@@ -25,3 +25,12 @@ class LoadBalancer(AComponent):
 
     def accept(self, visitor: IVisitor) -> None:
         visitor.visit_load_balancer(self)
+
+    def validate(self) -> None:
+        super().validate()
+        if self._instance_count <= 0:
+            raise ValueError(
+                f"LoadBalancer {self.name} must have a positive instance count."
+            )
+        if not isinstance(self._target, AComponent):
+            raise TypeError(f"LoadBalancer {self.name} target must be an AComponent.")

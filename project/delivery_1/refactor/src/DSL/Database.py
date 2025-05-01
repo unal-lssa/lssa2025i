@@ -26,3 +26,8 @@ class Database(AComponent):
 
     def accept(self, visitor: IVisitor) -> None:
         visitor.visit_database(self)
+
+    def validate(self):
+        super().validate()
+        if not isinstance(self.database_type, DatabaseType):
+            raise ValueError("Invalid database type.")

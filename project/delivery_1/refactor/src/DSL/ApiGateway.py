@@ -25,3 +25,10 @@ class ApiGateway(AComponent):
 
     def accept(self, visitor: IVisitor) -> None:
         visitor.visit_api_gateway(self)
+
+    def validate(self) -> None:
+        super().validate()
+        if not isinstance(self.auth, AComponent):
+            raise TypeError("Auth must be an instance of AComponent.")
+        if not all(isinstance(net, Network) for net in self.networks):
+            raise TypeError("All networks must be instances of Network.")
