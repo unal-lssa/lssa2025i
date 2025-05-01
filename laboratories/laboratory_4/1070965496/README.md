@@ -144,9 +144,6 @@ Se incluyó un script que genera múltiples peticiones concurrentes para observa
 ✅ **Separación clara de responsabilidades:**  
 Cada componente tiene una función clara, lo que permite escalar horizontalmente con facilidad.
 
-✅ **Autenticación integrada (JWT):**  
-Se mantiene la seguridad de las peticiones mediante tokens válidos.
-
 ---
 
 ## 📌 Recomendaciones
