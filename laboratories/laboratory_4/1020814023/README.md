@@ -2,17 +2,11 @@
 
 ## Full name: Juan Sebastián Alcina Rodríguez
 
-# Additional services
+# New configuration to test load balancing and caching patterns
 
-1. Message microservice
+1. Log de trazabilidad por instanica
 
-This microservice return a simple message. If the request is successful it will return: 'Este microservicio únicamente devuelve este mensaje si tienes el rol "user". Consulta satisfactoria!'
-
-2. Stats microservice
-
-This microservice counts the total number of visits. It returns the number of visits the service has.
-
-# New rules for limiting exposure
+Modifica api_gateway.py (y su segunda instancia en el puerto 5003) para que cada instancia imprima un identificador único (ej. print("Handled by API Gateway 1")) y así validar que el balanceador realmente distribuye las peticiones.
 
 1. Roles and permissions
 
