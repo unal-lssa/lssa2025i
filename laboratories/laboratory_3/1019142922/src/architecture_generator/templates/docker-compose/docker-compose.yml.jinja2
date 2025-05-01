@@ -1,0 +1,45 @@
+services:
+  api_gateway:
+    build: ./api_gateway
+    ports:
+      - '8000:8000'
+    networks:
+      - public
+      - internal
+
+{% for name, component in components.items() %}
+  {{ name }}:
+    {% if component.type == "database" %}
+    image: mysql:8
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE={{ name }}
+    volumes:
+      - ./{{ name }}/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - internal
+    ports:
+      - '{{ 3306 + loop.index0 }}:3306'
+    {% elif component.type == "frontend" %}
+    build: ./{{ name }}
+    ports:
+      - '{{ 8000 + loop.index0 }}:80'
+    networks:
+      - public
+    {% else %}
+    build: ./{{ name }}
+    networks:
+      - internal
+    {% if component.type == "backend" %}
+    depends_on:
+      - {{ db_component }}
+    {% endif %}
+    {% endif %}
+{% endfor %}
+
+networks:
+  public:
+    driver: bridge
+  internal:
+    driver: bridge
+    internal: true 
