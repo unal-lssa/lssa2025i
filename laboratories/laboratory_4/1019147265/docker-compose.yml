@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   load_balancer:
     build: ./load_balancer
@@ -16,6 +14,11 @@ services:
     ports:
       - "5000:5000"
 
+  api_gateway_2:
+    build: ./api_gateway
+    ports:
+      - "5003:5000"
+
   microservice:
     build: ./microservice
     ports:
@@ -30,3 +33,8 @@ services:
     build: ./database
     ports:
       - "5002:5002"
+
+  login_service:
+    build: ./login_service
+    ports:
+      - "5006:5006"

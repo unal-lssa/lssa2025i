@@ -11,6 +11,7 @@ SECRET_KEY = "secret"
 def token_required(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
+        print("Checking token...")
         token = request.headers.get("Authorization")
         if not token: return jsonify({'error': 'Missing token'}), 403
         try: jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
@@ -22,6 +23,7 @@ def token_required(f):
 @app.route("/data", methods=["GET"])
 @token_required
 def get_data():
+    print("Fetching data...")
     cache_resp = requests.get("http://127.0.0.1:5004/cache/my_data").json()
     if cache_resp['value']:
         return jsonify({'cached': True, 'data': cache_resp['value']})
@@ -39,4 +41,4 @@ def long_task():
     return jsonify({'status': 'Task queued'}), 202
 
 if __name__ == "__main__":
-    app.run(port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
