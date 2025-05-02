@@ -1,0 +1,155 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  ecommerce_be_or_db:
+    image: mysql:8
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=ecommerce_be_or_db
+    volumes:
+      - ./ecommerce_be_or_db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: mysqladmin ping -h localhost -proot
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  ecommerce_be_pd_db:
+    image: mysql:8
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=ecommerce_be_pd_db
+    volumes:
+      - ./ecommerce_be_pd_db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: mysqladmin ping -h localhost -proot
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  ecommerce_be_inv_db:
+    image: mysql:8
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=ecommerce_be_inv_db
+    volumes:
+      - ./ecommerce_be_inv_db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: mysqladmin ping -h localhost -proot
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  ecommerce_be_pmt_db:
+    image: mysql:8
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=ecommerce_be_pmt_db
+    volumes:
+      - ./ecommerce_be_pmt_db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: mysqladmin ping -h localhost -proot
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  ecommerce_be_or:
+    build: ./ecommerce_be_or
+    depends_on:
+      ecommerce_be_or_db:
+        condition: service_healthy
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:80/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  ecommerce_be_pd:
+    build: ./ecommerce_be_pd
+    depends_on:
+      ecommerce_be_pd_db:
+        condition: service_healthy
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:80/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  ecommerce_be_inv:
+    build: ./ecommerce_be_inv
+    depends_on:
+      ecommerce_be_inv_db:
+        condition: service_healthy
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:80/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  ecommerce_be_pmt:
+    build: ./ecommerce_be_pmt
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      ecommerce_be_pmt_db:
+        condition: service_healthy
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:80/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  ecommerce_ag_us:
+    build: ./ecommerce_ag_us
+    depends_on:
+      ecommerce_be_or:
+        condition: service_healthy
+      ecommerce_be_pd:
+        condition: service_healthy
+      ecommerce_be_inv:
+        condition: service_healthy
+      ecommerce_be_pmt:
+        condition: service_healthy
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:80/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  ecommerce_fe:
+    build: ./ecommerce_fe
+    depends_on:
+      ecommerce_ag_us:
+        condition: service_healthy
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:80/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  ecommerce_lb:
+    build: ./ecommerce_lb
+    ports:
+      - '8080:80'
+    depends_on:
+      ecommerce_fe:
+        condition: service_healthy
+
+
+networks:
+  default:
+    driver: bridge
