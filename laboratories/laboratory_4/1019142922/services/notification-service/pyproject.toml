@@ -1,0 +1,8 @@
+[project]
+name = "notification-service"
+version = "0.1.0"
+description = "Basic implementation of a Task Queue"
+requires-python = ">=3.13"
+dependencies = [
+    "httpx>=0.28.1",
+]

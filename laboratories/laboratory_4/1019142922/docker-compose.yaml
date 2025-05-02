@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: ./services/frontend
+    ports:
+      - "80:80"
+
+  load_balancer:
+    build: ./services/load-balancer
+    ports:
+      - "8000:8000"
+
+  api_gateway_1:
+    build: ./services/api-gateway
+    ports:
+      - "8001:8000"
+
+  api_gateway_2:
+    build: ./services/api-gateway
+    ports:
+      - "8002:8000"
+
+  database:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: tutoring
+    volumes:
+      - ./services/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  search_service:
+    build: ./services/search-service
+    depends_on:
+      - database
+
+
+  booking_service:
+    build: ./services/booking-service
+    depends_on:
+      - database
+
+  queue:
+    build: ./services/queue
+
+  cache:
+    build: ./services/cache
+
+  notification_service:
+    build: ./services/notification-service
+    depends_on:
+      - queue
+

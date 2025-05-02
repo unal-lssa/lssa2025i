@@ -1,0 +1,9 @@
+[project]
+name = "queue"
+version = "0.1.0"
+description = "Basic implementation of a Task Queue"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.115.12",
+    "pydantic>=2.11.4",
+]
