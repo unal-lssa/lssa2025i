@@ -3,25 +3,46 @@ import jwt, requests
 from functools import wraps
 from threading import Thread
 import time
+import os
 
 app = Flask(__name__)
 SECRET_KEY = "secret"
+
+USERS = {"user1": "password123"}
+
+
+# Route for user login (returns JWT token)
+@app.route("/login", methods=["POST"])
+def login():
+    auth = request.get_json()
+    username = auth.get("username")
+    password = auth.get("password")
+    if USERS.get(username) == password:
+        token = jwt.encode({"username": username}, SECRET_KEY, algorithm="HS256")
+        return jsonify({"token": token})
+    return jsonify({"message": "Invalid credentials"}), 401
 
 
 # Decorators (reuse token auth if desired)
 def token_required(f):
     @wraps(f)
-    def wrapper(*args, **kwargs):
+    def decorated_function(*args, **kwargs):
         token = request.headers.get("Authorization")
         if not token:
-            return jsonify({"error": "Missing token"}), 403
+            return jsonify({"message": "Token is missing!"}), 403
         try:
+            print(token)
+            # Remove "Bearer " if present
+            if token.startswith("Bearer "):
+                token = token[7:]
+
             jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-        except:
-            return jsonify({"error": "Invalid token"}), 403
+        except Exception as e:
+            print(e)
+            return jsonify({"message": "Token is invalid!"}), 403
         return f(*args, **kwargs)
 
-    return wrapper
+    return decorated_function
 
 
 # Cached data access
@@ -49,4 +70,5 @@ def long_task():
 
 
 if __name__ == "__main__":
-    app.run(port=5000, debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(port=port, debug=True)
