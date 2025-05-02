@@ -12,7 +12,7 @@ The objective of the second (final) delivery of the project is to perform an ite
 * Perform four architectural verification iterations for the software system designed in **Delivery 1**.
 * Iteration 1 must be based on the architectural model created in the **Delivery 1** and must focus on the **security** quality attribute (scenario).
 * Iteration 2 must be based on a new architectural model that includes at least one architectural tactic and an architectural pattern that allows responding to the scenario posed in iteration 1.
-* Iteration 3 must be based on the architectural model created in the iteration 3 and must focus on the **scalability** quality attribute (scenario).
+* Iteration 3 must be based on the architectural model created in the iteration 2 and must focus on the **scalability** quality attribute (scenario).
 * Iteration 4 must be based on a new architectural model that includes at least one architectural tactic and an architectural pattern that allows responding to the scenario posed in iteration 3.
 * Execute each iteration through a process that includes: modeling, instantiation, graphing (C&C architectural view and deployment architectural view (if applicable)), simulation (of the quality attribute scenarios), and analysis of results. Refer to Lab 5. Use a general-purpose programming language for this activity (preferably Python) and develop the process using a Jupyter Notebook in Google Colab.
 
@@ -26,12 +26,12 @@ The objective of the second (final) delivery of the project is to perform an ite
 
 ### 4.1. Deliverable
 
-* Link (URL) to a Jupyter Notebook, created and stored in Google Colab, named lssa_2025i_d2_x.ipynb (where X = the name of the system), which must contain:
- - Full names of team members.
- - System name.
- - System description.
- - Executable code for each execution (Note: execution must be possible directly in the Jupyter Notebook).
- - Descriptions associated with each phase of each execution: modeling, instantiation, graphing, simulation, and results analysis.
+* Link (URL) to a Jupyter Notebook, created and stored in Google Colab, named **lssa_2025i_d2_x.ipynb** (where X = the name of the system), which must contain:
+  - Full names of team members.
+  - System name.
+  - System description.
+  - Executable code for each execution (*Note:* execution must be possible directly in the Jupyter Notebook).
+  - Descriptions associated with each phase of each execution: modeling, instantiation, graphing, simulation, and results analysis.
 
 ### 4.2. Submission Format
 
