@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  api_gateway_1:
+    build:
+      context: ./api_gateway
+    ports:
+      - "5000:5000"
+    container_name: api_gateway_1
+    networks:
+      - lssa_net
+    depends_on:
+      - cache
+      - database
+      - worker
+
+  api_gateway_2:
+    build:
+      context: ./api_gateway
+    ports:
+      - "5003:5000"
+    container_name: api_gateway_2
+    networks:
+      - lssa_net
+    depends_on:
+      - cache
+      - database
+      - worker
+
+  api_gateway_3:
+    build:
+      context: ./api_gateway
+    ports:
+      - "5006:5000"
+    container_name: api_gateway_3
+    networks:
+      - lssa_net
+    depends_on:
+      - cache
+      - database
+      - worker
+
+  cache:
+    build:
+      context: ./cache
+    ports:
+      - "5004:5004"
+    container_name: cache_service
+    networks:
+      - lssa_net
+
+  database:
+    build:
+      context: ./database
+    ports:
+      - "5002:5002"
+    container_name: database_service
+    networks:
+      - lssa_net
+
+  worker:
+    build:
+      context: ./worker
+    ports:
+      - "5005:5005"
+    container_name: worker_service
+    networks:
+      - lssa_net
+
+  load_balancer:
+    build:
+      context: ./load_balancer
+    ports:
+      - "8000:8000"
+    container_name: load_balancer
+    networks:
+      - lssa_net
+
+networks:
+  lssa_net:
