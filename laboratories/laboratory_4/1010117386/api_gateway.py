@@ -46,16 +46,16 @@ def token_required(f):
 
 
 # Cached data access
-@app.route("/data", methods=["GET"])
+@app.route("/data/<element>", methods=["GET"])
 @token_required
-def get_data():
-    cache_resp = requests.get("http://127.0.0.1:5004/cache/my_data").json()
+def get_data(element):
+    cache_resp = requests.get("http://127.0.0.1:5004/cache/" + element).json()
     if cache_resp["value"]:
         return jsonify({"cached": True, "data": cache_resp["value"]})
     # Simulate DB fetch
-    db_resp = requests.get("http://127.0.0.1:5002/db").json()
+    db_resp = requests.get("http://127.0.0.1:5002/db/" + element).json()
     requests.post(
-        "http://127.0.0.1:5004/cache/my_data", json={"value": db_resp["message"]}
+        "http://127.0.0.1:5004/cache/" + element, json={"value": db_resp["message"]}
     )
     return jsonify({"cached": False, "data": db_resp["message"]})
 
@@ -67,6 +67,13 @@ def long_task():
     payload = request.json
     requests.post("http://127.0.0.1:5005/task", json=payload)
     return jsonify({"status": "Task queued"}), 202
+
+
+# Trigger async task
+@app.route("/process", methods=["GET"])
+@token_required
+def process():
+    return requests.get("http://127.0.0.1:5008/process").json()
 
 
 if __name__ == "__main__":

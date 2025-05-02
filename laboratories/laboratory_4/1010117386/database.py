@@ -3,9 +3,10 @@ from flask import Flask, jsonify
 app = Flask(__name__)
 
 
-@app.route("/db", methods=["GET"])
-def db_data():
-    return jsonify({"message": "Fetched fresh data from DB"})
+@app.route("/db/<element>", methods=["GET"])
+def db_data(element):
+    message = "Fetched resource " + element + " from DB"
+    return jsonify({"message": message})
 
 
 if __name__ == "__main__":
