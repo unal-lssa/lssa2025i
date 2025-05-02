@@ -42,7 +42,7 @@ def get_data():
 def long_task():
     payload = request.json
     requests.post("http://127.0.0.1:5005/task", json=payload)
-    return jsonify({'status': 'Task queued'}), 202
+    return jsonify({'status': 'Task queued',"gateway":"5000"}), 202
 
 if __name__ == "__main__":
     app.run(port=5000, debug=True)
