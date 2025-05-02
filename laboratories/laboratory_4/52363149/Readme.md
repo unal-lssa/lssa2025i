@@ -20,4 +20,32 @@
 5. Gestión asincronica de tareas
    Las tareas largas se delegan a los "workers", con lo cual éstos se podrían escalar de manera independiente. Además de esto, el sistema se proteje al impedir que las tareas largas bloqueen otros procesos.
 
+
+#### Ejecución:
+
+1. Ejecutar star_services para levantar todos los servicios
+
+
+       python star_services.py
+
+
+3. Obtener un token valido ejecutando user
+
+
+         python user.py
+
+
+4. Se pueden hacer llamados get y post a los diferentes microservicios. El load_balancer se encargará de distribuir estas peticiones entre los microservicios disponibles:
+
+
+| **Componente**                    | **Puerto** | **Rutas**                                 | **Funcionalidad**                                                                                     
+| --------------------------------- | ---------- | ----------------------------------------- | -----------------------------------------------------------------------------------------------------
+| **api_gateway**                   | 8000       | `/data`, `/longtask`, `/db`, `/analytics` | Punto de entrada principal. Verifica el token JWT y redirige las peticiones al balanceador 
+| **load_balancer**                 |            | Interno (usado por api\_gateway)          | Balancea peticiones entre `microservicio1` y `microservicio2` para `/data` y `/longtask`           
+| **microservice**                  | 5001       | `/data`, `/longtask`                      | Devuelve datos simulados y redirige tareas largas al **worker**.                                      
+| **microservice2**                 | 5002       | `/data`, `/longtask`                      | Similar a microservicio1.                      
+| **database**                      | 5003       | `/db`                                     | Simula acceso a base de datos.                                        
+| **analytics**                     | 5005       | `/analyze`                                | Simula analisis de datos.                             
+| **worker**                        | 5006       | `/task`                                   | Simula ejecución de tareas asincrónicas largas                                                
+
    
