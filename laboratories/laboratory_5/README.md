@@ -73,3 +73,23 @@ Adding some Performance & Scalability tactics leads to improved system performan
 * We introduced Limit Event Response.
 
 Thanks to the simulator, you can verify that the system's performance is as agreed and even find possible areas for improvement.
+
+## 5. Delivery
+
+### 5.1. Deliverable
+
+* Full name.
+* The same excercise with the following improvement: Extend this design by adding additional resources to test load balancing patterns on the worker component by introducing the Weighted Round-Robin algorithm.
+
+### 5.2. Submission Format
+
+* The deliverable must be submitted via GitHub ([lssa2025i](https://github.com/unal-lssa/lssa2025i) repository).
+* Steps:
+  - Use the branch corresponding to your team (team1, team2, ...).
+  - In the folder [laboratories/laboratory_5](), create an **X** folder (where X = your identity document number), which must include the **deliverable**:
+    + README.md with the full name and steps for executing the exercise.
+    + Related files to execute.
+
+### 4.3. Delivery Deadline
+
+Friday, May 09, 2025, before 23h59.
