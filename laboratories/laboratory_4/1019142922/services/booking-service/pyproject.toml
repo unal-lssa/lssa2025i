@@ -1,0 +1,10 @@
+[project]
+name = "booking-service"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.13"
+dependencies = [
+    "asyncpg>=0.30.0",
+    "fastapi[standard]>=0.115.12",
+    "httpx>=0.28.1",
+]

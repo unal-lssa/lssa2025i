@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tutoring Service</title>
+    <script>
+        async function login() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const response = await fetch("http://localhost:8000/token", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `username=${username}&password=${password}`
+            });
+            const data = await response.json();
+            localStorage.setItem("token", data.access_token);
+            alert("Logged in!");
+        }
+
+        async function searchTutors() {
+            const subject = document.getElementById("subject").value;
+            const response = await fetch(`http://localhost:8000/search?subject=${subject}`, {
+                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+            });
+            const data = await response.json();
+            document.getElementById("results").innerText = JSON.stringify(data, null, 2);
+        }
+
+        async function bookSession() {
+            const studentId = document.getElementById("student_id").value;
+            const tutorId = document.getElementById("tutor_id").value;
+            const response = await fetch("http://localhost:8000/book", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ student_id: studentId, tutor_id: tutorId })
+            });
+            const data = await response.json();
+            alert("Booking status: " + data.status);
+        }
+    </script>
+</head>
+<body>
+    <h1>Tutoring Service</h1>
+    <h2>Login</h2>
+    <input id="username" placeholder="Username">
+    <input id="password" placeholder="Password" type="password">
+    <button onclick="login()">Login</button>
+    <h2>Search Tutors</h2>
+    <input id="subject" placeholder="Subject">
+    <button onclick="searchTutors()">Search</button>
+    <pre id="results"></pre>
+    <h2>Book a Session</h2>
+    <input id="student_id" placeholder="Student ID">
+    <input id="tutor_id" placeholder="Tutor ID">
+    <button onclick="bookSession()">Book</button>
+</body>
+</html>
+
