@@ -1,0 +1,9 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY load_balancer.py /app/
+COPY /utils /app/utils
+RUN pip install flask
+
+CMD ["python", "load_balancer.py"]

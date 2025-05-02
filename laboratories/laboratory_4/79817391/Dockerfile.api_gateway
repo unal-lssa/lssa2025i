@@ -1,0 +1,15 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY api_gateway.py /app/
+COPY /utils /app/utils
+COPY /test  /app/test
+
+# Instalamos las dependencias necesarias
+RUN apt-get update && \
+    apt-get install -y openssh-server net-tools lsof nano iputils-ping
+
+RUN pip install flask requests pyjwt pytest
+
+CMD ["python", "api_gateway.py"]
