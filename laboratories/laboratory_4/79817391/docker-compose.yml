@@ -1,0 +1,94 @@
+services:
+  api_gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.api_gateway
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    depends_on:
+      - cache
+      - database
+      - worker
+    networks:
+      - app_network
+
+  api_gateway_2:
+    build:
+      context: .
+      dockerfile: Dockerfile.api_gateway
+    ports:
+      - "5003:5000"
+    env_file:
+      - .env
+    depends_on:
+      - cache
+      - database
+      - worker
+    networks:
+      - app_network
+
+  load_balancer:
+    build:
+      context: .
+      dockerfile: Dockerfile.load_balancer
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env    
+    depends_on:
+      - api_gateway
+      - api_gateway_2
+    networks:
+      - app_network
+
+  cache:
+    build:
+      context: .
+      dockerfile: Dockerfile.cache
+    ports:
+      - "5004:5004"
+    env_file:
+      - .env      
+    networks:
+      - app_network
+
+  database:
+    build:
+      context: .
+      dockerfile: Dockerfile.database
+    ports:
+      - "5002:5002"
+    env_file:
+      - .env      
+    networks:
+      - app_network
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    ports:
+      - "5005:5005"
+    env_file:
+      - .env      
+    networks:
+      - app_network
+
+  microservice:
+    build:
+      context: .
+      dockerfile: Dockerfile.microservice
+    ports:
+      - "5001:5001"
+    env_file:
+      - .env      
+    networks:
+      - app_network
+
+ 
+
+networks:
+  app_network:
+    driver: bridge
