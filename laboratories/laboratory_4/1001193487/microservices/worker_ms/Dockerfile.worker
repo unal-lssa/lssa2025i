@@ -1,0 +1,23 @@
+# Use official slim Python image
+FROM python:3.11-slim
+
+# Azure best practices: no .pyc, unbuffered stdout/stderr
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+# Install system dependencies (if any) and pip packages
+RUN pip install --no-cache-dir flask requests python-dotenv celery redis
+
+# Copy application code
+COPY . .
+
+# Create non‑root user for security
+RUN useradd --create-home worker
+USER worker
+
+# Expose nothing (worker pulls from broker)
+
+# Entrypoint: launch Celery worker for this module
+CMD ["celery", "-A", "worker_ms", "worker", "--loglevel=info"]

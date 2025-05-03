@@ -1,0 +1,124 @@
+services:
+  load_balancer:
+    build:
+      context: ./load_balancer
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    networks:
+      - default
+    depends_on:
+      - api_gateway
+      - api_gateway_replica
+
+  api_gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - AUTHORIZED_IP = "127.0.0.1"
+    networks:
+      - default
+    depends_on:
+      - auth_ms
+      - users_ms
+      - worker_ms
+
+  api_gateway_replica:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5000"
+    environment:
+      - AUTHORIZED_IP = "127.0.0.1"
+    networks:
+      - default
+    depends_on:
+      - auth_ms
+      - users_ms
+      - worker_ms
+
+  auth_ms:
+    build:
+      context: ./microservices/auth_ms
+      dockerfile: Dockerfile
+    environment:
+      - SECRET_KEY = "your_secret_key"
+    networks:
+      - default
+    depends_on:
+      - auth_db
+
+  users_ms:
+    build:
+      context: ./microservices/users_ms
+      dockerfile: Dockerfile
+    networks:
+      - default
+    depends_on:
+      - users_db-0
+      - users_db-1
+      - users_db-2
+
+  worker_ms:
+    build:
+      context: ./microservices/worker_ms
+      dockerfile: Dockerfile
+    networks:
+      - default
+  worker:
+    build:
+      context: ./microservices/worker_ms
+      dockerfile: Dockerfile.worker
+    networks:
+      - default
+
+  auth_db:
+    build:
+      context: ./databases/auth_db
+      dockerfile: Dockerfile
+    networks:
+      - default
+
+  users_db-0:
+    build:
+      context: ./databases/users_db
+      dockerfile: Dockerfile
+    networks:
+      - default
+  
+  users_db-1:
+    build:
+      context: ./databases/users_db
+      dockerfile: Dockerfile
+    networks:
+      - default
+  
+  users_db-2:
+    build:
+      context: ./databases/users_db
+      dockerfile: Dockerfile
+    networks:
+      - default
+
+  redis:
+    image: redis:latest
+    networks:
+      - default
+    ports:
+      - "6379:6379"
+
+  users_cache:
+    image: redis:latest
+    networks:
+      - default
+    ports:
+      - "6380:6379"
+
+networks:
+  default:
+    name: lab3_network
+    driver: bridge
