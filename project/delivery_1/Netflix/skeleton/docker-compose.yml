@@ -1,0 +1,50 @@
+services:
+  auth_lb:
+    build: ./auth_lb
+    ports:
+      - "443:443"
+  
+  media_storage:
+    build: ./media_storage
+    ports: 
+      - "8000:8000"
+
+  ms_accounts:
+    build: ./ms_accounts
+    ports:
+      - "8004:8004"
+  
+  ms_auth:
+    build: ./ms_auth
+    ports:
+      - "8003:8003"
+
+  ms_content:
+    build: ./ms_content
+    ports:
+      - "8006:8006"
+  
+  ms_payment:
+    build: ./ms_payment
+    ports:
+      - "8005:8005"
+  
+  ms_recommender:
+    build: ./ms_recommender
+    ports:
+      - "8002:8002"
+    
+  ms_streamer:
+    build: ./ms_streamer
+    ports:
+      - "8001:8001"
+  
+  streamer_lb:
+    build: ./streamer_lb
+    ports:
+      - "443:443"
+
+  web_frontend:
+    build: ./web_frontend
+    ports:
+      - "80:80"
