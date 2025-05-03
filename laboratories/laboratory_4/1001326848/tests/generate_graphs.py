@@ -20,41 +20,32 @@ def detect_column(df, keywords):
 def analyze_stats_file(path):
     df = pd.read_csv(path)
 
-    # Verificar columna 'Name'
+    # Verify 'Name' column
     if 'Name' not in df.columns:
-        print(f"⚠️  File {path} has no 'Name' column, skipping.")
         return None
 
-    # Eliminar filas de resumen y conservar solo endpoints HTTP
+    # Drop summary rows and keep only HTTP endpoints
     df = df[~df['Name'].isin(['Total', 'Aggregated'])]
     df = df[df['Name'].str.startswith('/')]
-
-    if df.empty:
-        print(f"⚠️  No endpoint entries in {path}, skipping.")
-        return None
-
-    # Quitar query strings para agrupar por endpoint
     df['endpoint'] = df['Name'].str.split('?').str[0]
 
-    # Filtrar solo /data
+    # Filter /data endpoint
     data_rows = df[df['endpoint'] == '/data']
     if data_rows.empty:
-        print(f"⚠️  No '/data' entries in {path}, skipping.")
         return None
 
-    # Detectar columnas relevantes
+    # Detect relevant columns
     avg_rt_col   = detect_column(data_rows, ['Average Response Time', 'Average response time'])
     rps_col      = detect_column(data_rows, ['Requests/s', 'RPS'])
     failures_col = detect_column(data_rows, ['Failures'])
 
     if not avg_rt_col:
-        print(f"⚠️  Avg Response Time column not found in {path}, skipping.")
         return None
 
-    # Cálculo de promedio simple
+    # Compute simple average response time
     simple_avg = data_rows[avg_rt_col].mean()
 
-    # Sumar throughput y fallas
+    # Sum throughput and failures
     throughput = round(data_rows[rps_col].sum(), 2) if rps_col else None
     failures   = int(data_rows[failures_col].sum()) if failures_col else 0
 
@@ -67,64 +58,90 @@ def analyze_stats_file(path):
         'failures': failures
     }
 
-def main():
+def load_results():
     stats_files = glob.glob('tests/results/*_stats.csv')
-    if not stats_files:
-        print("⚠️  No stats CSV files found in tests/results/.")
-        sys.exit(1)
-
     results = []
     for path in stats_files:
         res = analyze_stats_file(path)
         if res:
             results.append(res)
-
     if not results:
         print("⚠️  No valid data to plot.")
         sys.exit(1)
+    return pd.DataFrame(sorted(results, key=lambda x: x['scenario']))
 
-    # Ordenar y crear DataFrame
-    results = sorted(results, key=lambda x: x['scenario'])
-    df = pd.DataFrame(results)
+def plot_bar(x, y, ylabel, title, outpath):
+    plt.figure()
+    plt.bar(x, y)
+    plt.xticks(rotation=45, ha='right')
+    plt.ylabel(ylabel)
+    plt.title(title)
+    plt.tight_layout()
+    plt.savefig(outpath)
+    print(f"✅ Saved {title}: {outpath}")
 
-    # Crear carpetas de salida
+def main():
+    df = load_results()
+
+    # Ensure output directories
     os.makedirs('tests/reports/graphs', exist_ok=True)
     os.makedirs('tests/reports', exist_ok=True)
 
-    # Gráfica: Tiempo de respuesta promedio
-    plt.figure()
-    plt.bar(df['scenario'], df['avg_response_time'])
-    plt.xticks(rotation=45, ha='right')
-    plt.ylabel('Avg Response Time (ms)')
-    plt.title('Average Response Time by Scenario')
-    plt.tight_layout()
-    avg_chart = 'tests/reports/graphs/avg_response_time.png'
-    plt.savefig(avg_chart)
-    print(f"✅ Saved avg response time chart: {avg_chart}")
+    # 1) All scenarios
+    plot_bar(
+        df['scenario'], df['avg_response_time'],
+        'Avg Response Time (ms)',
+        'Average Response Time by Scenario',
+        'tests/reports/graphs/avg_response_time.png'
+    )
+    plot_bar(
+        df['scenario'], df['requests_per_s'],
+        'Requests per Second',
+        'Throughput by Scenario',
+        'tests/reports/graphs/throughput.png'
+    )
 
-    # Gráfica: Throughput
-    plt.figure()
-    plt.bar(df['scenario'], df['requests_per_s'])
-    plt.xticks(rotation=45, ha='right')
-    plt.ylabel('Requests per Second')
-    plt.title('Throughput by Scenario')
-    plt.tight_layout()
-    thr_chart = 'tests/reports/graphs/throughput.png'
-    plt.savefig(thr_chart)
-    print(f"✅ Saved throughput chart: {thr_chart}")
+    # 2) Compare MISS: 1 vs 3 Gateways (Cache MISS)
+    miss = df[df['scenario'].isin(['results_1_gateway_miss', 'results_3_gateways_miss'])]
+    plot_bar(
+        miss['scenario'], miss['avg_response_time'],
+        'Avg Response Time (ms)',
+        'Response Time: 1 vs 3 Gateways (Cache MISS)',
+        'tests/reports/graphs/rt_1v3_miss.png'
+    )
+    plot_bar(
+        miss['scenario'], miss['requests_per_s'],
+        'Requests per Second',
+        'Throughput: 1 vs 3 Gateways (Cache MISS)',
+        'tests/reports/graphs/th_1v3_miss.png'
+    )
 
-    # Generar resumen Markdown
+    # 3) Compare HIT vs MISS: 3 Gateways
+    cmp = df[df['scenario'].isin(['results_3_gateways_hit', 'results_3_gateways_miss'])]
+    plot_bar(
+        cmp['scenario'], cmp['avg_response_time'],
+        'Avg Response Time (ms)',
+        'Response Time: 3 Gateways HIT vs MISS',
+        'tests/reports/graphs/rt_3_hit_vs_miss.png'
+    )
+    plot_bar(
+        cmp['scenario'], cmp['requests_per_s'],
+        'Requests per Second',
+        'Throughput: 3 Gateways HIT vs MISS',
+        'tests/reports/graphs/th_3_hit_vs_miss.png'
+    )
+
+    # Generate summary Markdown
     summary_lines = [
         "# Benchmark Summary",
         "",
         "| Scenario | Avg Response Time (ms) | Requests/s | Failures |",
         "|----------|------------------------|------------|----------|"
     ]
-    for r in results:
+    for _, r in df.iterrows():
         summary_lines.append(
-            f"| {r['scenario']} | {r['avg_response_time']} | {r['requests_per_s']} | {r['failures']} |"
+            f"| {r.scenario} | {r.avg_response_time} | {r.requests_per_s} | {r.failures} |"
         )
-
     summary_path = 'tests/reports/summary.md'
     with open(summary_path, 'w') as f:
         f.write("\n".join(summary_lines))

@@ -6,8 +6,8 @@ app = Flask(__name__)
 
 @app.route("/db", methods=["GET"])
 def db_data():
-    # Simulate 50 ms latency
-    time.sleep(0.05)
+    # Simulate 100 ms latency
+    time.sleep(0.1)
     return jsonify({"message": "Fetched fresh data from DB"})
 
 

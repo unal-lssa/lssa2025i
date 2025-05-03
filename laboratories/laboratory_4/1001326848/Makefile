@@ -5,7 +5,7 @@ COMPOSE=docker-compose -f docker-compose.yml
 VENV=.venv
 PYTHON=$(VENV)/bin/python3
 LOCUST_BIN=$(VENV)/bin/locust
-LOCUST_BASE=$(LOCUST_BIN) -f tests/load_test.py --host=http://localhost:8000 --headless --users 600 --spawn-rate 60 --run-time 60s
+LOCUST_BASE=$(LOCUST_BIN) -f tests/load_test.py --host=http://localhost:8000 --headless --users 1000 --spawn-rate 100 --run-time 60s
 
 # ----------------------------------------------
 # Python, pip, and venv validation and setup
