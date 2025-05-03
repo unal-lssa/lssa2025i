@@ -67,8 +67,8 @@ graph TD
     GW2 -->|/data| Cache
     Cache --> DB[(Database)]
 
-    GW1 -->|/process| MS1[Microservice 1 (5001)]
-    GW1 -->|/process| MS2[Microservice 2 (5010)]
+    GW1 -->|/process| MS1[Microservice 1 ]
+    GW1 -->|/process| MS2[Microservice 2 ]
     GW2 -->|/process| MS1
     GW2 -->|/process| MS2
 
