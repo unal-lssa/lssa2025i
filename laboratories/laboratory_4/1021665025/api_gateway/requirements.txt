@@ -1,0 +1,6 @@
+Flask==2.3.2
+PyJWT==2.8.0
+requests==2.31.0
+redis==5.0.1
+celery==5.3.6
+pika==1.3.2
