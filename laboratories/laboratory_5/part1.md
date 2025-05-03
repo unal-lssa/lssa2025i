@@ -14,7 +14,7 @@ Key Features:
 
 ### b. Prerequisites
 
-Asegurate de instalar todos los prerequisitos para el correcto funcionamiento de este laboratorio
+Make sure you install all the prerequisites for this lab to run correctly.
 - Flask
 - Request
 - Matplotlib
