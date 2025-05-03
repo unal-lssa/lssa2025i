@@ -173,9 +173,9 @@ By comparing these two scenarios under different configurations (e.g., 1 vs. 3 g
 
 | Scenario | Avg Response Time (ms) | Requests/s | Failures |
 |----------|------------------------|------------|----------|
-| results_1_gateway_miss | 26992.09 | 9.61 | 0 |
-| results_3_gateways_hit | 1971.26 | 271.36 | 0 |
-| results_3_gateways_miss | 21742.52 | 28.95 | 0 |
+| results_1_gateway_miss | 26253.42 | 12.28 | 0 |
+| results_3_gateways_hit | 1356.08 | 332.23 | 0 |
+| results_3_gateways_miss | 19685.23 | 34.57 | 0 |
 
 ### Response Time and Throughput: 1 vs. 3 API Gateways (Cache Miss)
 
