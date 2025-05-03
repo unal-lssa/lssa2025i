@@ -3,38 +3,54 @@ services:
     build: ./load_balancer
     ports:
       - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
 
   cache:
     build: ./cache
     ports:
       - "5004:5004"
+    environment:
+      - PYTHONUNBUFFERED=1
 
   api_gateway:
     build: ./api_gateway
     ports:
       - "5000:5000"
+    environment:
+      - PYTHONUNBUFFERED=1
 
   api_gateway_2:
     build: ./api_gateway
     ports:
       - "5003:5000"
+    environment:
+      - PYTHONUNBUFFERED=1
 
   microservice:
     build: ./microservice
     ports:
       - "5001:5001"
+    environment:
+      - PYTHONUNBUFFERED=1
 
   worker:
     build: ./worker
     ports:
       - "5005:5005"
+    environment:
+      - PYTHONUNBUFFERED=1
 
   database:
     build: ./database
     ports:
       - "5002:5002"
+    environment:
+      - PYTHONUNBUFFERED=1
 
   login_service:
     build: ./login_service
     ports:
       - "5006:5006"
+    environment:
+      - PYTHONUNBUFFERED=1

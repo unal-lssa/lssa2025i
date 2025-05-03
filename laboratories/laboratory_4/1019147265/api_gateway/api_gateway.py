@@ -19,25 +19,36 @@ def token_required(f):
         return f(*args, **kwargs)
     return wrapper
 
-# Cached data access
+# Cached data access with authentication caching
 @app.route("/data", methods=["GET"])
-@token_required
 def get_data():
-    print("Fetching data...")
-    cache_resp = requests.get("http://127.0.0.1:5004/cache/my_data").json()
-    if cache_resp['value']:
-        return jsonify({'cached': True, 'data': cache_resp['value']})
-    # Simulate DB fetch
-    db_resp = requests.get("http://127.0.0.1:5002/db").json()
-    requests.post("http://127.0.0.1:5004/cache/my_data", json={'value': db_resp['message']})
-    return jsonify({'cached': False, 'data': db_resp['message']})
+    token = request.headers.get("Authorization")
+    if not token:
+        return jsonify({'error': 'Missing token'}), 403
+
+    # Check token in auth cache
+    auth_resp = requests.get(f"http://cache:5004/auth/{token}").json()
+    if auth_resp.get('auth_data'):
+        return jsonify({'cached': True, 'data': auth_resp['auth_data']})
+
+    # Decode token if not cached
+    try:
+        decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        # Cache the decoded token
+        requests.post(f"http://cache:5004/auth/{token}", json={'auth_data': decoded})
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token expired'}), 403
+    except jwt.InvalidTokenError:
+        return jsonify({'error': 'Invalid token'}), 403
+
+    return jsonify({'cached': False, 'data': decoded})
 
 # Trigger async task
 @app.route("/longtask", methods=["POST"])
 @token_required
 def long_task():
     payload = request.json
-    requests.post("http://127.0.0.1:5005/task", json=payload)
+    requests.post("http://worker:5005/task", json=payload)
     return jsonify({'status': 'Task queued'}), 202
 
 if __name__ == "__main__":
