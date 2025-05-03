@@ -3,9 +3,11 @@
 # 1019147265
 
 ## Summary of Changes
+- **Dockerization**: Added all the services to a Docker Compose file for easy deployment and management.
+- **Login Service**: Implemented a very simple login service that returns a token that should be used in the `Authorization` header of the requests. 
 
 ### Caching Mechanisms
-- **Login Service**: Implemented a very simple login service that returns a token that should be used in the `Authorization` header of the requests. 
+
 - **Session Caching**: Added endpoints in `cache.py` to store and retrieve session data, reducing the need for repeated database queries.
 - **Authentication Caching**: Integrated token caching in `api_gateway.py` to minimize the overhead of decoding and verifying tokens repeatedly.
 
