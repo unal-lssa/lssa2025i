@@ -29,8 +29,8 @@ def analyze_stats_file(path):
     df = df[df['Name'].str.startswith('/')]
     df['endpoint'] = df['Name'].str.split('?').str[0]
 
-    # Filter /data endpoint
-    data_rows = df[df['endpoint'] == '/data']
+    # Filter /data and /process endpoints
+    data_rows = df[df['endpoint'].isin(['/data', '/process'])]
     if data_rows.empty:
         return None
 

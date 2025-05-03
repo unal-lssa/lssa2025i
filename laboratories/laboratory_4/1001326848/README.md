@@ -31,6 +31,8 @@ The main objectives of this lab are:
 
 During this lab, we created a distributed architecture using Docker Compose to simulate an environment with multiple API Gateway instances and a caching mechanism. Locust was used to apply load testing scenarios and gather performance metrics.
 
+Each virtual user randomly accesses either the `/data` or `/process` endpoints during the test runs.
+
 In addition to the main objectives, we:
 
 - Tuned services using Gunicorn for production-grade server management.
@@ -57,6 +59,19 @@ The architecture includes the following folders and components:
 - **database/**: Simulated database for slow-response scenarios.
 
 - **tests/**: Contains load testing scripts and report generators.
+
+---
+## Architecture diagram
+
+```mermaid
+graph TD;
+    A[Client] -->|Requests| B[Load Balancer]
+    B -->|Routes| C[API Gateway]
+    C -->|Search data| D[Database service]
+    C -->|Execute logic| E[Microservice]
+    C -->|Cache response| I[Cache]
+    C -->|Async long logic| F[Worker]
+```
 
 ---
 ## Docker Services
@@ -93,7 +108,7 @@ The architecture includes the following folders and components:
 | `/longtask` | Sends task to background worker; protected and asynchronous. |
 
 
-The `/data` route is used extensively during performance testing.
+Both `/data` and `/process` routes are accessed randomly during load testing.
 
 ---
 ## Testing Scripts
@@ -133,6 +148,8 @@ This command runs:
 
 Warm-up steps with low traffic (10 users, 10 seconds) are included before each scenario.
 
+Note: During the tests, users alternate randomly between `/data` and `/process` endpoints to simulate realistic load distribution.
+
 ---
 ## Local Results
 
@@ -165,20 +182,20 @@ By comparing these two scenarios under different configurations (e.g., 1 vs. 3 g
 The following graphs compare system performance when using one versus three API Gateway instances under **cache miss** conditions. As expected, adding more gateways slightly increases throughput and slightly reduces latency, but the overall gain is marginal without caching.
 
 #### Average Response Time
-![Response Time](/assets/rt_1v3_miss.png)
+![Response Time](assets/rt_1v3_miss.png)
 
 #### Requests per Second (Throughput)
-![Throughput](/assets/th_1v3_miss.png)
+![Throughput](assets/th_1v3_miss.png)
 
 ### Response Time and Throughput: Cache Hit vs. Miss (3 Gateways)
 
 This comparison demonstrates the dramatic improvement introduced by caching. With cache hits, the system avoids database and microservice calls, leading to response times up to 10x faster and significantly higher throughput.
 
 #### Average Response Time
-![Response Time](/assets/rt_3_hit_vs_miss.png)
+![Response Time](assets/rt_3_hit_vs_miss.png)
 
 #### Requests per Second (Throughput)
-![Throughput](/assets/th_3_hit_vs_miss.png)
+![Throughput](assets/th_3_hit_vs_miss.png)
 
 
 The following summary highlights key trends:
