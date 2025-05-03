@@ -1,0 +1,39 @@
+architecture:
+
+    component frontend register_fe
+    component frontend seller_fe
+    component frontend admin_fe
+
+    component api_gateway efact_ag
+
+    component backend auth_be
+
+    component load_balancer users_lb
+    component load_balancer efact_writing_lb
+    component load_balancer efact_reading_lb
+
+    component backend users_be
+    component backend efact_writing_be
+    component backend efact_reading_be
+
+    component database users_db
+    component database efact_writing_db
+    component database efact_reading_db
+    
+    connector register_fe -> efact_ag
+    connector seller_fe -> efact_ag
+    connector admin_fe -> efact_ag
+
+    connector efact_ag -> auth_be
+
+    connector efact_ag -> users_lb
+    connector efact_ag -> efact_writing_lb
+    connector efact_ag -> efact_reading_lb
+
+    connector users_lb -> users_be
+    connector efact_writing_lb -> efact_writing_be
+    connector efact_reading_lb -> efact_reading_be
+
+    connector users_be -> users_db
+    connector efact_writing_be -> efact_writing_db
+    connector efact_reading_be -> efact_reading_db
