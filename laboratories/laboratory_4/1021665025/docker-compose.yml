@@ -1,0 +1,183 @@
+version: '3.8'
+
+services:
+  # Nginx Load Balancer - Entry point for clients, handles IP filtering and Rate Limiting
+  nginx:
+    image: nginx:stable-alpine 
+    ports:
+      - "80:80" # Expose Nginx on standard HTTP port 80
+    volumes:
+      - ./load_balancer/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api_gateway_1
+      - api_gateway_2 # Nginx depends on API Gateway instances
+
+  # API Gateway Instances - Multiple replicas for load balancing
+  api_gateway_1:
+    build: ./api_gateway
+    ports:
+       - "5000:5000" # Expose first instance on 5000
+    environment:
+      SECRET_KEY: your_super_secret_jwt_key_change_this
+      AUTHORIZED_IP: 127.0.0.1 
+      AUTH_SERVICE_URL: http://auth_service:5001
+      FINANCES_SERVICE_URL: http://finances_service:5002
+      LEGAL_SERVICE_URL: http://legal_service:5003
+      UNITS_SERVICE_URL: http://units_service:5004
+      CACHE_SERVICE_URL: redis://redis:6379/0 # Use redis:// protocol and service name:port
+      CELERY_BROKER_URL: amqp://guest:guest@rabbitmq:5672//
+      CELERY_BACKEND_URL: redis://redis:6379/1 # Use a different DB in Redis for results
+    depends_on:
+      - auth_service
+      - finances_service
+      - legal_service
+      - units_service
+      - redis 
+      - rabbitmq 
+
+  api_gateway_2:
+    build: ./api_gateway
+    # Expose second instance on a different port externally
+    ports:
+       - "5001:5000" 
+    environment:
+      SECRET_KEY: your_super_secret_jwt_key_change_this
+      AUTHORIZED_IP: 127.0.0.1 
+      AUTH_SERVICE_URL: http://auth_service:5001
+      FINANCES_SERVICE_URL: http://finances_service:5002
+      LEGAL_SERVICE_URL: http://legal_service:5003
+      UNITS_SERVICE_URL: http://units_service:5004
+      CACHE_SERVICE_URL: redis://redis:6379/0 
+      WORKER_SERVICE_URL: http://worker_service:5006
+      CELERY_BROKER_URL: amqp://guest:guest@rabbitmq:5672//
+      CELERY_BACKEND_URL: redis://redis:6379/1 
+    depends_on:
+      - auth_service
+      - finances_service
+      - legal_service
+      - units_service
+      - redis
+      - rabbitmq 
+
+  # Authentication Service 
+  auth_service:
+    build: ./auth_service
+    ports:
+      - "5002:5001"
+    environment:
+      DATABASE_URL: postgresql://user:password@auth_db:5432/auth_db
+      SECRET_KEY: your_super_secret_jwt_key_change_this
+    depends_on:
+      - auth_db
+
+  # Finances Service
+  finances_service:
+    build: ./finances_service
+    ports:
+      - "5003:5002"
+    environment:
+      DATABASE_URL: postgresql://user:password@finances_db:5432/finances_db
+    depends_on:
+      - finances_db
+
+  # Legal Service
+  legal_service:
+    build: ./legal_service
+    ports:
+      - "5004:5003" 
+    environment:
+      DATABASE_URL: postgresql://user:password@legal_db:5432/legal_db
+    depends_on:
+      - legal_db
+
+  # Units Service
+  units_service:
+    build: ./units_service
+    ports:
+      - "5005:5004" 
+    environment:
+      DATABASE_URL: postgresql://user:password@units_db:5432/units_db
+    depends_on:
+      - units_db
+
+  # Cache Service
+  redis:
+    image: redis:latest # Use the official Redis image
+    volumes:
+      - redis_data:/data
+
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine # Use RabbitMQ with management plugin
+    ports:
+      - "5672:5672" # AMQP protocol port
+      - "15672:15672" # Management UI port
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq # Persist RabbitMQ data
+
+  # Celery Worker Service - Consumes tasks from RabbitMQ
+  celery_worker:
+    build: ./celery_worker
+    environment:
+      CELERY_BROKER_URL: amqp://guest:guest@rabbitmq:5672//
+      CELERY_BACKEND_URL: redis://redis:6379/1
+      FINANCES_DATABASE_URL: postgresql://user:password@finances_db:5432/finances_db
+      LEGAL_DATABASE_URL: postgresql://user:password@legal_db:5432/legal_db
+    depends_on:
+      - rabbitmq
+      - redis
+      - finances_db
+      - legal_db
+    command: celery -A celery_app worker -l info -Q high_priority,low_priority
+
+  # Databases
+  auth_db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data
+      - ./auth_service/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+  finances_db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: finances_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - finances_db_data:/var/lib/postgresql/data
+      - ./finances_service/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+  legal_db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: legal_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - legal_db_data:/var/lib/postgresql/data
+      - ./legal_service/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+  units_db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: units_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - units_db_data:/var/lib/postgresql/data
+      - ./units_service/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+volumes:
+  auth_db_data:
+  finances_db_data:
+  legal_db_data:
+  units_db_data:
+  redis_data:
+  rabbitmq_data: 
