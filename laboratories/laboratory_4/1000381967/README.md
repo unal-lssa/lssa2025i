@@ -81,3 +81,5 @@
     Tarea completada
     ```
 
+## Architecture Diagram:
+![Architecture Diagram](./Diagram.png)
