@@ -2,7 +2,9 @@ from flask import Flask, request, Response
 import itertools, requests
 
 app = Flask(__name__)
-api_gateways = itertools.cycle(["http://127.0.0.1:5000", "http://127.0.0.1:5001"])
+api_gateways = itertools.cycle(
+    ["http://api_gateway_1:5000", "http://api_gateway_2:5001"]
+)
 
 
 @app.route("/<path:path>", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
@@ -33,4 +35,4 @@ def forward(path):
 
 
 if __name__ == "__main__":
-    app.run(port=8000, debug=True)
+    app.run(host="0.0.0.0", port=8000, debug=True)

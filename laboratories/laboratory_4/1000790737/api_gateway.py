@@ -3,10 +3,10 @@ import jwt, requests
 from functools import wraps
 
 SECRET_KEY = "secret"
-AUTH_LB = "http://127.0.0.1:5013"
-SERVICE_LB = "http://127.0.0.1:5002"
-WORKER_LB = "http://127.0.0.1:5007"
-CACHE_URL = "http://127.0.0.1:5006/cache/my_data"
+AUTH_LB = "http://load_balancer_auth:5013"
+SERVICE_LB = "http://load_balancer_service:5002"
+WORKER_LB = "http://load_balancer_worker:5007"
+CACHE_URL = "http://cache:5006/cache/my_data"
 
 
 # Decorator for token auth
@@ -66,4 +66,4 @@ if __name__ == "__main__":
     import sys
 
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 5000
-    app.run(port=port, debug=True)
+    app.run(host="0.0.0.0", port=port, debug=True)

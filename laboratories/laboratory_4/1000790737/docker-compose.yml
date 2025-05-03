@@ -1,0 +1,99 @@
+services:
+  load_balancer_api_gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: load_balancer_api_gateway
+    ports:
+      - "8000:8000"
+    networks:
+      - app_net
+    command: ["python", "load_balancer_api_gateway.py"]
+  api_gateway_1:
+    build: .
+    container_name: api_gateway_1
+    networks:
+      - app_net
+    command: ["python", "api_gateway.py", "5000"]
+  api_gateway_2:
+    build: .
+    container_name: api_gateway_2
+    networks:
+      - app_net
+    command: ["python", "api_gateway.py", "5001"]
+  load_balancer_service:
+    build: .
+    container_name: load_balancer_service
+    networks:
+      - app_net
+    command: ["python", "load_balancer_service.py"]
+  service_1:
+    build: .
+    container_name: service_1
+    networks:
+      - app_net
+    command: ["python", "service.py", "5003"]
+  service_2:
+    build: .
+    container_name: service_2
+    networks:
+      - app_net
+    command: ["python", "service.py", "5004"]
+  database:
+    build: .
+    container_name: database
+    networks:
+      - app_net
+    command: ["python", "database.py"]
+  cache:
+    build: .
+    container_name: cache
+    networks:
+      - app_net
+    command: ["python", "cache.py"]
+  load_balancer_worker:
+    build: .
+    container_name: load_balancer_worker
+    networks:
+      - app_net
+    command: ["python", "load_balancer_worker.py"]
+  worker_1:
+    build: .
+    container_name: worker_1
+    networks:
+      - app_net
+    command: ["python", "worker.py", "5008"]
+  worker_2:
+    build: .
+    container_name: worker_2
+    networks:
+      - app_net
+    command: ["python", "worker.py", "5009"]
+  worker_cache:
+    build: .
+    container_name: worker_cache
+    networks:
+      - app_net
+    command: ["python", "worker_cache.py"]
+  load_balancer_auth:
+    build: .
+    container_name: load_balancer_auth
+    networks:
+      - app_net
+    command: ["python", "load_balancer_auth.py"]
+  auth_1:
+    build: .
+    container_name: auth_1
+    networks:
+      - app_net
+    command: ["python", "auth_service.py", "5011"]
+  auth_2:
+    build: .
+    container_name: auth_2
+    networks:
+      - app_net
+    command: ["python", "auth_service.py", "5012"]
+
+networks:
+  app_net:
+    driver: bridge
