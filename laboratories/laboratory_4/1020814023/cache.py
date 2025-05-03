@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 import time
+from datetime import datetime
 
 app = Flask(__name__)
 cache = {}
@@ -10,15 +11,21 @@ def get_cache(key):
     if not entry:
         return jsonify({'value': None})
     if time.time() > entry['expires_at']:
-        del cache[key]  # Eliminar el registro si expiró
+        del cache[key]
         return jsonify({'value': None})
-    return jsonify({'value': cache.get(key)})
+    readable_expires = datetime.fromtimestamp(entry['expires_at']).strftime('%Y-%m-%d %H:%M:%S')
+    return jsonify({
+        'value': {
+            'value': entry['value'],
+            'expires_at': readable_expires
+        }
+    })
 
 @app.route("/cache/<key>", methods=["POST"])
 def set_cache(key):
     data = request.json
     value = data.get("value")
-    ttl = data.get("ttl", 120)  # TTL por defecto: 60 segundos
+    ttl = data.get("ttl", 120)
     expires_at = time.time() + ttl
     cache[key] = {'value': value, 'expires_at': expires_at}
     return jsonify({'status': 'ok', 'expires_in': ttl})
