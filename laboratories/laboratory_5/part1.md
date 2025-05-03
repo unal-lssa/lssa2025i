@@ -810,9 +810,197 @@ These commands allowed us to confirm that the system is working.
 
 ## 3. Instructions to simulate request
 
+Now to create the simulations and validation of the system, the following files must be created in the previously created simulator folder:
+
+```
+lab5/
+│
+├── Components/
+│   ├── ...
+├── simulator/
+│   ├── simulator.py
+│   ├── repot_generator.py
+│   └── status_log.json  # is generated when simulating
+│
+├── main_simulator.py
+```
+
+### `simulator.py`
+
+This file contains the instructions needed to send a group of transactions to the different endpoints of the software system, in this case 300 /data requests and 300 /longtask requests:
+
+```python
+import requests
+from Components.status_tracker import reset_log
+data = {
+    "username": "user1",
+    "password": "password123"
+}
+
+main_loadbalancer = "http://127.0.0.1:8000"
+
+def request_login():
+    url = f"{main_loadbalancer}/login"
+    headers = {"Content-Type": "application/json"}
+    data = {
+        "username": "user1",
+        "password": "password123"
+    }
+
+    response = requests.post(url, json=data, headers=headers)
+    data = response.json()
+    returned_token = data.get("token")
+    return returned_token
+
+def request_data(token):
+    url = f"{main_loadbalancer}/data"
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+    response = requests.get(url, headers=headers)
+    return response.json()
+
+def request_long_task(token):
+    url = f"{main_loadbalancer}/longtask"
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+    body = {
+        "task": "report"
+    }
+    response = requests.post(url, headers=headers, json=body)
+
+    return response.json()
+
+
+
+def run_simulation(token, purchase_count=300):
+
+
+    print('-----------------Start requesting data-----------------')
+    for i in range(1, purchase_count + 1):
+        request_data(token)
+    print('-----------------Start requesting longtask-----------------')
+    for i in range(1, purchase_count + 1):
+        request_long_task(token)
+
+def main():
+    reset_log()
+    token = request_login()
+    run_simulation(token)
+
+
+```
+
+### `report_generator.py`
+
+This file contains the instructions needed to create a PDF report with the simulation results:
+
+```python
+import json
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+from datetime import datetime
+
+
+def generate_status_report_pdf(json_path, pdf_dir="."):
+    # Generate filename with timestamp
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    pdf_filename = f"status_report_{timestamp}.pdf"
+    pdf_path = f"{pdf_dir}/{pdf_filename}"
+
+    # Load data
+    with open(json_path, "r") as f:
+        data = json.load(f)
+
+    # Initialize PDF
+    with PdfPages(pdf_path) as pdf:
+        # 1. Total requests per service graph
+        total_requests = {
+            service: sum(map(int, codes.values()))
+            for service, codes in data.items()
+        }
+
+        plt.figure(figsize=(8, 6))
+        plt.bar(total_requests.keys(), total_requests.values(), color='skyblue')
+        plt.title("Total Requests per Service")
+        plt.ylabel("Number of Requests")
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        pdf.savefig()
+        plt.close()
+
+        # 2. Status codes per service graph
+        for service, codes in data.items():
+            plt.figure(figsize=(6, 4))
+            codes_sorted = dict(sorted(codes.items()))
+            codes_list = list(codes_sorted.keys())
+            counts = [int(v) for v in codes_sorted.values()]
+
+            # Asignar color rojo si no está en el rango 200–299
+            colors = [
+                'lightgreen' if 200 <= int(code) < 300 else 'red'
+                for code in codes_list
+            ]
+
+            plt.bar(codes_list, counts, color=colors)
+            plt.title(f"Status Codes in {service}")
+            plt.xlabel("HTTP Code")
+            plt.ylabel("Count")
+            plt.tight_layout()
+            pdf.savefig()
+            plt.close()
+
+        # 3. Textual report (two columns)
+        report_text = []
+        report_text.append("Status Report Summary:\n")
+
+        for service, codes in data.items():
+            total_requests_service = sum(map(int, codes.values()))
+            report_text.append(f"\nService: {service}")
+            report_text.append(f"Total Requests: {total_requests_service}")
+            for code, count in codes.items():
+                report_text.append(f"  Code {code}: {count} requests")
+
+        # Add the report in two columns
+        fig, ax = plt.subplots(figsize=(8, 11))
+        ax.axis('off')
+
+        # Split the text into two roughly equal parts
+        midpoint = len(report_text) // 2
+        left_text = "\n".join(report_text[:midpoint])
+        right_text = "\n".join(report_text[midpoint:])
+
+        # Place the two columns of text
+        ax.text(0.05, 0.95, left_text, fontsize=10, ha='left', va='top', wrap=True)
+        ax.text(0.55, 0.95, right_text, fontsize=10, ha='left', va='top', wrap=True)
+
+        pdf.savefig()
+        plt.close()
+
+    print(f"PDF report generated at: {pdf_path}")
+```
+
+Finally, the following file must be created in the root of the project:
+
+### `main_simulator.py`
+
+This file contains the instructions necessary to run the simulation and subsequently report the results:
+
+```python
+from simulator.simulator import main
+from simulator.report_generator import generate_status_report_pdf
+
+if __name__ == "__main__":
+    main()
+    generate_status_report_pdf("simulator/status_log.json")
+```
+### Run the simulation
+To run the simulations you must execute the following command, making sure you have followed all the previous steps, with the system running:
+
 ```bash
     python .\main_simulator.py
 ```
 
-
+After running this command, the system will automatically generate a PDF report with a summary of the results obtained. This .pdf file will be located in the previously created /simulator folder and will store the results in the simulator/status_log.json file.
 
