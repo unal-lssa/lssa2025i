@@ -98,12 +98,12 @@ The next request will be loaded from Cache.
 
 A cache refresh was implemented to forcefully refresh it. It's forced by the use of the query string parameter refresh (true or false). It's an optional parameter.
 
-<img src="images/7_CacheRefresh.png.png" alt="Cache Refresh"/>
+<img src="images/7_CacheRefresh.png" alt="Cache Refresh"/>
 
 This is usefull to ensure that the cache reflex and returns the last changes persisted into the DB.
 
 
-## An another Cache Pattern : Cache refresh in background
+## And another Cache Pattern : Cache refresh in background
 
 This one is related to the previous one. 
 
