@@ -16,9 +16,11 @@ Document ID: 1001326848
 
 ## Objectives
 
+This lab explores how distributed architectures can be improved using caching and load balancing to handle large-scale traffic while maintaining performance. It was developed as part of the Large Scale Software Architecture course at Universidad Nacional de Colombia.
+
 The main objectives of this lab are:
 
-- Apply architectural tactics of scalability and performance in a distributed system.
+- Apply architectural tactics to improve scalability and performance in distributed systems.
 
 - Demonstrate the use of architectural patterns such as **load balancing** and **caching**.
 
@@ -82,16 +84,16 @@ The architecture includes the following folders and components:
 ---
 ## Available Endpoints
 
-|   |   |
-|---|---|
-|Endpoint|Description|
-|`/health`|Healthcheck endpoint to verify service availability.|
-|`/login`|Accepts credentials and returns a JWT token.|
-|`/data`|Returns data from cache or DB; protected and cacheable.|
-|`/process`|Calls microservice; protected and cacheable.|
-|`/longtask`|Sends task to worker; protected and async response.|
+| Endpoint    | Description                                               |
+|-------------|-----------------------------------------------------------|
+| `/health`   | Healthcheck endpoint to verify service availability.      |
+| `/login`    | Accepts credentials and returns a JWT token.              |
+| `/data`     | Returns data from cache or DB; protected and cacheable.   |
+| `/process`  | Calls the microservice; protected and cacheable.          |
+| `/longtask` | Sends task to background worker; protected and asynchronous. |
 
-The `/data` route are used extensively during performance testing.
+
+The `/data` route is used extensively during performance testing.
 
 ---
 ## Testing Scripts
@@ -158,13 +160,26 @@ By comparing these two scenarios under different configurations (e.g., 1 vs. 3 g
 | results_3_gateways_hit | 1971.26 | 271.36 | 0 |
 | results_3_gateways_miss | 21742.52 | 28.95 | 0 |
 
-### 1 vs 3 Api Gateway instances
-![rt_1v3](/assets/rt_1v3_miss.png)
-![th_1v3](/assets/th_1v3_miss.png)
+### Response Time and Throughput: 1 vs. 3 API Gateways (Cache Miss)
 
-### Diference using cache
-![rt_hit_vs_miss](/assets/rt_3_hit_vs_miss.png)
-![th_hit_vs_miss](/assets/th_3_hit_vs_miss.png)
+The following graphs compare system performance when using one versus three API Gateway instances under **cache miss** conditions. As expected, adding more gateways slightly increases throughput and slightly reduces latency, but the overall gain is marginal without caching.
+
+#### Average Response Time
+![Response Time](/assets/rt_1v3_miss.png)
+
+#### Requests per Second (Throughput)
+![Throughput](/assets/th_1v3_miss.png)
+
+### Response Time and Throughput: Cache Hit vs. Miss (3 Gateways)
+
+This comparison demonstrates the dramatic improvement introduced by caching. With cache hits, the system avoids database and microservice calls, leading to response times up to 10x faster and significantly higher throughput.
+
+#### Average Response Time
+![Response Time](/assets/rt_3_hit_vs_miss.png)
+
+#### Requests per Second (Throughput)
+![Throughput](/assets/th_3_hit_vs_miss.png)
+
 
 The following summary highlights key trends:
 
@@ -172,6 +187,7 @@ The following summary highlights key trends:
 
 - **Load balancing** (1 vs 3) shows a slightly improve in response time and improves throughput.
 
+These results validate caching as the most impactful optimization tactic in this architecture, with load balancing playing a secondary role.
 
 ---
 ## Running the Solution
@@ -206,3 +222,9 @@ make report         # Generate charts and markdown summary
 ```
 
 The `make benchmark-all` command performs warm-up cycles, executes four scenarios (`hit` and `miss` for both 1 and 3 gateways), and then shuts down the stack.
+
+
+---
+### Conclusion
+
+This experiment demonstrates how introducing caching significantly improves system responsiveness and throughput, while load balancing helps distribute traffic evenly across multiple gateways. However, the impact of scaling the number of API Gateways is less noticeable when caching is active, indicating that caching may provide more substantial benefits in certain scenarios.
