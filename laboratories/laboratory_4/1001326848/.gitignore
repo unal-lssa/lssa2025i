@@ -50,3 +50,7 @@ yarn-error.log*
 # Miscellaneous
 *.swp
 *.swo
+
+
+results/
+reports/
