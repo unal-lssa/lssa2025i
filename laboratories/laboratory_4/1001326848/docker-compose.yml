@@ -1,0 +1,76 @@
+version: "3.8"
+
+services:
+  # ----------------------------------------------
+  # Load Balancer - acts as internal proxy
+  # ----------------------------------------------
+  load_balancer:
+    container_name: load_balancer
+    build: ./apps/load_balancer
+    ports:
+      - "8000:8000"  # Exposed to host for external access
+    networks:
+      - backend
+
+  # ----------------------------------------------
+  # API Gateway Instances (Round-Robin targets)
+  # ----------------------------------------------
+  api-gateway-1:
+    container_name: api_gateway_1
+    build: ./apps/api_gateway
+    networks:
+      - backend
+
+  api-gateway-2:
+    container_name: api_gateway_2
+    build: ./apps/api_gateway
+    networks:
+      - backend
+
+  api-gateway-3:
+    container_name: api_gateway_3
+    build: ./apps/api_gateway
+    networks:
+      - backend
+
+  # ----------------------------------------------
+  # Core services: cache, db, business logic
+  # ----------------------------------------------
+  cache:
+    container_name: cache
+    build: ./apps/cache
+    ports:
+      - "5002:5000"  # Only expose if needed from host
+    networks:
+      - backend
+
+  database:
+    container_name: database
+    build: ./apps/database
+    ports:
+      - "5003:5000"
+    networks:
+      - backend
+
+  microservice:
+    container_name: microservice
+    build: ./apps/microservice
+    ports:
+      - "5004:5000"
+    networks:
+      - backend
+
+  worker:
+    container_name: worker
+    build: ./apps/worker
+    ports:
+      - "5005:5000"
+    networks:
+      - backend
+
+# ----------------------------------------------
+# Shared internal network
+# ----------------------------------------------
+networks:
+  backend:
+    driver: bridge

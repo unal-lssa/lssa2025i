@@ -1,0 +1,5 @@
+locust
+requests
+pandas
+matplotlib
+gunicorn
