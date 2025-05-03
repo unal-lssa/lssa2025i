@@ -1,0 +1,56 @@
+services:
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - load_balancer
+
+  load_balancer:
+    build: ./load_balancer
+    ports:
+      - "8000:8000"
+    depends_on:
+      - api_gateway1
+      - api_gateway2
+
+  api_gateway1:
+    build: ./api_gateway
+    ports:
+      - "5000:5000"
+    environment:
+      - GATEWAY_ID=api_gateway1
+    depends_on:
+      - cache
+      - worker
+      - database
+
+  api_gateway2:
+    build: ./api_gateway
+    ports:
+      - "5003:5000"  # Port on host is 5003; internal is still 5000
+    environment:
+      - GATEWAY_ID=api_gateway2
+    depends_on:
+      - cache
+      - worker
+      - database
+     
+  cache:
+    build: ./cache
+    container_name: cache
+    ports:
+      - "5004:5004"  
+
+  database:
+    build: ./database
+    container_name: database
+    ports:
+      - "5002:5002"  
+
+  worker:
+    build: ./worker
+    container_name: worker
+    ports:
+      - "5005:5005"  
