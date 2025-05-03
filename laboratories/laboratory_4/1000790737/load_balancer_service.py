@@ -2,7 +2,7 @@ from flask import Flask, request, Response
 import itertools, requests
 
 app = Flask(__name__)
-services = itertools.cycle(["http://127.0.0.1:5003", "http://127.0.0.1:5004"])
+services = itertools.cycle(["http://service_1:5003", "http://service_2:5004"])
 
 
 @app.route("/<path:path>", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
@@ -33,4 +33,4 @@ def forward(path):
 
 
 if __name__ == "__main__":
-    app.run(port=5002, debug=True)
+    app.run(host="0.0.0.0", port=5002, debug=True)

@@ -24,28 +24,14 @@ Name: Carlos Santiago Sandoval Casallas
 | worker_1                     | 5008   |
 | worker_2                     | 5009   |
 | worker_cache                 | 5010   |
-| auth_service_1               | 5011   |
-| auth_service_2               | 5012   |
+| auth_1               | 5011   |
+| auth_2               | 5012   |
 | load_balancer_auth           | 5013   |
 
 ## How to run
 
 ```bash
-python3 load_balancer_api_gateway.py
-python3 api_gateway_1.py 5000
-python3 api_gateway_2.py 5001
-python3 load_balancer_auth.py
-python3 auth_service_1.py 5011
-python3 auth_service_2.py 5012
-python3 load_balancer_service.py
-python3 service_1.py 5003
-python3 service_2.py 5004
-python3 database.py
-python3 cache.py
-python3 load_balancer_worker.py
-python3 worker_1.py 5008
-python3 worker_2.py 5009
-python3 worker_cache.py
+docker-compose up --build
 ```
 
 # How to test

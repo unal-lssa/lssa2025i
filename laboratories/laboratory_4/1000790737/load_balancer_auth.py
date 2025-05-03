@@ -2,7 +2,7 @@ from flask import Flask, request, Response
 import itertools, requests
 
 app = Flask(__name__)
-auth_services = itertools.cycle(["http://127.0.0.1:5011", "http://127.0.0.1:5012"])
+auth_services = itertools.cycle(["http://auth_1:5011", "http://auth_2:5012"])
 
 
 @app.route("/login", methods=["POST"])
@@ -29,4 +29,4 @@ def forward_login():
 
 
 if __name__ == "__main__":
-    app.run(port=5013, debug=True)
+    app.run(host="0.0.0.0", port=5013, debug=True)

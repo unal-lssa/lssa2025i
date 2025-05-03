@@ -3,7 +3,7 @@ import threading, time
 import requests
 
 app = Flask(__name__)
-CACHE_URL = "http://127.0.0.1:5010/cache/task_results"
+CACHE_URL = "http://worker_cache:5010/cache/task_results"
 
 
 @app.route("/task", methods=["POST"])
@@ -26,4 +26,4 @@ if __name__ == "__main__":
     import sys
 
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 5008
-    app.run(port=port, debug=True)
+    app.run(host="0.0.0.0", port=port, debug=True)

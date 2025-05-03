@@ -2,7 +2,7 @@ from flask import Flask, request, Response
 import itertools, requests
 
 app = Flask(__name__)
-workers = itertools.cycle(["http://127.0.0.1:5008", "http://127.0.0.1:5009"])
+workers = itertools.cycle(["http://worker_1:5008", "http://worker_2:5009"])
 
 
 @app.route("/task", methods=["POST"])
@@ -29,4 +29,4 @@ def forward():
 
 
 if __name__ == "__main__":
-    app.run(port=5007, debug=True)
+    app.run(host="0.0.0.0", port=5007, debug=True)
