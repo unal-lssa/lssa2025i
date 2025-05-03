@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  load_balancer:
+    build: ./load_balancer
+    ports:
+      - "8000:8000"
+    depends_on:
+      - ag1
+      - ag2
+    networks:
+      - app_network
+
+  ag1:
+    build: ./AG
+    container_name: ag1
+    ports:
+      - "2020:5000"
+    environment:
+      - INSTANCE=ag1
+    depends_on:
+      - auth_service
+      - user_service
+      - order_service
+      - cache
+      - worker
+    networks:
+      - app_network
+
+  ag2:
+    build: ./AG
+    container_name: ag2
+    ports:
+      - "5003:5000"
+    environment:
+      - INSTANCE=ag2
+    depends_on:
+      - auth_service
+      - user_service
+      - order_service
+      - cache
+      - worker
+    networks:
+      - app_network
+
+  cache:
+    build: ./cache
+    ports:
+      - "5004:5004"
+    networks:
+      - app_network
+
+  worker:
+    build: ./worker
+    ports:
+      - "5005:5005"
+    networks:
+      - app_network
+
+  auth_service:
+    build: ./auth_service
+    ports:
+      - "5006:5006"
+    networks:
+      - app_network
+
+  user_service:
+    build: ./user_service
+    ports:
+      - "5001:5001"
+    networks:
+      - app_network
+
+  order_service:
+    build: ./order_service
+    ports:
+      - "5002:5002"
+    networks:
+      - app_network
+
+  log_service:
+    build: ./logs_service
+    ports:
+      - "5007:5007"
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge

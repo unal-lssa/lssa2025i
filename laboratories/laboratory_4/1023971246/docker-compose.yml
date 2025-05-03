@@ -1,0 +1,30 @@
+services:
+  api_gateway:
+    build: ./api_gateway
+    ports:
+      - "5000:5000"
+
+  cache:
+    build: ./cache
+    ports:
+      - "5004:5004"
+  
+  database:
+    build: ./database
+    ports:
+      - "5002:5002"
+
+  load_balancer:
+    build: ./load_balancer
+    ports:
+      - "8000:8000"
+
+  microservice:
+    build: ./microservice
+    ports:
+      - "5001:5001"
+
+  worker:
+    build: ./worker
+    ports:
+      - "5005:5005"

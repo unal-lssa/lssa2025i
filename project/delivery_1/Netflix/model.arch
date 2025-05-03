@@ -1,0 +1,36 @@
+architecture:
+  component frontend web_frontend port="80"
+  component services ms_streamer port="8001"
+  component services ms_recommender port="8002"
+  component services ms_auth port="8003"
+  component services ms_accounts port="8004"
+  component services ms_payment port="8005"
+  component services ms_content port="8006"
+  component loadbalancer streamer_lb port="443"
+  component storage media_storage size="500gb"
+  database mongo recommender_db
+  database mongo auth_db
+  database mysql accounts_db
+  database mongo payment_db
+  database mongo content_db
+  cache redis content_cache size="1gb"
+  event_stream kafka kafka_service partitions="3"
+  connector http frontend_streamer web_frontend -> streamer_lb timeout="10s"
+  connector http frontend_auth web_frontend -> ms_auth timeout="5s"
+  connector http streamer_ms streamer_lb -> ms_streamer timeout="15s"
+  connector http frontend_ms_recommender web_frontend -> ms_recommender timeout="10s"
+  connector http frontend_ms_accounts web_frontend -> ms_accounts timeout="5s"
+  connector http frontend_ms_payment web_frontend -> ms_payment timeout="5s"
+  connector http frontend_ms_content web_frontend -> ms_content timeout="10s"
+  connector mongoose recommender_db_conn ms_recommender -> recommender_db connection_pool="10"
+  connector mongoose auth_db_conn ms_auth -> auth_db connection_pool="15"
+  connector db_connector accounts_db_conn ms_accounts -> accounts_db connection_pool="10"
+  connector mongoose payment_db_conn ms_payment -> payment_db connection_pool="5"
+  connector mongoose content_db_conn ms_content -> content_db connection_pool="20"
+  connector s3 streamer_media_storage ms_streamer -> media_storage encryption="true"
+  connector redis content_cache_conn ms_content -> content_cache ttl="3600"
+  connector kafka auth_kafka_conn ms_auth -> kafka_service topic="auth_events"
+  connector kafka recommender_kafka_conn ms_recommender -> kafka_service topic="recommendation_events"
+  connector kafka accounts_kafka_conn ms_accounts -> kafka_service topic="account_events"
+  connector kafka payment_kafka_conn ms_payment -> kafka_service topic="payment_events"
+  connector kafka content_kafka_conn ms_content -> kafka_service topic="content_events"

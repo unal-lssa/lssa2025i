@@ -1,0 +1,111 @@
+
+services:
+  api_gateway_1:
+    build: ./api_gateway
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+    depends_on:
+      - cache
+      - database
+      - worker
+    networks:
+      - app_network
+
+  api_gateway_2:
+    build: ./api_gateway
+    ports:
+      - "5006:5006"
+    environment:
+      - PORT=5006
+    depends_on:
+      - cache
+      - database
+      - worker
+    networks:
+      - app_network
+
+  api_gateway_3:
+    build: ./api_gateway
+    ports:
+      - "5007:5007"
+    environment:
+      - PORT=5007
+    depends_on:
+      - cache
+      - database
+      - worker
+    networks:
+      - app_network
+
+  api_gateway_4:
+    build: ./api_gateway
+    ports:
+      - "5008:5008"
+    environment:
+      - PORT=5008
+    depends_on:
+      - cache
+      - database
+      - worker
+    networks:
+      - app_network
+
+  api_gateway_5:
+    build: ./api_gateway
+    ports:
+      - "5009:5009"
+    environment:
+      - PORT=5009
+    depends_on:
+      - cache
+      - database
+      - worker
+    networks:
+      - app_network
+
+  load_balancer:
+    build: ./load_balancer
+    ports:
+      - "8000:8000"
+    depends_on:
+      - api_gateway_1
+      - api_gateway_2
+      - api_gateway_3
+      - api_gateway_4
+      - api_gateway_5
+    networks:
+      - app_network
+
+  database:
+    build: ./database
+    ports:
+      - "5002:5002"
+    networks:
+      - app_network
+
+  cache:
+    build: ./cache
+    ports:
+      - "5004:5004"
+    networks:
+      - app_network
+
+  worker:
+    build: ./worker
+    ports:
+      - "5005:5005"
+    networks:
+      - app_network
+
+  microservice:
+    build: ./microservice
+    ports:
+      - "5003:5003"
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge 
