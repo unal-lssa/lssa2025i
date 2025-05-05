@@ -1,0 +1,115 @@
+version: '3.8'
+
+x-common-env-networks: &common-env-networks
+  environment:
+    - DB_HOST=db
+    - DB_USER=admin
+    - DB_PASSWORD=admin123
+    - DB_NAME=app_db
+    - DB_PORT=5432
+  networks:
+    - internal
+    - db_net
+  depends_on:
+    db:
+      condition: service_healthy
+
+x-gateway-base: &gateway-base
+  build:
+    context: ./gateway
+  environment:
+    - JWT_SECRET=supersecretjwt
+  networks:
+    - internal
+    - cache_net
+  depends_on:
+    - cache
+
+services:
+  load_balancer:
+    build:
+      context: ./load_balancer
+    ports:
+      - "127.0.0.1:8080:8080"
+    networks:
+      - public
+      - internal
+    depends_on:
+      - gateway_1
+      - gateway_2
+
+  gateway_1:
+    <<: *gateway-base
+    environment:
+      - WHITELIST_HOST=whitelist
+      - MICROSERVICE_HOST=microservice_1
+    depends_on:
+      - whitelist
+      - microservice_1
+
+  gateway_2:
+    <<: *gateway-base
+    environment:
+      - WHITELIST_HOST=whitelist
+      - MICROSERVICE_HOST=microservice_2
+    depends_on:
+      - whitelist
+      - microservice_2
+
+  microservice_1:
+    build:
+      context: ./microservice
+    <<: *common-env-networks
+
+  microservice_2:
+    build:
+      context: ./microservice
+    <<: *common-env-networks
+
+  whitelist:
+    build:
+      context: ./whitelist
+    <<: *common-env-networks
+
+  db:
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin123
+      - POSTGRES_DB=app_db
+    networks:
+      - db_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  cache:
+    image: redis:alpine
+    networks:
+      - cache_net
+
+  invalid_request:
+    image: curlimages/curl
+    entrypoint: >
+      /bin/sh -c "curl -X POST http://load_balancer:8080/login -d ''"
+    networks:
+      - public
+    profiles:
+      - request
+
+networks:
+  public:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16
+          gateway: 172.30.0.1
+  internal:
+    internal: true
+  db_net:
+    internal: true
+  cache_net:
+    internal: true
