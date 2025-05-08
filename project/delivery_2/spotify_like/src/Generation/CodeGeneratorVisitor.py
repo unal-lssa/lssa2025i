@@ -17,6 +17,8 @@ from .NetworkOrchestrator import NetworkOrchestrator
 
 from .Templates.frontendTemplate import generate_frontend
 from .Templates.apiGatewayTemplate import generate_api_gateway
+from .Templates.bucketTemplate import generate_bucket
+from .Templates.generateCDN import generate_cdn
 
 from typing import Optional
 
@@ -45,9 +47,9 @@ class CodeGeneratorVisitor(IVisitor):
         elif comp.type == StandardComponentType.FRONTEND:
             self._write_frontend_service(comp)
         elif comp.type == StandardComponentType.CDN:
-            pass  # TODO: Write config files
+            generate_cdn(comp.name, self._output)
         elif comp.type == StandardComponentType.BUCKET:
-            pass  # TODO: Write config files
+            generate_bucket(comp.name, self._output)
 
     def visit_database(self, db: Database) -> None:
         # Use the database docker image
