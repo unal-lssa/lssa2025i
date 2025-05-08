@@ -15,6 +15,8 @@ from DSL.AComponent import AComponent
 
 from .NetworkOrchestrator import NetworkOrchestrator
 
+from .Templates.frontendTemplate import generate_frontend
+
 from typing import Optional
 
 
@@ -40,7 +42,7 @@ class CodeGeneratorVisitor(IVisitor):
         if comp.type == StandardComponentType.BACKEND:
             self._write_backend_service(comp)
         elif comp.type == StandardComponentType.FRONTEND:
-            pass  # TODO: Add frontend service
+            self._write_frontend_service(comp)
         elif comp.type == StandardComponentType.CDN:
             pass  # TODO: Write config files
         elif comp.type == StandardComponentType.BUCKET:
@@ -98,3 +100,6 @@ class CodeGeneratorVisitor(IVisitor):
 
         with open(os.path.join(svc, "app.py"), "w") as f:
             f.write("\n".join(lines))
+
+    def _write_frontend_service(self, comp: AComponent) -> None:
+        generate_frontend(comp.name, self._output)

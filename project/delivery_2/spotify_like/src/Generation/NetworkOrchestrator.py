@@ -7,6 +7,7 @@ from DSL.AComponent import AComponent
 
 class NetworkOrchestrator:
     START_PORT = 3000
+    FRONTEND_PORT = 80
 
     def __init__(self):
         self.next_port = self.START_PORT
@@ -19,7 +20,15 @@ class NetworkOrchestrator:
         if component.name in self.assigned_ports:
             return self.assigned_ports[component.name]
 
-        assigned_port = self.next_port
+        if isinstance(component, AComponent):
+            # If the component is a frontend, assign it the frontend port
+            if component.type == "frontend":
+                assigned_port = self.FRONTEND_PORT
+            else:
+                # Otherwise, assign the next available port
+                assigned_port = self.next_port
+        else:
+            assigned_port = self.next_port
         self.assigned_ports[component.name] = assigned_port
         self.next_port += 1
         return assigned_port
