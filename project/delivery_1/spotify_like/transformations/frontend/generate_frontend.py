@@ -5,15 +5,16 @@ import json  # Importar módulo json
 
 def generate_frontend(name, backend=None, connections=None):
     # Ruta base para el esqueleto del componente
-    base_path = f'skeleton/{name}'
+    base_path = f"skeleton/{name}"
     os.makedirs(base_path, exist_ok=True)
 
     # Ruta para la carpeta de contenidos estáticos
-    contents_path = os.path.join(base_path, 'contents')
+    contents_path = os.path.join(base_path, "contents")
     os.makedirs(contents_path, exist_ok=True)
 
     # --- Generar el archivo index.html dentro de la carpeta 'contents' ---
-    html_content = textwrap.dedent("""
+    html_content = textwrap.dedent(
+        """
         <!DOCTYPE html>
         <html lang="en">
 
@@ -80,9 +81,11 @@ def generate_frontend(name, backend=None, connections=None):
         </body>
 
         </html>
-    """)
+    """
+    )
 
-    html_content_player = textwrap.dedent("""
+    html_content_player = textwrap.dedent(
+        """
             <!DOCTYPE html>
             <html lang="en">
 
@@ -199,7 +202,7 @@ def generate_frontend(name, backend=None, connections=None):
                         <a href="#" class="hover:text-white transition duration-200">Explorar</a>
                         <a href="#" class="hover:text-white transition duration-200">Tu Biblioteca</a>
                         <a href="#" class="hover:text-white transition duration-200">Crear Lista</a>
-                        <div class="mt-auto md:mt-0"> 
+                        <div class="mt-auto md:mt-0">
                             <a href="index.html" class="text-sm text-gray-400 hover:text-white transition duration-200">Volver a
                                 Inicio</a>
                         </div>
@@ -211,14 +214,14 @@ def generate_frontend(name, backend=None, connections=None):
                             <p>Contenido dinámico del reproductor irá aquí (ej: listas, álbumes, etc.).</p>
                             <div class="mt-6 space-y-4">
                                 <div class="p-4 bg-gray-600 rounded-md flex items-center gap-4">
-                                    <div class="w-12 h-12 bg-gray-500 rounded-md"></div> 
+                                    <div class="w-12 h-12 bg-gray-500 rounded-md"></div>
                                     <div>
                                         <div class="font-semibold">Nombre de la Canción</div>
                                         <div class="text-sm text-gray-400">Artista - Álbum</div>
                                     </div>
                                 </div>
                                 <div class="p-4 bg-gray-600 rounded-md flex items-center gap-4">
-                                    <div class="w-12 h-12 bg-gray-500 rounded-md"></div> 
+                                    <div class="w-12 h-12 bg-gray-500 rounded-md"></div>
                                     <div>
                                         <div class="font-semibold">Otra Canción</div>
                                         <div class="text-sm text-gray-400">Otro Artista - Otro Álbum</div>
@@ -227,9 +230,9 @@ def generate_frontend(name, backend=None, connections=None):
                             </div>
                         </div>
 
-                        <div id="player-bar" class="mt-auto"> 
+                        <div id="player-bar" class="mt-auto">
                             <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 bg-gray-500 rounded-md"></div> 
+                                <div class="w-10 h-10 bg-gray-500 rounded-md"></div>
                                 <div>
                                     <div class="text-sm font-semibold">Felp 22, Duki, Rauw Alejandro - TRAPPERZ A Mafia Da Sicilia (feat. MC Davo & Fuego)</div>
                                     <div class="text-xs text-gray-400">Felp 22</div>
@@ -247,12 +250,13 @@ def generate_frontend(name, backend=None, connections=None):
             </body>
 
             </html>
-    """)
-
+    """
+    )
 
     # --- Generar el archivo app.js ---
     # Este app.js solo servirá los archivos HTML estáticos desde 'contents'
-    app_code = textwrap.dedent("""
+    app_code = textwrap.dedent(
+        """
         const express = require('express');
         const path = require('path'); // Importar módulo path
         const app = express();
@@ -274,8 +278,8 @@ def generate_frontend(name, backend=None, connections=None):
         const PORT = 80; // Puerto interno del contenedor
 
         app.listen(PORT, () => console.log(`Frontend running on port ${PORT}`));
-    """)
-
+    """
+    )
 
     # --- Generar el archivo package.json ---
     # Solo necesitamos express, ya que axios no se usa en esta versión básica
@@ -291,7 +295,8 @@ def generate_frontend(name, backend=None, connections=None):
     }
 
     # --- Generar el archivo Dockerfile ---
-    dockerfile_content = textwrap.dedent("""
+    dockerfile_content = textwrap.dedent(
+        """
         FROM node:18
 
         WORKDIR /app
@@ -308,21 +313,22 @@ def generate_frontend(name, backend=None, connections=None):
         EXPOSE 80
 
         CMD ["node", "app.js"]
-    """)
+    """
+    )
 
     # --- Escribir los archivos ---
-    with open(os.path.join(contents_path, 'index.html'), 'w') as f:
+    with open(os.path.join(contents_path, "index.html"), "w") as f:
         f.write(html_content)
 
-    with open(os.path.join(contents_path, 'player.html'), 'w') as f:
-        f.write(html_content_player) # Escribir el contenido del player.html
+    with open(os.path.join(contents_path, "player.html"), "w") as f:
+        f.write(html_content_player)  # Escribir el contenido del player.html
 
-    with open(os.path.join(base_path, 'app.js'), 'w') as f:
+    with open(os.path.join(base_path, "app.js"), "w") as f:
         f.write(app_code)
 
-    with open(os.path.join(base_path, 'package.json'), 'w') as f:
+    with open(os.path.join(base_path, "package.json"), "w") as f:
         # Usar json.dump para escribir el diccionario package_json_content
         json.dump(package_json_content, f, indent=2)
 
-    with open(os.path.join(base_path, 'Dockerfile'), 'w') as f:
+    with open(os.path.join(base_path, "Dockerfile"), "w") as f:
         f.write(dockerfile_content)
