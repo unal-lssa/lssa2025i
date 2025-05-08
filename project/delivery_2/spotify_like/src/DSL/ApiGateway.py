@@ -1,7 +1,10 @@
+import sys, os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "../..", "src"))
+
 from typing import List
-from .AComponent import AComponent
-from .Network import Network
-from .IVisitor import IVisitor
+from DSL.AComponent import AComponent
+from DSL.Network import Network
 
 
 class ApiGateway(AComponent):
@@ -23,7 +26,7 @@ class ApiGateway(AComponent):
     def networks(self) -> List[Network]:
         return list(self._networks)
 
-    def accept(self, visitor: IVisitor) -> None:
+    def accept(self, visitor: "IVisitor") -> None:
         visitor.visit_api_gateway(self)
 
     def validate(self) -> None:

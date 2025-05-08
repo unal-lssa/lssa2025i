@@ -1,18 +1,22 @@
-from ..DSL.AComponent import AComponent
-from ..DSL.ApiGateway import ApiGateway
-from ..DSL.Connector import Connector, ConnectorType
-from ..DSL.Database import Database, DatabaseType
-from ..DSL.IElement import IElement
-from ..DSL.IVisitor import IVisitor
-from ..DSL.LoadBalancer import LoadBalancer
-from ..DSL.Model import Model
-from ..DSL.Network import Network
-from ..DSL.Queue import Queue
-from ..DSL.StandardComponent import StandardComponent, StandardComponentType
+import sys, os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "../..", "src"))
+
+from DSL.AComponent import AComponent
+from DSL.ApiGateway import ApiGateway
+from DSL.Connector import Connector, ConnectorType
+from DSL.Database import Database, DatabaseType
+from DSL.IElement import IElement
+from DSL.IVisitor import IVisitor
+from DSL.LoadBalancer import LoadBalancer
+from DSL.Model import Model
+from DSL.Network import Network
+from DSL.Queue import Queue
+from DSL.StandardComponent import StandardComponent, StandardComponentType
 
 # Change the visitor to change the deployment model logic
-from .DockerWriterVisitor import DockerWriterVisitor
-from .CodeGeneratorVisitor import CodeGeneratorVisitor
+from Generation.DockerComposeWriterVisitor import DockerComposeWriterVisitor
+from Generation.CodeGeneratorVisitor import CodeGeneratorVisitor
 
 
 def convert_textx_to_dsl_element(elem) -> IElement:
@@ -58,7 +62,7 @@ def convert_textx_to_dsl_element(elem) -> IElement:
         )
     if cls_name == "Connector":
         source = convert_textx_to_dsl_element(
-            elem["from"]
+            getattr(elem, "from", None)
         )  # 'from' is a reserved keyword
         target = convert_textx_to_dsl_element(elem.to)
         conn_type = ConnectorType(elem.type)
@@ -101,7 +105,9 @@ def generate_architecture(model, output_dir: str = "skeleton"):
     arch.validate()
 
     # Use the visitor to generate the architecture
-    docker_visitor = DockerWriterVisitor(output_dir)
     code_visitor = CodeGeneratorVisitor(output_dir)
-    arch.accept(docker_visitor)
+    docker_visitor = DockerComposeWriterVisitor(
+        output_dir, network_orchestrator=code_visitor.network_orchestrator
+    )  # Use the same port as the code generator
     arch.accept(code_visitor)
+    arch.accept(docker_visitor)

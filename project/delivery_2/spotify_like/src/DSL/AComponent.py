@@ -1,12 +1,20 @@
+import sys, os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "../..", "src"))
+
 from abc import ABC
-from .IElement import IElement
-from .Network import Network
+from DSL.IElement import IElement
+from DSL.Network import Network
 
 
 class AComponent(IElement, ABC):
     def __init__(self, name: str, network: Network):
         super().__init__(name)
         self._network = network
+
+    @property
+    def name(self) -> str:
+        return self._name
 
     @property
     def network(self) -> Network:

@@ -1,6 +1,10 @@
+import sys, os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "../..", "src"))
+
 from typing import List
-from .IElement import IElement
-from .IVisitor import IVisitor
+from DSL.IElement import IElement
+from DSL.Network import Network
 
 
 class Model:
@@ -27,7 +31,7 @@ class Model:
         if duplicates:
             raise ValueError(f"Duplicate elements found: {', '.join(duplicates)}")
 
-    def accept(self, visitor: IVisitor) -> None:
+    def accept(self, visitor: "IVisitor") -> None:
         """
         Traverse elements with a visitor. You can use different Visitor implementations:
         - One visitor writes per-component files (Dockerfile, app.py) by handling visit_standard_component, visit_database, etc.
@@ -38,6 +42,16 @@ class Model:
             if not callable(getattr(elem, "accept", None)):
                 raise TypeError(f"Element {elem} does not have an accept method.")
             elem.accept(visitor)
+
+        for e in [x for x in self._elements if isinstance(x, Network)]:
+            if not callable(getattr(e, "accept", None)):
+                raise TypeError(f"Element {e} does not have an accept method.")
+            e.accept(visitor)
+
+        for e in [x for x in self._elements if not isinstance(x, Network)]:
+            if not callable(getattr(e, "accept", None)):
+                raise TypeError(f"Element {e} does not have an accept method.")
+            e.accept(visitor)
 
         if hasattr(visitor, "post_visit_model"):
             visitor.post_visit_model(self)

@@ -1,12 +1,16 @@
+import sys, os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "../..", "src"))
+
 from abc import ABC, abstractmethod
-from .Model import Model
-from .Network import Network
-from .StandardComponent import StandardComponent
-from .LoadBalancer import LoadBalancer
-from .Database import Database
-from .ApiGateway import ApiGateway
-from .Queue import Queue
-from .Connector import Connector
+from DSL.Model import Model
+from DSL.Network import Network
+from DSL.StandardComponent import StandardComponent
+from DSL.LoadBalancer import LoadBalancer
+from DSL.Database import Database
+from DSL.ApiGateway import ApiGateway
+from DSL.Queue import Queue
+from DSL.Connector import Connector
 
 
 class IVisitor(ABC):

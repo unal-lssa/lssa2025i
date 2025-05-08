@@ -1,7 +1,11 @@
+import sys, os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "../..", "src"))
+
 from enum import Enum
-from .IElement import IElement
-from .AComponent import AComponent
-from .IVisitor import IVisitor
+from DSL.IElement import IElement
+from DSL.AComponent import AComponent
+from DSL.Queue import Queue
 
 
 class ConnectorType(Enum):
@@ -25,18 +29,18 @@ class Connector(IElement):
         self._type = conn_type
 
     @property
-    def from_component(self) -> AComponent:
+    def from_comp(self) -> AComponent:
         return self._from
 
     @property
-    def to_component(self) -> AComponent:
+    def to_comp(self) -> AComponent:
         return self._to
 
     @property
     def type(self) -> ConnectorType:
         return self._type
 
-    def accept(self, visitor: IVisitor) -> None:
+    def accept(self, visitor: "IVisitor") -> None:
         visitor.visit_connector(self)
 
     def validate(self) -> None:
@@ -63,9 +67,7 @@ class Connector(IElement):
             elif hasattr(self._from, "database_type"):
                 raise ValueError("DB_CONNECTOR cannot connect two database components.")
         elif self._type == ConnectorType.QUEUE_CONNECTOR:
-            if not hasattr(self._to, "queue_type") or not hasattr(
-                self._from, "queue_type"
-            ):
+            if not isinstance(self._to, Queue) and not isinstance(self._from, Queue):
                 raise ValueError(
                     "QUEUE_CONNECTOR can only connect to queue components."
                 )

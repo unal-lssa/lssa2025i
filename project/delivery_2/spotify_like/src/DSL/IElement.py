@@ -1,5 +1,4 @@
 from abc import abstractmethod, ABCMeta
-from .IVisitor import IVisitor
 
 
 class IElement(metaclass=ABCMeta):

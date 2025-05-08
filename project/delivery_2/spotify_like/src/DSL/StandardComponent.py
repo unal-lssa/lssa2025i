@@ -1,7 +1,10 @@
+import sys, os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "../..", "src"))
+
 from enum import Enum
-from .AComponent import AComponent
-from .Network import Network
-from .IVisitor import IVisitor
+from DSL.AComponent import AComponent
+from DSL.Network import Network
 
 
 class StandardComponentType(Enum):
@@ -20,7 +23,7 @@ class StandardComponent(AComponent):
     def type(self) -> StandardComponentType:
         return self._type
 
-    def accept(self, visitor: IVisitor) -> None:
+    def accept(self, visitor: "IVisitor") -> None:
         visitor.visit_standard_component(self)
 
     def validate(self):

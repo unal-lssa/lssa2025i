@@ -1,6 +1,9 @@
-from .AComponent import AComponent
-from .Network import Network
-from .IVisitor import IVisitor
+import sys, os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "../..", "src"))
+
+from DSL.AComponent import AComponent
+from DSL.Network import Network
 
 
 class LoadBalancer(AComponent):
@@ -23,7 +26,7 @@ class LoadBalancer(AComponent):
     def target(self) -> AComponent:
         return self._target
 
-    def accept(self, visitor: IVisitor) -> None:
+    def accept(self, visitor: "IVisitor") -> None:
         visitor.visit_load_balancer(self)
 
     def validate(self) -> None:

@@ -1,6 +1,9 @@
+import sys, os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "../..", "src"))
+
 from typing import Optional
-from .IElement import IElement
-from .IVisitor import IVisitor
+from DSL.IElement import IElement
 
 
 class Network(IElement):
@@ -22,7 +25,7 @@ class Network(IElement):
     def driver(self) -> Optional[str]:
         return self._driver
 
-    def accept(self, visitor: IVisitor) -> None:
+    def accept(self, visitor: "IVisitor") -> None:
         visitor.visit_network(self)
 
     def validate(self) -> None:

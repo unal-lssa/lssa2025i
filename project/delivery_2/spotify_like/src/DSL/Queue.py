@@ -1,7 +1,10 @@
+import sys, os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "../..", "src"))
+
 from typing import List
-from .AComponent import AComponent
-from .Network import Network
-from .IVisitor import IVisitor
+from DSL.AComponent import AComponent
+from DSL.Network import Network
 
 
 class Queue(AComponent):
@@ -24,7 +27,7 @@ class Queue(AComponent):
     def replication(self) -> int:
         return self._replication
 
-    def accept(self, visitor: IVisitor) -> None:
+    def accept(self, visitor: "IVisitor") -> None:
         visitor.visit_queue(self)
 
     def validate(self) -> None:
