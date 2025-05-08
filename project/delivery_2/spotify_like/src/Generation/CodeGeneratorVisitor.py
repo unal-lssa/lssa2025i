@@ -16,6 +16,7 @@ from DSL.AComponent import AComponent
 from .NetworkOrchestrator import NetworkOrchestrator
 
 from .Templates.frontendTemplate import generate_frontend
+from .Templates.apiGatewayTemplate import generate_api_gateway
 
 from typing import Optional
 
@@ -60,7 +61,16 @@ class CodeGeneratorVisitor(IVisitor):
         pass  # TODO: Write config files
 
     def visit_api_gateway(self, ag: ApiGateway) -> None:
-        pass  # TODO: Implement API Gateway
+        # Get all connected components
+        route_map = {}
+        for conn in self._model.elements:
+            if not isinstance(conn, Connector):
+                continue
+            if conn.from_comp.name == ag.name:
+                # TODO: This does not make sense but this is how the Gateway API transformation code is implemented.
+                route_map[conn.to_comp.name] = conn.to_comp.name
+
+        generate_api_gateway(ag.name, self._output, route_map)
 
     def visit_connector(self, conn: Connector) -> None:
         pass  # TODO: Add connector injection

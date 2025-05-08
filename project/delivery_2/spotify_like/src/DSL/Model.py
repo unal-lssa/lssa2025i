@@ -38,11 +38,6 @@ class Model:
         - Another visitor collects service definitions into a shared docker-compose structure in visitor.visit_model or visit_network, then finalizes in visitor.post_visit_model.
         """
         visitor.visit_model(self)
-        for elem in self._elements:
-            if not callable(getattr(elem, "accept", None)):
-                raise TypeError(f"Element {elem} does not have an accept method.")
-            elem.accept(visitor)
-
         for e in [x for x in self._elements if isinstance(x, Network)]:
             if not callable(getattr(e, "accept", None)):
                 raise TypeError(f"Element {e} does not have an accept method.")
