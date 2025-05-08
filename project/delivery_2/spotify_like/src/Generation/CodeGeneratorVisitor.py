@@ -4,7 +4,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "../..", "src"))
 
 from DSL.IVisitor import IVisitor
 from DSL.Model import Model
-from DSL.StandardComponent import StandardComponent
+from DSL.StandardComponent import StandardComponent, StandardComponentType
 from DSL.Database import Database, DatabaseType
 from DSL.Queue import Queue
 from DSL.LoadBalancer import LoadBalancer
@@ -33,9 +33,37 @@ class CodeGeneratorVisitor(IVisitor):
         self._model = model
 
     def visit_network(self, network: Network) -> None:
+        # This configuration is defined in the docker-compose file
         pass
 
     def visit_standard_component(self, comp: StandardComponent) -> None:
+        if comp.type == StandardComponentType.BACKEND:
+            self._write_backend_service(comp)
+        elif comp.type == StandardComponentType.FRONTEND:
+            pass  # TODO: Add frontend service
+        elif comp.type == StandardComponentType.CDN:
+            pass  # TODO: Write config files
+        elif comp.type == StandardComponentType.BUCKET:
+            pass  # TODO: Write config files
+
+    def visit_database(self, db: Database) -> None:
+        # Use the database docker image
+        pass
+
+    def visit_queue(self, q: Queue) -> None:
+        # Use the queue docker image
+        pass
+
+    def visit_load_balancer(self, lb: LoadBalancer) -> None:
+        pass  # TODO: Write config files
+
+    def visit_api_gateway(self, ag: ApiGateway) -> None:
+        pass  # TODO: Implement API Gateway
+
+    def visit_connector(self, conn: Connector) -> None:
+        pass  # TODO: Add connector injection
+
+    def _write_backend_service(self, comp: AComponent) -> None:
         port = self.net_orch.register_component(comp)
         svc = os.path.join(self._output, f"{comp.name}")
         os.makedirs(svc, exist_ok=True)
@@ -70,21 +98,3 @@ class CodeGeneratorVisitor(IVisitor):
 
         with open(os.path.join(svc, "app.py"), "w") as f:
             f.write("\n".join(lines))
-
-    def visit_database(self, db: Database) -> None:
-        # Use the database docker image
-        pass
-
-    def visit_queue(self, q: Queue) -> None:
-        # Use the queue docker image
-        pass
-
-    def visit_load_balancer(self, lb: LoadBalancer) -> None:
-        # Use the load balancer docker image
-        pass
-
-    def visit_api_gateway(self, ag: ApiGateway) -> None:
-        pass
-
-    def visit_connector(self, conn: Connector) -> None:
-        pass
