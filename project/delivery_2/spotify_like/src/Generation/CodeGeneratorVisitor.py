@@ -19,6 +19,7 @@ from .Templates.frontendTemplate import generate_frontend
 from .Templates.apiGatewayTemplate import generate_api_gateway
 from .Templates.bucketTemplate import generate_bucket
 from .Templates.generateCDN import generate_cdn
+from .Templates.generateLoadBalancer import generate_load_balancer
 
 from typing import Optional
 
@@ -60,7 +61,13 @@ class CodeGeneratorVisitor(IVisitor):
         pass
 
     def visit_load_balancer(self, lb: LoadBalancer) -> None:
-        pass  # TODO: Write config files
+        generate_load_balancer(
+            lb.name,
+            target=lb.target,
+            net_orch=self.net_orch,
+            instance_count=lb.instance_count,
+            output_dir=self._output,
+        )
 
     def visit_api_gateway(self, ag: ApiGateway) -> None:
         # Get all connected components
@@ -69,8 +76,8 @@ class CodeGeneratorVisitor(IVisitor):
             if not isinstance(conn, Connector):
                 continue
             if conn.from_comp.name == ag.name:
-                # TODO: This does not make sense but this is how the Gateway API transformation code is implemented.
-                route_map[conn.to_comp.name] = conn.to_comp.name
+                port = self.net_orch.get_assigned_port(conn.to_comp)
+                route_map[conn.to_comp.name] = port
 
         generate_api_gateway(ag.name, self._output, route_map)
 

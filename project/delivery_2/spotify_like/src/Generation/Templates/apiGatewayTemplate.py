@@ -11,8 +11,8 @@ def generate_api_gateway(
 
     route_entries = ",\n        ".join(
         [
-            f'"{service.replace("_lb", "")}": "http://{lb_name}:80"'
-            for service, lb_name in route_map.items()
+            f'"{service.replace("_lb", "")}": "http://{service}:{component_port}"'
+            for service, component_port in route_map.items()
         ]
     )
 

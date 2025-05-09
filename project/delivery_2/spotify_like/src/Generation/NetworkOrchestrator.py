@@ -3,6 +3,7 @@ import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), "../..", "src"))
 
 from DSL.AComponent import AComponent
+from DSL.StandardComponent import StandardComponent
 
 
 class NetworkOrchestrator:
@@ -20,7 +21,7 @@ class NetworkOrchestrator:
         if component.name in self.assigned_ports:
             return self.assigned_ports[component.name]
 
-        if isinstance(component, AComponent):
+        if isinstance(component, StandardComponent):
             # If the component is a frontend, assign it the frontend port
             if component.type == "frontend":
                 assigned_port = self.FRONTEND_PORT
@@ -32,3 +33,12 @@ class NetworkOrchestrator:
         self.assigned_ports[component.name] = assigned_port
         self.next_port += 1
         return assigned_port
+
+    def get_assigned_port(self, component: AComponent) -> int:
+        """
+        Get the assigned port for a component.
+        """
+        if component.name in self.assigned_ports:
+            return self.assigned_ports[component.name]
+        else:
+            return self.register_component(component)
