@@ -20,6 +20,7 @@ from .Templates.apiGatewayTemplate import generate_api_gateway
 from .Templates.bucketTemplate import generate_bucket
 from .Templates.generateCDN import generate_cdn
 from .Templates.generateLoadBalancer import generate_load_balancer
+from .Templates.generateDatabase import generate_database
 
 from typing import Optional
 
@@ -53,8 +54,15 @@ class CodeGeneratorVisitor(IVisitor):
             generate_bucket(comp.name, self._output)
 
     def visit_database(self, db: Database) -> None:
-        # Use the database docker image
-        pass
+        # Get Port
+        port = self.net_orch.register_component(db)
+
+        # Generate the database
+        generate_database(
+            component=db,
+            net_orch=self.net_orch,
+            output_dir=self._output,
+        )
 
     def visit_queue(self, q: Queue) -> None:
         # Use the queue docker image
@@ -105,8 +113,8 @@ class CodeGeneratorVisitor(IVisitor):
         lines = [
             "from flask import Flask, jsonify",
             "\n",
-            self.REPLACE_CONNECTION_STRING,
             self.REPLACE_IMPORT_STRING,
+            self.REPLACE_CONNECTION_STRING,
             "\n",
             "app=Flask(__name__)",
             "\n",
