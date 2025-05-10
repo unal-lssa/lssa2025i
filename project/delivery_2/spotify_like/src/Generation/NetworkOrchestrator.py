@@ -4,6 +4,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "../..", "src"))
 
 from DSL.AComponent import AComponent
 from DSL.StandardComponent import StandardComponent
+from DSL.Queue import Queue
 
 
 class NetworkOrchestrator:
@@ -12,7 +13,7 @@ class NetworkOrchestrator:
 
     def __init__(self):
         self.next_port = self.START_PORT
-        self.assigned_ports: dict[str, dict] = {}
+        self.assigned_ports: dict[str, int | list[int]] = {}
 
     def register_component(self, component: AComponent) -> int:
         """
@@ -28,6 +29,10 @@ class NetworkOrchestrator:
             else:
                 # Otherwise, assign the next available port
                 assigned_port = self.next_port
+        elif isinstance(component, Queue):
+            # For queues, assign a 2 to 1 mapping of ports
+            assigned_port = [self.next_port, self.next_port + 1]
+            self.next_port += 2
         else:
             assigned_port = self.next_port
         self.assigned_ports[component.name] = assigned_port

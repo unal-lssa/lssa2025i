@@ -25,7 +25,5 @@ def generate_bucket(name: str, output_dir="skeleton"):
 
 
 def move_file(src, dest):
-    if not os.path.exists(src):
-        raise FileNotFoundError(f"El archivo {src} no existe.")
+    os.makedirs(dest, exist_ok=True)
     shutil.copy(src, os.path.join(dest, os.path.basename(src)))
-    print(f"Archivo {src} movido a {os.path.join(dest, os.path.basename(src))}")

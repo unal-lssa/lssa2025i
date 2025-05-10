@@ -63,8 +63,6 @@ architecture:
         network playlist_service_net
 
     component queue upload_queue
-        partitions 1
-        replication 1
         network file_processor_net
 
     component loadbalancer catalog_lb 1 catalog_service
@@ -117,7 +115,7 @@ architecture:
 
     connector http file_consumer -> music_storage
 
-    connector http music_storage -> songs_cdn
+    connector http songs_cdn -> music_storage
 
-    connector http songs_cdn -> app_fe
+    connector http app_fe -> songs_cdn
 

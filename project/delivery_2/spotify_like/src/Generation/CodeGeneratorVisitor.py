@@ -17,7 +17,7 @@ from .NetworkOrchestrator import NetworkOrchestrator
 
 from .Templates.frontendTemplate import generate_frontend
 from .Templates.apiGatewayTemplate import generate_api_gateway
-from .Templates.bucketTemplate import generate_bucket
+from .Templates.bucketTemplate import generate_bucket, move_file
 from .Templates.generateCDN import generate_cdn
 from .Templates.generateLoadBalancer import generate_load_balancer
 from .Templates.generateDatabase import generate_database
@@ -36,6 +36,10 @@ class CodeGeneratorVisitor(IVisitor):
         self._model: Optional[Model] = None
         os.makedirs(self._output, exist_ok=True)
 
+    @property
+    def network_orchestrator(self):
+        return self.net_orch
+
     def visit_model(self, model: Model):
         self._model = model
 
@@ -51,6 +55,10 @@ class CodeGeneratorVisitor(IVisitor):
         elif comp.type == StandardComponentType.CDN:
             generate_cdn(comp.name, self._output)
         elif comp.type == StandardComponentType.BUCKET:
+            move_file(
+                os.path.join(os.path.dirname(__file__), "Templates", "song.mp3"),
+                f"{self._output}/{comp.name}",
+            )
             generate_bucket(comp.name, self._output)
 
     def visit_database(self, db: Database) -> None:
@@ -97,14 +105,19 @@ class CodeGeneratorVisitor(IVisitor):
         svc = os.path.join(self._output, f"{comp.name}")
         os.makedirs(svc, exist_ok=True)
 
+        req = [
+            "flask",
+        ]
+        with open(os.path.join(svc, "requirements.txt"), "w") as f:
+            f.write("\n".join(req))
+
         # Dockerfile
         df = [
-            "FROM python:3.9-slim",
+            "FROM python:3.11-slim",
             "WORKDIR /app",
-            "COPY requirements.txt .",
+            "COPY . .",
             "RUN pip install -r requirements.txt",
-            "COPY app.py .",
-            "CMD ['python','app.py']",
+            'CMD ["python", "app.py"]',
         ]
         with open(os.path.join(svc, "Dockerfile"), "w") as f:
             f.write("\n".join(df))

@@ -56,8 +56,6 @@ def convert_textx_to_dsl_element(elem) -> IElement:
         network = convert_textx_to_dsl_element(elem.network)
         return Queue(
             name=elem.name,
-            partitions=elem.partitions,
-            replication=elem.replication,
             network=network,
         )
     if cls_name == "Connector":
@@ -106,6 +104,8 @@ def generate_architecture(model, output_dir: str = "skeleton"):
 
     # Use the visitor to generate the architecture
     code_visitor = CodeGeneratorVisitor(output_dir)
-    # docker_visitor = DockerComposeWriterVisitor(output_dir, network_orchestrator=code_visitor.network_orchestrator)  # Use the same port as the code generator
+    docker_visitor = DockerComposeWriterVisitor(
+        output_dir, network_orchestrator=code_visitor.network_orchestrator
+    )  # Use the same port as the code generator
     arch.accept(code_visitor)
-    # arch.accept(docker_visitor)
+    arch.accept(docker_visitor)

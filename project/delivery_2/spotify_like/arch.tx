@@ -48,8 +48,6 @@ ApiGateway:
 
 Queue:
     'component' 'queue' name=ID
-        'partitions' partitions=INT
-        'replication' replication=INT
         'network' network=[Network]
 ;
 
