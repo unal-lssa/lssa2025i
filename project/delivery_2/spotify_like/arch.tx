@@ -23,7 +23,7 @@ LoadBalancer:
 ;
 
 StandardComponentType:
-    'frontend' | 'backend' | 'bucket' | 'cdn'
+    'frontend' | 'backend' | 'bucket' | 'cdn' | 'cache'
 ;
 
 StandardComponent:

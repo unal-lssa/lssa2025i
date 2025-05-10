@@ -70,6 +70,14 @@ class DockerComposeWriterVisitor(IVisitor):
         self._networks[network.name] = conf
 
     def visit_standard_component(self, comp: StandardComponent) -> None:
+        if comp.type == StandardComponentType.CACHE:
+            self._services[comp.name] = {
+                "image": "redis:latest",
+                "networks": [comp.network.name],
+                "container_name": comp.name,
+            }
+            return
+        
         svc: dict = {
             "build": {
                 "context": f"./{comp.name}",

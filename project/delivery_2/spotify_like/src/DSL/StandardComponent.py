@@ -12,6 +12,7 @@ class StandardComponentType(Enum):
     BACKEND = "backend"
     BUCKET = "bucket"
     CDN = "cdn"
+    CACHE = "cache"
 
 
 class StandardComponent(AComponent):
