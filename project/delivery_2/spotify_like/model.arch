@@ -65,19 +65,19 @@ architecture:
     component queue upload_queue
         network file_processor_net
 
-    component loadbalancer catalog_lb 1 catalog_service
+    component loadbalancer catalog_lb 2 catalog_service
         network catalog_service_net
 
     component loadbalancer user_lb 1 user_service
         network user_service_net
 
-    component loadbalancer auth_lb 1 auth_service
+    component loadbalancer auth_lb 2 auth_service
         network auth_service_net
 
     component loadbalancer playlist_lb 1 playlist_service
         network playlist_service_net
 
-    component loadbalancer file_producer_lb 1 file_producer
+    component loadbalancer file_producer_lb 2 file_producer
         network file_processor_net
 
     component api_gateway api_gateway_comp

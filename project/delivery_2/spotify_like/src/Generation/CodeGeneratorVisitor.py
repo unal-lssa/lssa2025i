@@ -78,10 +78,8 @@ class CodeGeneratorVisitor(IVisitor):
 
     def visit_load_balancer(self, lb: LoadBalancer) -> None:
         generate_load_balancer(
-            lb.name,
-            target=lb.target,
+            load_balancer=lb,
             net_orch=self.net_orch,
-            instance_count=lb.instance_count,
             output_dir=self._output,
         )
 

@@ -16,15 +16,19 @@ class LoadBalancer(AComponent):
     ):
         super().__init__(name, network)
         self._instance_count = instance_count
-        self._target = target
+        self._targets = [target]
 
     @property
     def instance_count(self) -> int:
         return self._instance_count
 
     @property
-    def target(self) -> AComponent:
-        return self._target
+    def targets(self) -> list[AComponent]:
+        return self._targets
+
+    @targets.setter
+    def targets(self, targets: list[AComponent]) -> None:
+        self._targets = list(targets)
 
     def accept(self, visitor: "IVisitor") -> None:
         visitor.visit_load_balancer(self)
@@ -35,5 +39,8 @@ class LoadBalancer(AComponent):
             raise ValueError(
                 f"LoadBalancer {self.name} must have a positive instance count."
             )
-        if not isinstance(self._target, AComponent):
-            raise TypeError(f"LoadBalancer {self.name} target must be an AComponent.")
+        for target in self._targets:
+            if not isinstance(target, AComponent):
+                raise TypeError(
+                    f"LoadBalancer {self.name} target must be an AComponent."
+                )

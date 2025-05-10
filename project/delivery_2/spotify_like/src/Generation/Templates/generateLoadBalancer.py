@@ -4,19 +4,17 @@ from Generation.NetworkOrchestrator import NetworkOrchestrator
 
 
 def generate_load_balancer(
-    name: str,
-    target: AComponent,
+    load_balancer: AComponent,
     net_orch: NetworkOrchestrator,
-    instance_count: int,
     output_dir="skeleton",
 ):
-    path = f"{output_dir}/{name}"
+    path = f"{output_dir}/{load_balancer.name}"
     os.makedirs(path, exist_ok=True)
 
     upstream_block = "\n".join(
         [
-            f"        server {target.name}_{i}:{net_orch.get_assigned_port(target)};"
-            for i in range(instance_count)
+            f"        server {target.name}:{net_orch.get_assigned_port(target)};"
+            for target in load_balancer.targets
         ]
     )
 

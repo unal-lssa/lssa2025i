@@ -1,4 +1,5 @@
 import sys, os
+from copy import deepcopy
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "../..", "src"))
 
@@ -68,6 +69,47 @@ def convert_textx_to_dsl_element(elem) -> IElement:
     raise ValueError(f"Unsupported element type: {cls_name}")
 
 
+def expand_load_balancer_instances(model: Model) -> Model:
+    """
+    Expands the load balancer instances in the model.
+    """
+    new_elements = []
+    replicated_map = {}
+
+    for elem in model.elements:
+        if not isinstance(elem, LoadBalancer) or elem.instance_count <= 1:
+            new_elements.append(elem)
+            continue
+
+        # WARNING: Unlike if you are modifying targets somewhere else. Targets must be a list with a single element.
+        if (len(elem.targets) > 1) and (new_name in replicated_map):
+            raise RuntimeError(
+                "The defined grammar does not allow the existence of a list of targets related to a loadbalancer. If you are seeing this error it is most likely that the architecture is being expanded more than 1 time (this method is being called more than 1 time)."
+            )
+
+        # Create multiple instances of the load balancer
+        replicas = list(elem.targets)
+        for i in range(elem.instance_count - 1):
+            suffix = f"_{i + 1}" if elem.instance_count > 0 else ""
+            new_name = f"{elem.targets[0].name}{suffix}"
+
+            clone = deepcopy(
+                elem.targets[0]
+            )  # Targets is defined as a single-item list BEFORE expansion.
+            clone.name = new_name
+
+            new_elements.append(clone)
+            replicas.append(clone)
+
+        lb_clone = deepcopy(elem)
+        lb_clone.targets = replicas
+        new_elements.append(lb_clone)
+
+        replicated_map[elem] = replicas
+
+    return Model(elements=new_elements)
+
+
 def generate_architecture(model, output_dir: str = "skeleton"):
     converted_elems = []
     textx_to_domain_map = {}
@@ -97,9 +139,10 @@ def generate_architecture(model, output_dir: str = "skeleton"):
             converted_elems.append(conn)
 
     # Validate the architecture
-    arch = Model(
+    base_arch = Model(
         elements=converted_elems,
     )
+    arch = expand_load_balancer_instances(base_arch)
     arch.validate()
 
     # Use the visitor to generate the architecture

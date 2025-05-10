@@ -139,7 +139,7 @@ class DockerComposeWriterVisitor(IVisitor):
         self._services[lb.name] = {
             "image": "nginx:latest",
             "networks": [lb.network.name],
-            "depends_on": [lb.target.name],
+            "depends_on": [target.name for target in lb.targets],
             "container_name": lb.name,
         }
 

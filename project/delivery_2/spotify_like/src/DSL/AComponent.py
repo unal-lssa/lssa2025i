@@ -16,6 +16,10 @@ class AComponent(IElement, ABC):
     def name(self) -> str:
         return self._name
 
+    @name.setter
+    def name(self, name: str) -> None:
+        self._name = name
+
     @property
     def network(self) -> Network:
         return self._network
