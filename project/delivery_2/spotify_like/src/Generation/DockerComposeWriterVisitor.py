@@ -77,7 +77,7 @@ class DockerComposeWriterVisitor(IVisitor):
                 "container_name": comp.name,
             }
             return
-        
+
         svc: dict = {
             "build": {
                 "context": f"./{comp.name}",
