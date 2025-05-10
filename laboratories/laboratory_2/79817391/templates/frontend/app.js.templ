@@ -1,0 +1,115 @@
+const express = require('express');
+const axios = require('axios');
+const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+const BACKEND_URL = 'http://lssa_lb:9091';
+
+app.get('/', async (req, res) => {
+    try {
+        const response = await axios.get(`${BACKEND_URL}/systems`);
+        const systems = response.data.systems;
+        const served_by = response.data.served_by;
+        console.log('Data: ',response.data);
+        
+        let listItems = systems.map(([id, name]) => 
+            `<li class="list-group-item d-flex justify-content-between align-items-center">
+                ${name}
+            </li>`
+        ).join('');
+        
+        res.send(`
+           <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Formulario</title>
+                <!-- Bootstrap 5 CSS -->
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+                <style>
+                    body {
+                        padding-top: 40px;
+                        background-color: #f8f9fa;
+                    }
+                    .form-container {
+                        max-width: 500px;
+                    }
+                    #submitBtn:disabled {
+                        cursor: not-allowed;
+                        opacity: 0.65;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="text-center mb-4">
+                        <h1 class="display-5">Formulario</h1>
+                    </div>
+                    
+                    <div class="row justify-content-center">
+                        <div class="col-md-8 col-lg-6 form-container">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <form method="POST" action="/create" class="mb-4" id="mainForm">
+                                        <div class="mb-3">
+                                            <label for="nameInput" class="form-label">Nombre</label>
+                                            <input type="text" class="form-control" id="nameInput" 
+                                                   name="name" placeholder="Ingrese un nombre" required
+                                                   oninput="validateForm()">
+                                        </div>
+                                        <button type="submit" class="btn btn-primary w-100" id="submitBtn" disabled>
+                                            Crear
+                                        </button>
+                                    </form>                       
+                                                    
+                                    <ul class="list-group">
+                                        ${listItems}
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="alert alert-success" role="alert">
+                                <div class="row">
+                                    <div class="col-7">Se envío a través del balanceador</div>
+                                    <div class="col-5">[ lssa_lb ]</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-7">Respuesta desde backend</div>
+                                    <div class="col-5">[ ${served_by} ]</div>
+                                </div>                               
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bootstrap JS Bundle con Popper -->
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+                
+                <!-- Script de validación -->
+                <script>
+                    function validateForm() {
+                        const nameInput = document.getElementById('nameInput');
+                        const submitBtn = document.getElementById('submitBtn');
+                        
+                        // Habilitar botón solo si hay al menos un caracter
+                        submitBtn.disabled = nameInput.value.trim().length < 1;
+                    }
+                    
+                    // Validar al cargar la página
+                    document.addEventListener('DOMContentLoaded', validateForm);
+                </script>
+            </body>
+            </html>
+        `);
+    } catch (err) {
+        res.status(500).send("Error contacting backend");
+    }
+});
+
+app.post('/create', async (req, res) => {
+    const name = req.body.name;
+    await axios.post(`${BACKEND_URL}/create`, { name });
+    res.redirect('/');
+});
+
+app.listen(80, () => console.log("Frontend running on port 80"));
