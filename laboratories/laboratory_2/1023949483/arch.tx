@@ -1,0 +1,37 @@
+Model:
+    'architecture' ':'
+    elements*=Element
+;
+
+Element:
+    Component | Connector | LoadBalancer
+;
+
+// New rule used to group both Components and LoadBalancers in the same type
+// so we can use it for the connector rule
+Node:
+    LoadBalancer | Component
+;
+
+Component:
+    'component' type=ComponentType name=ID
+;
+
+// The connector rule was updated to allow connections not from components to components
+// bot from Nodes to Nodes (including the new LoadBalancer element)
+Connector:
+    'connector' type=ConnectorType from=[Node] '->' to=[Node]
+;
+
+// LoadBalancer rule to define a load balancer with a list of targets
+LoadBalancer:
+    'load_balancer' name=ID 'targets' '[' targets+=[Component] (',' targets+=[Component])* ']'
+;
+
+ComponentType:
+    'frontend' | 'backend' | 'database'
+;
+
+ConnectorType:
+    'http' | 'db_connector'
+;
