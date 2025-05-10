@@ -60,6 +60,8 @@ class CodeGeneratorVisitor(IVisitor):
                 f"{self._output}/{comp.name}",
             )
             generate_bucket(comp.name, self._output)
+        elif comp.type == StandardComponentType.CACHE:
+            pass ## This configuration is defined in the docker-compose file
 
     def visit_database(self, db: Database) -> None:
         # Get Port

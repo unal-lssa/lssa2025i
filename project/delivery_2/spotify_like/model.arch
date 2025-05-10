@@ -62,6 +62,15 @@ architecture:
     component db playlist_db mongodb
         network playlist_service_net
 
+    component cache user_cache
+        network user_service_net
+
+    component cache auth_cache
+        network auth_service_net
+
+    component cache playlist_cache
+        network playlist_service_net
+        
     component queue upload_queue
         network file_processor_net
 
