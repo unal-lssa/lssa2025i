@@ -76,6 +76,9 @@ def expand_load_balancer_instances(model: Model) -> Model:
     new_elements = []
     replicated_map = {}
 
+    # Connectors are not expanded, but they are added to the new elements list
+    components_to_update_map = {}
+
     for elem in model.elements:
         if not isinstance(elem, LoadBalancer) or elem.instance_count <= 1:
             new_elements.append(elem)
@@ -101,11 +104,29 @@ def expand_load_balancer_instances(model: Model) -> Model:
             new_elements.append(clone)
             replicas.append(clone)
 
+        # Update the connector references to point to the new instances
+        components_to_update_map[replicas[0]] = replicas[1:]
+
         lb_clone = deepcopy(elem)
         lb_clone.targets = replicas
         new_elements.append(lb_clone)
-
         replicated_map[elem] = replicas
+
+    # Update the connectors to point to the new instances
+    for elem in model.elements:
+        if not isinstance(elem, Connector):
+            continue
+
+        if elem.from_comp in components_to_update_map:
+            for replica in components_to_update_map[elem.from_comp]:
+                new_conn = deepcopy(elem)
+                new_conn.from_comp = replica
+                new_elements.append(new_conn)
+        elif elem.to_comp in components_to_update_map:
+            for replica in components_to_update_map[elem.to_comp]:
+                new_conn = deepcopy(elem)
+                new_conn.to_comp = replica
+                new_elements.append(new_conn)
 
     return Model(elements=new_elements)
 
