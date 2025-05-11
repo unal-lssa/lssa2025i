@@ -1,0 +1,92 @@
+
+services:
+  postgres-products-db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: lssauser
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: productsdb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./products-db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  users-db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: lssauser
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: usersdb
+    volumes:
+      - pgusersdata:/var/lib/postgresql/data
+      - ./users-db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  redis:
+    image: redis:latest
+
+  rabbitmq-queue:
+    image: rabbitmq:management
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    ports:
+      - "15672:15672"   
+      - "5672:5672"     
+
+  products-microservice:
+    build: ./products-microservice
+    depends_on:
+      - postgres-products-db
+      - redis
+
+  users-microservice-1:
+    build: ./users-microservice
+    depends_on:
+      - users-db
+      - redis
+  
+  users-microservice-2:
+    build: ./users-microservice
+    depends_on:
+      - users-db
+      - redis
+
+  worker:
+    build: ./worker
+    depends_on:
+      - rabbitmq-queue
+
+  apigateway1:
+    build: ./apigateway
+    depends_on:
+      - rabbitmq-queue
+      - redis
+
+  apigateway2:
+    build: ./apigateway
+    depends_on:
+      - rabbitmq-queue
+      - redis
+
+  loadbalancer:
+    image: nginx:latest
+    ports:
+      - "8000:80" 
+    volumes:
+      - ./loadbalancer/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - apigateway1
+      - apigateway2
+
+  users-loadbalancer:
+    image: nginx:latest
+    ports:
+      - "8001:80" 
+    volumes:
+      - ./users-loadbalancer/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - users-microservice-1
+      - users-microservice-2
+
+volumes:
+  pgdata:
+  pgusersdata:

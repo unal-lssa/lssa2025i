@@ -1,0 +1,112 @@
+version: '3'
+
+services:
+  load_balancer:
+    build: ./src/load_balancer
+    ports:
+      - "8000:8000"
+    depends_on:
+      - api_gateway1
+      - api_gateway2
+    networks:
+      - microservices-net
+
+  api_gateway1:
+    build: ./src/api_gateway
+    environment:
+      - FLASK_PORT=5000
+      - GATEWAY_ID=1
+      - CACHE_HOST=cache
+      - DATABASE_HOST=database
+      - WORKER_HOST=worker
+      - MICROSERVICE_HOST=microservice
+    ports:
+      - "5000:5000"
+    depends_on:
+      - cache
+      - database
+      - worker
+      - microservice
+    networks:
+      - microservices-net
+
+  api_gateway2:
+    build: ./src/api_gateway
+    environment:
+      - FLASK_PORT=5003
+      - GATEWAY_ID=2
+      - CACHE_HOST=cache
+      - DATABASE_HOST=database
+      - WORKER_HOST=worker
+      - MICROSERVICE_HOST=microservice
+    ports:
+      - "5003:5003"
+    depends_on:
+      - cache
+      - database
+      - worker
+      - microservice
+    networks:
+      - microservices-net
+
+  cache:
+    build: ./src/cache
+    environment:
+      - FLASK_PORT=5004
+      - CACHE_TTL=60
+    ports:
+      - "5004:5004"
+    networks:
+      - microservices-net
+
+  database:
+    build: ./src/database
+    environment:
+      - FLASK_PORT=5002
+      - RESPONSE_DELAY=0.5
+    ports:
+      - "5002:5002"
+    networks:
+      - microservices-net
+
+  microservice:
+    build: ./src/microservice
+    environment:
+      - FLASK_PORT=5001
+    ports:
+      - "5001:5001"
+    networks:
+      - microservices-net
+
+  worker:
+    build: ./src/worker
+    environment:
+      - FLASK_PORT=5005
+    ports:
+      - "5005:5005"
+    networks:
+      - microservices-net
+
+  # Additional microservice instances for load balancing testing
+  microservice2:
+    build: ./src/microservice
+    environment:
+      - FLASK_PORT=5006
+      - SERVICE_ID=2
+    ports:
+      - "5006:5006"
+    networks:
+      - microservices-net
+
+  microservice3:
+    build: ./src/microservice
+    environment:
+      - FLASK_PORT=5007
+      - SERVICE_ID=3
+    ports:
+      - "5007:5007"
+    networks:
+      - microservices-net
+
+networks:
+  microservices-net:

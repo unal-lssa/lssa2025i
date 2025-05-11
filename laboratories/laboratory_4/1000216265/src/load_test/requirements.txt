@@ -1,0 +1,4 @@
+requests==2.26.0
+matplotlib==3.5.1
+numpy==1.22.0
+Flask==2.0.1
