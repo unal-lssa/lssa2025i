@@ -296,9 +296,17 @@ def _get_base_service_lines(
     for db in conn_map["from"]["database"]:
         lines.append(_get_database_setup_lines(db, net_orch))
 
+    source = None
+    if len(conn_map["to"]["api_gateway"]) > 0:
+        source = conn_map["to"]["api_gateway"][0].name
+    elif len(conn_map["to"]["load_balancer"]) > 0:
+        source = conn_map["to"]["load_balancer"][0].name
+    elif len(conn_map["to"]["service"]) > 0:
+        source = conn_map["to"]["service"][0].name
+
     lines.append(_get_flask_app_setup_lines(comp, net_orch))
     lines.append(_get_token_required_decorator_lines())
-    lines.append(_get_limit_exposure_decorator_lines())
+    lines.append(_get_limit_exposure_decorator_lines(source=source or "api-gateway"))
 
     return lines
 
