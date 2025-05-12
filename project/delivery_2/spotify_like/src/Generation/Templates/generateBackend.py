@@ -204,10 +204,6 @@ def _get_flask_app_setup_lines(comp: AComponent, net_orch: NetworkOrchestrator):
     lines = []
     lines.append("app = Flask(__name__)")
     lines.append(f"app.config['SECRET_KEY'] = 'your_secret_key'")
-    lines.append("app.config['DEBUG'] = True")
-    lines.append("app.config['ENV'] = 'development'")
-    lines.append("app.config['HOST'] = '0.0.0.0'")
-    lines.append(f"app.config['PORT'] = {net_orch.get_assigned_port(comp)}")
 
     return "\n".join(lines)
 
