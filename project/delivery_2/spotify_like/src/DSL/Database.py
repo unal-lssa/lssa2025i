@@ -12,7 +12,6 @@ class DatabaseType(Enum):
     ELASTICSEARCH = "elasticsearch"
     MYSQL = "mysql"
     MONGODB = "mongodb"
-    REDIS = "redis"
 
     @classmethod
     def get_docker_image(cls, db_type: str) -> str:
@@ -25,8 +24,6 @@ class DatabaseType(Enum):
                 return "mysql:latest"
             case cls.MONGODB.value:
                 return "mongo:latest"
-            case cls.REDIS.value:
-                return "redis:latest"
             case _:
                 raise ValueError(f"Unknown database type: {db_type}")
 
@@ -44,8 +41,6 @@ class DatabaseType(Enum):
                     "MONGO_INITDB_ROOT_USERNAME": "root",
                     "MONGO_INITDB_ROOT_PASSWORD": "password",
                 }
-            case cls.REDIS.value:
-                return {}
             case _:
                 raise ValueError(f"Unknown database type: {db_type}")
 
@@ -63,8 +58,6 @@ class DatabaseType(Enum):
                 return (
                     f"./{db.name}/init.js:/docker-entrypoint-initdb.d/init-mongo.js:ro"
                 )
-            case cls.REDIS.value:
-                return None
             case _:
                 raise ValueError(f"Unknown database type: {db_type}")
 

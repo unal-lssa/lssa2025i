@@ -90,7 +90,7 @@ def expand_load_balancer_instances(model: Model) -> Model:
                 "The defined grammar does not allow the existence of a list of targets related to a loadbalancer. If you are seeing this error it is most likely that the architecture is being expanded more than 1 time (this method is being called more than 1 time)."
             )
 
-        # Create multiple instances of the load balancer
+        # Create multiple instances of the load balancer target
         replicas = list(elem.targets)
         for i in range(elem.instance_count - 1):
             suffix = f"_{i + 1}" if elem.instance_count > 0 else ""
@@ -105,7 +105,7 @@ def expand_load_balancer_instances(model: Model) -> Model:
             replicas.append(clone)
 
         # Update the connector references to point to the new instances
-        components_to_update_map[replicas[0]] = replicas[1:]
+        components_to_update_map[replicas[0].name] = replicas[1:]
 
         lb_clone = deepcopy(elem)
         lb_clone.targets = replicas
@@ -117,15 +117,19 @@ def expand_load_balancer_instances(model: Model) -> Model:
         if not isinstance(elem, Connector):
             continue
 
-        if elem.from_comp in components_to_update_map:
-            for replica in components_to_update_map[elem.from_comp]:
-                new_conn = deepcopy(elem)
-                new_conn.from_comp = replica
-                new_elements.append(new_conn)
-        elif elem.to_comp in components_to_update_map:
-            for replica in components_to_update_map[elem.to_comp]:
+        # lb -> replica
+        if elem.to_comp.name in components_to_update_map.keys():
+            for replica in components_to_update_map[elem.to_comp.name]:
                 new_conn = deepcopy(elem)
                 new_conn.to_comp = replica
+                new_conn.from_comp = elem.from_comp
+                new_elements.append(new_conn)
+        # replica -> other service
+        elif elem.from_comp.name in components_to_update_map.keys():
+            for replica in components_to_update_map[elem.from_comp.name]:
+                new_conn = deepcopy(elem)
+                new_conn.to_comp = elem.to_comp
+                new_conn.from_comp = replica
                 new_elements.append(new_conn)
 
     return Model(elements=new_elements)

@@ -21,6 +21,11 @@ from .Templates.bucketTemplate import generate_bucket, move_file
 from .Templates.generateCDN import generate_cdn
 from .Templates.generateLoadBalancer import generate_load_balancer
 from .Templates.generateDatabase import generate_database
+from .Templates.generateBackend import (
+    get_auth_service_lines,
+    get_import_dependencies,
+    write_docker_file,
+)
 
 from typing import Optional
 
@@ -34,6 +39,7 @@ class CodeGeneratorVisitor(IVisitor):
         self._output = output_dir
         self.net_orch = NetworkOrchestrator()
         self._model: Optional[Model] = None
+        self.conn_list = []
         os.makedirs(self._output, exist_ok=True)
 
     @property
@@ -42,6 +48,9 @@ class CodeGeneratorVisitor(IVisitor):
 
     def visit_model(self, model: Model):
         self._model = model
+        for element in self._model.elements:
+            if isinstance(element, Connector):
+                self.conn_list.append(element)
 
     def visit_network(self, network: Network) -> None:
         # This configuration is defined in the docker-compose file
@@ -61,7 +70,7 @@ class CodeGeneratorVisitor(IVisitor):
             )
             generate_bucket(comp.name, self._output)
         elif comp.type == StandardComponentType.CACHE:
-            pass ## This configuration is defined in the docker-compose file
+            pass  ## This configuration is defined in the docker-compose file
 
     def visit_database(self, db: Database) -> None:
         # Get Port
@@ -100,46 +109,39 @@ class CodeGeneratorVisitor(IVisitor):
     def visit_connector(self, conn: Connector) -> None:
         pass  # TODO: Add connector injection
 
+    def _is_auth_service(self, comp: AComponent) -> bool:
+        # Check if the component is an auth service
+        for api_gateway in self._model.elements:
+            if not isinstance(api_gateway, ApiGateway):
+                continue
+            if comp.name == api_gateway.auth.name:
+                # Is directly connected to the api gateway
+                return True
+            elif isinstance(api_gateway.auth, LoadBalancer):
+                # Check if the load balancer is connected to the current service
+                for conn in self._model.elements:
+                    if not isinstance(conn, Connector):
+                        continue
+                    if conn.from_comp.name == api_gateway.auth.name:
+                        if conn.to_comp.name == comp.name:
+                            return True
+        return False
+
     def _write_backend_service(self, comp: AComponent) -> None:
-        port = self.net_orch.register_component(comp)
         svc = os.path.join(self._output, f"{comp.name}")
         os.makedirs(svc, exist_ok=True)
 
-        req = [
-            "flask",
-        ]
-        with open(os.path.join(svc, "requirements.txt"), "w") as f:
-            f.write("\n".join(req))
+        # Generate the docker file
+        dependencies = get_import_dependencies(comp, self.conn_list.copy())
+        write_docker_file(svc, dependencies)
 
-        # Dockerfile
-        df = [
-            "FROM python:3.11-slim",
-            "WORKDIR /app",
-            "COPY . .",
-            "RUN pip install -r requirements.txt",
-            'CMD ["python", "app.py"]',
-        ]
-        with open(os.path.join(svc, "Dockerfile"), "w") as f:
-            f.write("\n".join(df))
-
-        # App code
-        lines = [
-            "from flask import Flask, jsonify",
-            "\n",
-            self.REPLACE_IMPORT_STRING,
-            self.REPLACE_CONNECTION_STRING,
-            "\n",
-            "app=Flask(__name__)",
-            "\n",
-            "@app.route('/')",
-            "def hello(): return jsonify({'msg':'Hola Mundo'})",
-            "\n",
-            "if __name__ == '__main__':",
-            f"    app.run(host='0.0.0.0', port={port})",
-        ]
-
-        with open(os.path.join(svc, "app.py"), "w") as f:
-            f.write("\n".join(lines))
+        if self._is_auth_service(comp):
+            auth_lines = get_auth_service_lines(
+                comp, self.conn_list.copy(), self.net_orch
+            )
+            with open(os.path.join(svc, "app.py"), "w") as f:
+                f.write(auth_lines)
+            return
 
     def _write_frontend_service(self, comp: AComponent) -> None:
         generate_frontend(comp.name, self._output)

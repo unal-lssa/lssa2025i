@@ -6,6 +6,7 @@ from enum import Enum
 from DSL.IElement import IElement
 from DSL.AComponent import AComponent
 from DSL.Queue import Queue
+from DSL.StandardComponent import StandardComponentType
 
 
 class ConnectorType(Enum):
@@ -32,9 +33,19 @@ class Connector(IElement):
     def from_comp(self) -> AComponent:
         return self._from
 
+    @from_comp.setter
+    def from_comp(self, value: AComponent) -> None:
+        self._from = value
+        self.name = f"{self._type.value}:{self._from.name}->{self._to.name}"
+
     @property
     def to_comp(self) -> AComponent:
         return self._to
+
+    @to_comp.setter
+    def to_comp(self, value: AComponent) -> None:
+        self._to = value
+        self.name = f"{self._type.value}:{self._from.name}->{self._to.name}"
 
     @property
     def type(self) -> ConnectorType:
@@ -59,14 +70,7 @@ class Connector(IElement):
             raise ValueError("Invalid connector type.")
 
         # Ensure the connector type is compatible with the components
-        if self._type == ConnectorType.DB_CONNECTOR:
-            if not hasattr(self._to, "database_type"):
-                raise ValueError(
-                    "DB_CONNECTOR can only connect to a database component."
-                )
-            elif hasattr(self._from, "database_type"):
-                raise ValueError("DB_CONNECTOR cannot connect two database components.")
-        elif self._type == ConnectorType.QUEUE_CONNECTOR:
+        if self._type == ConnectorType.QUEUE_CONNECTOR:
             if not isinstance(self._to, Queue) and not isinstance(self._from, Queue):
                 raise ValueError(
                     "QUEUE_CONNECTOR can only connect to queue components."
