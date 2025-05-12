@@ -1,5 +1,4 @@
 import os
-import traceback
 
 from DSL.AComponent import AComponent
 from DSL.ApiGateway import ApiGateway
@@ -20,16 +19,16 @@ from Generation.NetworkOrchestrator import NetworkOrchestrator
 # ---
 # [ ] Setup Queue (Si usa Queue)
 # ---
-# [ ] Setup Flask
+# [X] Setup Flask
 # ---
 # [X] Codigo Limit Exposure API Gateway
 # ---
-# [ ] Codigo servicio Auth (Usar cache o db)
+# [X] Codigo servicio Auth (Usar cache o db)
 # [ ] Codigo servicio Producer Queue (Usar cache o db)
 # [ ] Codigo servicio Consumer Queue (Usar cache o db)
 # [ ] Codigo servicio General (Usar cache o db)
 # ---
-# [ ] Codigo execute flask serice (port)
+# [X] Codigo execute flask serice (port)
 
 
 def _get_connected_componentes(
