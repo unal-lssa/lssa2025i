@@ -17,15 +17,15 @@ from Generation.NetworkOrchestrator import NetworkOrchestrator
 # ---
 # [X] Setup Database (Si usa DB)
 # ---
-# [ ] Setup Queue (Si usa Queue)
+# [X] Setup Queue (Si usa Queue)
 # ---
 # [X] Setup Flask
 # ---
 # [X] Codigo Limit Exposure API Gateway
 # ---
 # [X] Codigo servicio Auth (Usar cache o db)
-# [ ] Codigo servicio Producer Queue (Usar cache o db)
-# [ ] Codigo servicio Consumer Queue (Usar cache o db)
+# [X] Codigo servicio Producer Queue (Usar cache o db)
+# [X] Codigo servicio Consumer Queue (Usar cache o db)
 # [ ] Codigo servicio General (Usar cache o db)
 # ---
 # [X] Codigo execute flask serice (port)
