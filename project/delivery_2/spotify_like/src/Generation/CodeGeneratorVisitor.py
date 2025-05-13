@@ -27,6 +27,7 @@ from .Templates.generateBackend import (
     write_docker_file,
     get_producer_service_lines,
     get_consumer_service_lines,
+    get_basic_service_lines,
 )
 
 from typing import Optional
@@ -109,37 +110,30 @@ class CodeGeneratorVisitor(IVisitor):
         generate_api_gateway(ag.name, self._output, route_map)
 
     def visit_connector(self, conn: Connector) -> None:
-        pass  # TODO: Add connector injection
+        pass
 
-    def _is_auth_service(self, comp: AComponent) -> bool:
-        # Check if the component is an auth service
-        for api_gateway in self._model.elements:
-            if not isinstance(api_gateway, ApiGateway):
-                continue
-            if comp.name == api_gateway.auth.name:
-                # Is directly connected to the api gateway
-                return True
-            elif isinstance(api_gateway.auth, LoadBalancer):
-                # Check if the load balancer is connected to the current service
-                for conn in self._model.elements:
-                    if not isinstance(conn, Connector):
-                        continue
-                    if conn.from_comp.name == api_gateway.auth.name:
-                        if conn.to_comp.name == comp.name:
-                            return True
-        return False
-
-    def _is_queue_connected_service(self, comp: AComponent) -> str:
-        """Get if a component is connected to a queue and return their relation ('consumer', 'producer', None)"""
-        for conn in self._model.elements:
-            if not isinstance(conn, Connector):
-                continue
-            if conn.from_comp.name == comp.name:
-                if isinstance(conn.to_comp, Queue):
+    def _get_service_type(self, comp: AComponent) -> str:
+        for elem in self._model.elements:
+            if isinstance(elem, Connector):
+                if elem.from_comp.name == comp.name and isinstance(elem.to_comp, Queue):
                     return "producer"
-            elif conn.to_comp.name == comp.name:
-                if isinstance(conn.from_comp, Queue):
+                elif elem.to_comp.name == comp.name and isinstance(
+                    elem.from_comp, Queue
+                ):
                     return "consumer"
+
+            if isinstance(elem, ApiGateway):
+                if elem.auth.name == comp.name:
+                    return "auth"
+                elif isinstance(elem.auth, LoadBalancer):
+                    for conn in self._model.elements:
+                        if not isinstance(conn, Connector):
+                            continue
+                        if (
+                            conn.from_comp.name == elem.auth.name
+                            and conn.to_comp.name == comp.name
+                        ):
+                            return "auth"
         return None
 
     def _write_backend_service(self, comp: AComponent) -> None:
@@ -150,30 +144,34 @@ class CodeGeneratorVisitor(IVisitor):
         dependencies = get_import_dependencies(comp, self.conn_list.copy())
         write_docker_file(svc, dependencies)
 
-        if self._is_auth_service(comp):
-            auth_lines = get_auth_service_lines(
-                comp, self.conn_list.copy(), self.net_orch
-            )
-            with open(os.path.join(svc, "app.py"), "w") as f:
-                f.write(auth_lines)
-            return
-
-        match self._is_queue_connected_service(comp):
+        # Generate service code
+        lines = []
+        match self._get_service_type(comp):
             case "producer":
-                producer_lines = get_producer_service_lines(
+                lines = get_producer_service_lines(
                     comp, self.conn_list.copy(), self.net_orch
                 )
-                with open(os.path.join(svc, "app.py"), "w") as f:
-                    f.write(producer_lines)
             case "consumer":
-                consumer_lines = get_consumer_service_lines(
+                lines = get_consumer_service_lines(
                     comp, self.conn_list.copy(), self.net_orch
                 )
-                with open(os.path.join(svc, "app.py"), "w") as f:
-                    f.write(consumer_lines)
+            case "auth":
+                lines = get_auth_service_lines(
+                    comp, self.conn_list.copy(), self.net_orch
+                )
             case _:
-                # No queue connected (Generic service)
-                pass
+                lines = get_basic_service_lines(
+                    comp, self.conn_list.copy(), self.net_orch
+                )
+
+        if lines:
+            with open(os.path.join(svc, "app.py"), "w") as f:
+                f.write(lines)
+        else:
+            raise ValueError(
+                f"Service type not found for {comp.name}. "
+                "Please check the connections and service types."
+            )
 
     def _write_frontend_service(self, comp: AComponent) -> None:
         generate_frontend(comp.name, self._output)

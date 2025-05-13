@@ -10,26 +10,6 @@ from DSL.StandardComponent import StandardComponent, StandardComponentType
 
 from Generation.NetworkOrchestrator import NetworkOrchestrator
 
-# ---
-# [X] Imports
-# ---
-# [X] Setup Redis (Si usa cache)
-# ---
-# [X] Setup Database (Si usa DB)
-# ---
-# [X] Setup Queue (Si usa Queue)
-# ---
-# [X] Setup Flask
-# ---
-# [X] Codigo Limit Exposure API Gateway
-# ---
-# [X] Codigo servicio Auth (Usar cache o db)
-# [X] Codigo servicio Producer Queue (Usar cache o db)
-# [X] Codigo servicio Consumer Queue (Usar cache o db)
-# [ ] Codigo servicio General (Usar cache o db)
-# ---
-# [X] Codigo execute flask serice (port)
-
 
 def _get_connected_componentes(
     comp: AComponent, conn_list: list[Connector]
@@ -599,4 +579,29 @@ def get_consumer_service_lines(
     )
     lines.append("    print('Waiting for messages from RabbitMQ...')")
     lines.append("    channel.start_consuming()")
+    return "\n".join(lines)
+
+
+def get_basic_service_lines(
+    comp: AComponent, conn_list: list[Connector], net_orch: NetworkOrchestrator
+):
+    lines = []
+    lines.extend(_get_base_service_lines(comp, conn_list, net_orch))
+
+    # Hello world endpoint
+    lines.append("@app.route('/protected', methods=['GET'])")
+    lines.append("@limit_exposure()")
+    lines.append("@token_required")
+    lines.append("def hello_world():")
+    lines.append("    return jsonify({'message': 'Hello, World!'}), 200")
+
+    lines.append("@app.route('/hello', methods=['GET'])")
+    lines.append("@limit_exposure()")
+    lines.append("def hello():")
+    lines.append("    return jsonify({'message': 'Hello!'}), 200")
+
+    lines.append("if __name__ == '__main__':")
+    lines.append(
+        f"    app.run(host='0.0.0.0', port={net_orch.get_assigned_port(comp)}, debug=True)"
+    )
     return "\n".join(lines)
