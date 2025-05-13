@@ -1,0 +1,60 @@
+Model:
+    'architecture' ':'
+        elements*=Element
+;
+
+Element:
+    Network | Component | Connector
+;
+
+Network:
+    'network' name=ID '{'
+        'internal' '=' internal=BOOL
+    '}'
+;
+
+Component:
+    LoadBalancer | StandardComponent | Database | ApiGateway | Queue
+;
+
+LoadBalancer:
+    'component' 'loadbalancer' name=ID instanceCount=INT target=[Component]
+        'network' network=[Network]
+;
+
+StandardComponentType:
+    'frontend' | 'backend' | 'bucket' | 'cdn' | 'cache'
+;
+
+StandardComponent:
+    'component' type=StandardComponentType name=ID
+        'network' network=[Network]
+;
+
+Database:
+    'component' 'db' name=ID databaseType=DatabaseType
+        'network' network=[Network]
+;
+
+DatabaseType:
+    'postgresql' | 'mongodb' | 'elasticsearch' | 'mysql'
+;
+
+ApiGateway:
+    'component' 'api_gateway' name=ID
+        'auth' auth=[Component]
+        'networks' networks+=[Network][',']
+;
+
+Queue:
+    'component' 'queue' name=ID
+        'network' network=[Network]
+;
+
+ConnectorType:
+    'http' | 'db_connector' | 'queue_connector'
+;
+
+Connector:
+    'connector' type=ConnectorType from=[Component] '->' to=[Component]
+;

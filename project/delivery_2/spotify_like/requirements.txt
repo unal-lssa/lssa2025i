@@ -1,0 +1,3 @@
+Arpeggio==2.0.2
+PyYAML==6.0.2
+textX==4.1.0

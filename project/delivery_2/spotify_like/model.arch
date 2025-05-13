@@ -1,0 +1,134 @@
+architecture:
+    network public_net {
+        internal = false
+    }
+
+    network api_gateway_net {
+        internal = true
+    }
+
+    network file_processor_net {
+        internal = true
+    }
+
+    network catalog_service_net {
+        internal = true
+    }
+
+    network user_service_net {
+        internal = true
+    }
+
+    network auth_service_net {
+        internal = true
+    }
+
+    network playlist_service_net {
+        internal = true
+    }
+
+    component frontend app_fe network public_net
+
+    component backend catalog_service
+        network catalog_service_net
+
+    component backend user_service
+        network user_service_net
+
+    component backend auth_service
+        network auth_service_net
+
+    component backend playlist_service
+        network playlist_service_net
+
+    component backend file_producer
+        network file_processor_net
+
+    component backend file_consumer
+        network file_processor_net
+
+    component db metadata_db postgresql
+        network file_processor_net
+
+    component db catalog_db elasticsearch
+        network catalog_service_net
+
+    component db user_db postgresql
+        network user_service_net
+
+    component db auth_db postgresql
+        network auth_service_net
+
+    component db playlist_db mongodb
+        network playlist_service_net
+
+    component cache user_cache
+        network user_service_net
+
+    component cache auth_cache
+        network auth_service_net
+
+    component cache playlist_cache
+        network playlist_service_net
+
+    component queue upload_queue
+        network file_processor_net
+
+    component loadbalancer catalog_lb 2 catalog_service
+        network catalog_service_net
+
+    component loadbalancer user_lb 1 user_service
+        network user_service_net
+
+    component loadbalancer auth_lb 2 auth_service
+        network auth_service_net
+
+    component loadbalancer playlist_lb 1 playlist_service
+        network playlist_service_net
+
+    component loadbalancer file_producer_lb 2 file_producer
+        network file_processor_net
+
+    component api_gateway api_gateway_comp
+        auth auth_lb
+        networks api_gateway_net, catalog_service_net, user_service_net, auth_service_net, playlist_service_net, file_processor_net
+
+    component cdn songs_cdn
+        network public_net
+
+    component bucket music_storage
+        network public_net
+
+    connector http app_fe -> api_gateway_comp
+
+    connector http api_gateway_comp -> catalog_lb
+    connector http api_gateway_comp -> user_lb
+    connector http api_gateway_comp -> auth_lb
+    connector http api_gateway_comp -> playlist_lb
+    connector http api_gateway_comp -> file_producer_lb
+
+    connector http catalog_lb -> catalog_service
+    connector http user_lb -> user_service
+    connector http auth_lb -> auth_service
+    connector http playlist_lb -> playlist_service
+    connector http file_producer_lb -> file_producer
+
+    connector db_connector catalog_service -> catalog_db
+    connector db_connector user_service -> user_db
+    connector db_connector auth_service -> auth_db
+    connector db_connector playlist_service -> playlist_db
+    connector db_connector file_consumer -> metadata_db
+
+    connector db_connector user_service -> user_cache
+    connector db_connector auth_service -> auth_cache
+    connector db_connector playlist_service -> playlist_cache
+
+    connector queue_connector file_producer -> upload_queue
+    connector queue_connector upload_queue -> file_consumer
+
+    connector http file_consumer -> music_storage
+
+    connector http songs_cdn -> music_storage
+
+    connector http app_fe -> songs_cdn
+
