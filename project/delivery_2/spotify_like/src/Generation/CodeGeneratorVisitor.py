@@ -5,12 +5,12 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "../..", "src"))
 from DSL.IVisitor import IVisitor
 from DSL.Model import Model
 from DSL.StandardComponent import StandardComponent, StandardComponentType
-from DSL.Database import Database, DatabaseType
+from DSL.Database import Database
 from DSL.Queue import Queue
 from DSL.LoadBalancer import LoadBalancer
 from DSL.ApiGateway import ApiGateway
 from DSL.Network import Network
-from DSL.Connector import Connector, ConnectorType
+from DSL.Connector import Connector
 from DSL.AComponent import AComponent
 
 from .NetworkOrchestrator import NetworkOrchestrator
@@ -25,6 +25,8 @@ from .Templates.generateBackend import (
     get_auth_service_lines,
     get_import_dependencies,
     write_docker_file,
+    get_producer_service_lines,
+    get_consumer_service_lines,
 )
 
 from typing import Optional
@@ -127,6 +129,19 @@ class CodeGeneratorVisitor(IVisitor):
                             return True
         return False
 
+    def _is_queue_connected_service(self, comp: AComponent) -> str:
+        """Get if a component is connected to a queue and return their relation ('consumer', 'producer', None)"""
+        for conn in self._model.elements:
+            if not isinstance(conn, Connector):
+                continue
+            if conn.from_comp.name == comp.name:
+                if isinstance(conn.to_comp, Queue):
+                    return "producer"
+            elif conn.to_comp.name == comp.name:
+                if isinstance(conn.from_comp, Queue):
+                    return "consumer"
+        return None
+
     def _write_backend_service(self, comp: AComponent) -> None:
         svc = os.path.join(self._output, f"{comp.name}")
         os.makedirs(svc, exist_ok=True)
@@ -142,6 +157,23 @@ class CodeGeneratorVisitor(IVisitor):
             with open(os.path.join(svc, "app.py"), "w") as f:
                 f.write(auth_lines)
             return
+
+        match self._is_queue_connected_service(comp):
+            case "producer":
+                producer_lines = get_producer_service_lines(
+                    comp, self.conn_list.copy(), self.net_orch
+                )
+                with open(os.path.join(svc, "app.py"), "w") as f:
+                    f.write(producer_lines)
+            case "consumer":
+                consumer_lines = get_consumer_service_lines(
+                    comp, self.conn_list.copy(), self.net_orch
+                )
+                with open(os.path.join(svc, "app.py"), "w") as f:
+                    f.write(consumer_lines)
+            case _:
+                # No queue connected (Generic service)
+                pass
 
     def _write_frontend_service(self, comp: AComponent) -> None:
         generate_frontend(comp.name, self._output)
