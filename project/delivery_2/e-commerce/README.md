@@ -6,6 +6,7 @@
 #### Yosman Alexis Arenas Jimenez
 #### Juan David Ramírez Ávila
 
+---
 El objetivo principal de esta segunda entrega es realizar un proceso iterativo de diseño parcial y verificación de la arquitectura de distribuida basada en microservicios para un E-commerce, que se propuso en la primera entrega, mediante un enfoque práctico y estructurado que permita evaluar atributos de calidad clave como la seguridad y la escalabilidad.
 
 
