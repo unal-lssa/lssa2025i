@@ -32,19 +32,21 @@ Adicionalmente, utilizando las librerías de grafos vistas en clase también se 
 Para realizar el proceso de verificación de los atributos de seguridad y escalabilidad, se eligió el flujo de la arquitectura que va desde el API Gateway —encargado de recibir las solicitudes del frontend— hasta el balanceador de carga, que distribuye las peticiones entre los microservicios. En el contexto de este proyecto, el proceso de verificación se centrará únicamente en el microservicio de usuarios. Consecutivamente, se presenta una imagen con la extracción, de la parte de la arquitectura a analizar: 
 
 
+
+
 ![Texto alternativo de la imagen](imagenes/FlujoSimplificado.png)
 
 
 ## 4. Iteración 1 
 
-La arquitectura seleccionada corresponde a un fragmento clave del e-Commerce. En el flujo elegido se aplican principios de **arquitectura de microservicios** con énfasis en los atributos de calidad de:
+La arquitectura seleccionada corresponde a un fragmento clave para el correcto funcionamiento de un e-commerce. En el flujo arquitectónico elegido se aplican principios de **arquitectura** con énfasis en los atributos de calidad de:
 
 - **Escalabilidad**: Capacidad de adaptarse a aumentos en la carga de trabajo de forma eficiente.
 - **Seguridad**: Protección frente a accesos no autorizados y ataques comunes, garantizando confidencialidad, integridad y disponibilidad.
 
 ### 4.1 Componentes y tácticas asociadas
 
-En este apartado del documento, se presenta una breve descripción de cada uno de los componentes del flujo elegido arquitéctonico seleccionado para desarrollar la iteración uno y se enfonca la descripción de cada componente, en lo que esta relacionado con el atributo de calidad de seguridad. 
+En este apartado del documento, se presenta una breve descripción de cada uno de los componentes del flujo elegido arquitéctonico elegido para desarrollar la iteración uno y se enfonca la descripción de cada componente, en lo que esta relacionado con el atributo de calidad de seguridad. 
 
 #### 4.1.1. **API Gateway** (`ecommerce_ag_us`)
 
