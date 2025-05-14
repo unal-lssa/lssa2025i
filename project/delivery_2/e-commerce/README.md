@@ -7,7 +7,7 @@
 #### Juan David Ramírez Ávila
 
 ---
-El objetivo principal de esta segunda entrega es realizar un proceso iterativo de diseño parcial y verificación de la arquitectura de distribuida basada en microservicios para un E-commerce, que se propuso en la primera entrega, mediante un enfoque práctico y estructurado que permita evaluar atributos de calidad clave como la seguridad y la escalabilidad.
+El objetivo principal de esta segunda entrega es realizar un proceso iterativo de diseño parcial y verificación de la arquitectura distribuida basada en microservicios para un E-commerce, que se propuso en la primera entrega, mediante un enfoque práctico y estructurado que permita evaluar atributos de calidad clave como la seguridad y la escalabilidad.
 
 
 ## 1. Visión general
@@ -21,6 +21,11 @@ El flujo completo desde el cliente hasta el procesamiento de pagos se maneja de 
 A continuación, se presenta un diagrama de arquitectura de componentes y conectores, que se expuso en la primera entrega del proyecto. 
 
 ![Texto alternativo de la imagen](imagenes/Arquitectura.png)
+
+Adicionalmente, utilizando las librerías de grafos vistas en clase también se construyó el diagrama de componentes y conectores, como se aprecia seguidamente: 
+
+![Texto alternativo de la imagen](imagenes/ArquitecturaProyectoGrafos.png)
+
 
 ## 3. Flujo elegido de la arquitectura del sistema 
 
