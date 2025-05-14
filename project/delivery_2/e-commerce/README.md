@@ -23,14 +23,14 @@ A continuación, se presenta un diagrama de arquitectura de componentes y conect
 
 La replicación del microservicio de usuarios para la arquitectura del e-commerce se hizo con el fin de garantizar la escalabilidad, permitiendo atender múltiples solicitudes concurrentes; alta disponibilidad, asegurando continuidad del servicio ante fallos; y mejor rendimiento, reduciendo la latencia en operaciones críticas como el inicio de sesión. Además, permite realizar mantenimientos sin interrupciones y adaptarse dinámicamente a la carga, mejorando la experiencia del usuario y la resiliencia del sistema. A continuación, se aprecia una imagen en donde se visualiza la arquitectura del sistema. 
 
-![Texto alternativo de la imagen](Arquitectura.png)
+![Texto alternativo de la imagen](imagenes/Arquitectura.png)
 
 ## 3. Flujo elegido de la arquitectura del sistema 
 
 Para realizar el proceso de verificación de los atributos de seguridad y escalabilidad, se eligió el flujo de la arquitectura que va desde el API Gateway —encargado de recibir las solicitudes del frontend— hasta el balanceador de carga, que distribuye las peticiones entre los microservicios. En el contexto de este proyecto, el proceso de verificación se centrará únicamente en el microservicio de usuarios y su respectiva réplica. Consecutivamente, se presenta una imagen con la extracción, de la parte de la arquitectura a analizar: 
 
 
-![Texto alternativo de la imagen](FlujoSimplificado.png)
+![Texto alternativo de la imagen](imagenes/FlujoSimplificado.png)
 
 
 ## 4. Iteración 1 
@@ -79,12 +79,32 @@ En este apartado del documento, se presenta una breve descripción de cada uno d
   - `Access Control`: solo microservicios autorizados pueden conectarse.
 
 ---
+
 Al analizar el flujo arquitectónico elegido en la primera entrega, se observa que el sistema carece de un mecanismo de control de frecuencia, es decir, no existen límites definidos para el uso de los recursos o el número de solicitudes permitidas en un periodo de tiempo. Esta ausencia deja al sistema vulnerable a ataques de Denegación de Servicio (DoS), donde un atacante podría saturar los servicios mediante solicitudes excesivas, comprometiendo tanto la disponibilidad como la estabilidad del sistema. 
 
 Por lo tanto, se simula un ataque de Denegación de Servicio (DoS) sobre el flujo seleccionado del sistema. En este escenario, se modela una situación en la que el sistema recibe N solicitudes concurrentes, sin contar con mecanismos de protección. Cada solicitud sigue una ruta aleatoria desde el frontend hasta la base de datos, exponiendo así las debilidades de la arquitectura ante cargas excesivas y mostrando la necesidad de implementar tácticas de seguridad.
 
-Con base en la simulación, corrida se aprecia, que al exponer al sistema a una gran cantidad de peticiones, la mayoría de estas van a fallar, por ejemplo, al simular 1000 solicitudes simultáneas, fallaron 754 (75,4%) y exitosas, fueron (32.6 %), con esto se evidencia la necesidad, de aplicar una táctica de seguridad con el objetivo, de que el sistema, sea capaz de soportar, grandes cantidades de solicitudes concurrentes. Lo descrito, se confirma con la siguiente gráfica: 
+Con base en la simulación, corrida se aprecia, que al exponer al sistema a una gran cantidad de peticiones, la mayoría de estas fallan, por ejemplo, al simular 1000 solicitudes simultáneas, fallaron 754 (75,4%) y exitosas, fueron (32.6 %), con esto se evidencia la necesidad, de aplicar una táctica de seguridad con el objetivo, de que el sistema, sea capaz de soportar, grandes cantidades de solicitudes concurrentes. Lo descrito, se confirma con la siguiente gráfica: 
 
 
-![Texto alternativo de la imagen](Sin_rate_limit.png)
+![Texto alternativo de la imagen](imagenes/Sin_rate_limit.png)
 
+## 5. Iteración 2
+
+En esta segunda iteración se introduce una táctica arquitectónica orientada a **mitigar vulnerabilidades de seguridad**, específicamente aquellas asociadas con ataques de **Denegación de Servicio (DoS)** o **Denegación de Servicio Distribuido (DDoS)**. 
+
+Durante la **Iteración 1**, se evidenció que la arquitectura inicial no implementaba ningún tipo de **control de frecuencia de solicitudes**, lo que la dejaba completamente expuesta a este tipo de amenazas. Como respuesta, se decide implementar una **táctica de seguridad conocida como _Rate Limiting_**, que permite regular el tráfico entrante hacia el sistema.
+
+### 5.1 ¿Qué es *Rate Limiting* y por qué es una táctica arquitectónica?
+
+ **Rate Limiting** es una **táctica arquitectónica de seguridad** ampliamente adoptada para controlar el número de solicitudes que una entidad (usuario, IP, sistema externo) puede realizar en un período determinado. Esta táctica permite:
+
+- **Reducir la superficie de ataque**, evitando que actores maliciosos sobrecarguen el sistema.
+- **Preservar la disponibilidad** de servicios críticos ante condiciones de alto tráfico.
+- **Estabilizar la carga del sistema**, especialmente cuando se trabaja con recursos limitados como conexiones a base de datos o hilos de procesamiento.
+
+En este contexto, Rate Limiting se ubica en la capa del **API Gateway**, el punto de entrada del sistema. Allí, actúa como **primer filtro**, evaluando si cada nueva solicitud debe ser aceptada o rechazada, en función de la carga actual del sistema.
+
+En la simulación se lanzaron 1000 solicitudes concurrentes, de las cuales sólo 30 pueden ser procesadas simultáneamente, el resto debe esperar o será descartado si no hay capacidad.
+
+---
