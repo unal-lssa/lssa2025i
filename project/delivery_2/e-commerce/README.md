@@ -105,6 +105,8 @@ Durante la **Iteración 1**, se evidenció que la arquitectura inicial no implem
 
 En este contexto, Rate Limiting se ubica en la capa del **API Gateway**, el punto de entrada del sistema. Allí, actúa como **primer filtro**, evaluando si cada nueva solicitud debe ser aceptada o rechazada, en función de la carga actual del sistema.
 
-En la simulación se lanzaron 1000 solicitudes concurrentes, de las cuales sólo 30 pueden ser procesadas simultáneamente, el resto debe esperar o será descartado si no hay capacidad.
+En la simulación se lanzaron 1000 solicitudes concurrentes,  y se obtuvieron los resultados que se aprecian en la siguiente gráfica: 
+
+![Texto alternativo de la imagen](imagenes/TransaccionesRateLimit.png)
 
 ---
