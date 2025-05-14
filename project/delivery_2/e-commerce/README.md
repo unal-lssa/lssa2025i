@@ -18,15 +18,13 @@ El flujo completo desde el cliente hasta el procesamiento de pagos se maneja de 
 
 ## 2. Arquitectura del sistema 
 
-A continuación, se presenta un diagrama de arquitectura de componentes y conectores. En la que se incluyo una replica del micro-servicios de usuarios, en relación a la arquitectura, que se expuso en la primera entrega del proyecto. 
-
-La replicación del microservicio de usuarios para la arquitectura del e-commerce se hizo con el fin de garantizar la escalabilidad, permitiendo atender múltiples solicitudes concurrentes; alta disponibilidad, asegurando continuidad del servicio ante fallos; y mejor rendimiento, reduciendo la latencia en operaciones críticas como el inicio de sesión. Además, permite realizar mantenimientos sin interrupciones y adaptarse dinámicamente a la carga, mejorando la experiencia del usuario y la resiliencia del sistema. A continuación, se aprecia una imagen en donde se visualiza la arquitectura del sistema. 
+A continuación, se presenta un diagrama de arquitectura de componentes y conectores, que se expuso en la primera entrega del proyecto. 
 
 ![Texto alternativo de la imagen](imagenes/Arquitectura.png)
 
 ## 3. Flujo elegido de la arquitectura del sistema 
 
-Para realizar el proceso de verificación de los atributos de seguridad y escalabilidad, se eligió el flujo de la arquitectura que va desde el API Gateway —encargado de recibir las solicitudes del frontend— hasta el balanceador de carga, que distribuye las peticiones entre los microservicios. En el contexto de este proyecto, el proceso de verificación se centrará únicamente en el microservicio de usuarios y su respectiva réplica. Consecutivamente, se presenta una imagen con la extracción, de la parte de la arquitectura a analizar: 
+Para realizar el proceso de verificación de los atributos de seguridad y escalabilidad, se eligió el flujo de la arquitectura que va desde el API Gateway —encargado de recibir las solicitudes del frontend— hasta el balanceador de carga, que distribuye las peticiones entre los microservicios. En el contexto de este proyecto, el proceso de verificación se centrará únicamente en el microservicio de usuarios. Consecutivamente, se presenta una imagen con la extracción, de la parte de la arquitectura a analizar: 
 
 
 ![Texto alternativo de la imagen](imagenes/FlujoSimplificado.png)
@@ -85,11 +83,16 @@ Con base en la simulación, corrida se aprecia, que al exponer al sistema a una 
 
 ![Texto alternativo de la imagen](imagenes/Sin_rate_limit.png)
 
+Adicionalmente, en la siguiente gráfica es posible apreciar los fallos por componente reportados por la simulación, en la que se aprecia, que la mayoría de las fallas se dieron el el microservicio de usuario, seguido por las fallas que se reportaron en el balanceador de carga. 
+
+![Texto alternativo de la imagen](imagenes/FallosComponenteI1.png)
+
+
 ## 5. Iteración 2
 
 En esta segunda iteración se introduce una táctica arquitectónica orientada a **mitigar vulnerabilidades de seguridad**, específicamente aquellas asociadas con ataques de **Denegación de Servicio (DoS)** o **Denegación de Servicio Distribuido (DDoS)**. 
 
-Durante la **Iteración 1**, se evidenció que la arquitectura inicial no implementaba ningún tipo de **control de frecuencia de solicitudes**, lo que la dejaba completamente expuesta a este tipo de amenazas. Como respuesta, se decide implementar una **táctica de seguridad conocida como _Rate Limiting_**, que permite regular el tráfico entrante hacia el sistema.
+Durante la **Iteración 1**, se evidenció que la arquitectura inicial no implementaba ningún tipo de **control de frecuencia de solicitudes**, lo que la dejaba completamente expuesta a este tipo de amenazas. Como respuesta, se decidió implementar una **táctica de seguridad conocida como _Rate Limiting_**, que permite regular el tráfico entrante hacia el sistema.
 
 ### 5.1 ¿Qué es *Rate Limiting* y por qué es una táctica arquitectónica?
 
@@ -105,14 +108,17 @@ En la simulación se lanzaron 1000 solicitudes concurrentes,  y se obtuvieron lo
 
 ![Texto alternativo de la imagen](imagenes/TransaccionesRateLimit.png)
 
-En la gráfica de "Transacciones con Rate Limiting (Iteración 2)", se aprecia que al aplicar la táctica arquitectónica de Rate Limiting, se aprecia que 30 solicitudes, fueron exitosas y el resto debe esperar o será descartado si no hay capacidad. De esat forma, se evita que el sistema colapse en caso de que reciba un gran número de peticiones concurrentes. 
+En la gráfica de "Transacciones con Rate Limiting (Iteración 2)", se aprecia que al aplicar la táctica arquitectónica de Rate Limiting, se aprecia que 30 solicitudes, fueron exitosas y el resto debe esperar o será descartado si no hay capacidad. De esta forma, se evita que el sistema colapse en caso de que reciba un gran número de peticiones concurrentes. 
 
+Adicionalmente, se presenta la gráfica "Fallos por componente (con Rate Limiting)", en la que se visualiza, que el número de fallos disminuye en relación a la gráfica "Fallos por componente (Iteración 1)", y la mayoría de las fallas se dan en el micro-servicio de usuarios,seguido del balanceador de carga.  
+
+![Texto alternativo de la imagen](imagenes/FallosComponenteRL.png)
 
 ### 5.2 Flujo Arquitectónico Simulado
 
 1. Una solicitud ingresa al sistema por el **frontend**.
 2. Llega al **API Gateway**, donde se aplica la táctica de **Rate Limiting**.
-3. Si la solicitud **se aprueba**, se enruta hacia los **microservicios** y, finalmente, hacia una **base de datos**.
+3. Si la solicitud **se aprueba**, se enruta hacia el **microservicio de usuarios** y, finalmente, hacia una **base de datos**.
 4. Si **no se aprueba** (por sobrepasar el límite), la solicitud se **rechaza inmediatamente**.
 
 
