@@ -32,8 +32,6 @@ Adicionalmente, utilizando las librerías de grafos vistas en clase también se 
 Para realizar el proceso de verificación de los atributos de seguridad y escalabilidad, se eligió el flujo de la arquitectura que va desde el API Gateway —encargado de recibir las solicitudes del frontend— hasta el balanceador de carga, que distribuye las peticiones entre los microservicios. En el contexto de este proyecto, el proceso de verificación se centrará únicamente en el microservicio de usuarios. Consecutivamente, se presenta una imagen con la extracción, de la parte de la arquitectura a analizar: 
 
 
-
-
 ![Texto alternativo de la imagen](imagenes/FlujoSimplificado.png)
 
 
@@ -67,7 +65,7 @@ En este apartado del documento, se presenta una breve descripción de cada uno d
 
 
 #### 4.1.3. **Microservicio de Usuarios**  
-- Instancias: `ecommerce_be_usr` y `ecommerce_be_usr_replica`
+- Instancias: `ecommerce_be_usr`
 
 - **Responsabilidad**: Gestionar operaciones de usuarios (registro, login, modificación de datos, etc.).
 
