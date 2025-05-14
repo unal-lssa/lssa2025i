@@ -42,9 +42,11 @@ La arquitectura seleccionada corresponde a un fragmento clave para el correcto f
 - **Escalabilidad**: Capacidad de adaptarse a aumentos en la carga de trabajo de forma eficiente.
 - **Seguridad**: Protección frente a accesos no autorizados y ataques comunes, garantizando confidencialidad, integridad y disponibilidad.
 
-### 4.1 Componentes y tácticas asociadas
+# 4.1 Componentes y tácticas asociadas
 
-En este apartado del documento, se presenta una breve descripción de cada uno de los componentes del flujo elegido arquitéctonico elegido para desarrollar la iteración uno y se enfonca la descripción de cada componente, en lo que esta relacionado con el atributo de calidad de seguridad. 
+En este apartado del documento, se presenta una breve descripción de cada uno de los componentes del flujo arquitectónico elegido para desarrollar la iteración uno. La descripción de cada componente se enfoca en lo que está relacionado con los atributos de calidad de **seguridad** y **escalabilidad**.
+
+---
 
 #### 4.1.1. **API Gateway** (`ecommerce_ag_us`)
 
@@ -52,9 +54,13 @@ En este apartado del documento, se presenta una breve descripción de cada uno d
 
 - **Tácticas de seguridad**:
   - `Authentication Enforcement`: gestión centralizada de autenticación.
-  - `Input Validation`: inspección y validación de solicitudes entrantes.
   - `Authorization`: control de acceso a recursos protegidos.
 
+- **Tácticas de escalabilidad**:
+  - `Service Routing`: enrutamiento inteligente a servicios que pueden escalar de forma independiente.
+
+
+---
 
 #### 4.1.2. **Balanceador de Carga** (`ecommerce_lb`)
 
@@ -63,6 +69,10 @@ En este apartado del documento, se presenta una breve descripción de cada uno d
 - **Tácticas de seguridad**:
   - `Failover`: redireccionamiento automático en caso de caída de instancia.
 
+- **Tácticas de escalabilidad**:
+  - `Load Balancing`: distribución dinámica de carga entre instancias para evitar cuellos de botella.
+
+---
 
 #### 4.1.3. **Microservicio de Usuarios**  
 - Instancias: `ecommerce_be_usr`
@@ -72,12 +82,18 @@ En este apartado del documento, se presenta una breve descripción de cada uno d
 - **Tácticas de seguridad**:
   - `Secure Communication`: canal seguro (HTTPS) para la transmisión de datos sensibles.
 
+- **Tácticas de escalabilidad**:
+  - `Service Replication`: posibilidad de levantar múltiples instancias del servicio para manejar mayor carga.
+
+---
 
 #### 4.1.4. **Base de Datos de Usuarios** (`ecommerce_be_usr_db`)
 
 - **Tácticas de seguridad**:
   - `Access Control`: solo microservicios autorizados pueden conectarse.
 
+- **Tácticas de escalabilidad**:
+  - `Read Replicas`: permitir múltiples réplicas de solo lectura para balancear consultas.
 
 Al analizar el flujo arquitectónico elegido en la primera entrega, se observa que el sistema carece de un mecanismo de control de frecuencia, es decir, no existen límites definidos para el uso de los recursos o el número de solicitudes permitidas en un periodo de tiempo. Esta ausencia deja al sistema vulnerable a ataques de Denegación de Servicio (DoS), donde un atacante podría saturar los servicios mediante solicitudes excesivas, comprometiendo tanto la disponibilidad como la estabilidad del sistema. 
 
@@ -139,4 +155,3 @@ La inclusión del **Rate Limiting** como táctica aporta varias mejoras notables
 Desde el punto de vista del diseño arquitectónico, esta iteración no solo **mitiga un riesgo** identificado previamente, sino que introduce un **patrón emergente de defensa perimetral**, reforzando el principio de **"defense in depth"**.
 
 ## 6. Iteración 3
-
