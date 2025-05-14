@@ -123,7 +123,7 @@ La inclusión del **Rate Limiting** como táctica aporta varias mejoras notables
 - **Robustez** frente a amenazas externas.  
 - **Aislamiento y protección** de servicios internos.  
 - **Desacoplamiento** de responsabilidades entre gateway y backend.  
-- **Mayor **resiliencia** ante tráfico irregular o malicioso.
+- **Mayor resiliencia** ante tráfico irregular o malicioso.
 
 Desde el punto de vista del diseño arquitectónico, esta iteración no solo **mitiga un riesgo** identificado previamente, sino que introduce un **patrón emergente de defensa perimetral**, reforzando el principio de **"defense in depth"**.
 
