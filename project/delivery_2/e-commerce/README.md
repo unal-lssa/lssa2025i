@@ -83,7 +83,7 @@ Al analizar el flujo arquitectónico elegido en la primera entrega, se observa q
 
 Por lo tanto, se simula un ataque de Denegación de Servicio (DoS) sobre el flujo seleccionado del sistema. En este escenario, se modela una situación en la que el sistema recibe N solicitudes concurrentes, sin contar con mecanismos de protección. Cada solicitud sigue una ruta aleatoria desde el frontend hasta la base de datos, exponiendo así las debilidades de la arquitectura ante cargas excesivas y mostrando la necesidad de implementar tácticas de seguridad.
 
-Con base en la simulación, corrida se aprecia, que al exponer al sistema a una gran cantidad de peticiones, la mayoría de estas fallan, por ejemplo, al simular 1000 solicitudes simultáneas, fallaron 754 (75,4%) y 246 exitosas, fueron (32.6 %), con esto se evidencia la necesidad, de aplicar una táctica de seguridad con el objetivo, de que el sistema, sea capaz de soportar, grandes cantidades de solicitudes concurrentes. Lo descrito, se confirma con la siguiente gráfica: 
+Con base en la simulación, se aprecia, que al exponer al sistema a una gran cantidad de peticiones, la mayoría de estas fallan, por ejemplo, al simular 1000 solicitudes simultáneas, fallaron 754 (75,4%) y 246 exitosas, fueron (32.6 %), con esto se evidencia la necesidad, de aplicar una táctica de seguridad con el objetivo, de que el sistema, sea capaz de soportar, grandes cantidades de solicitudes concurrentes. Lo descrito, se confirma con la siguiente gráfica: 
 
 
 ![Texto alternativo de la imagen](imagenes/Sin_rate_limit.png)
