@@ -8,14 +8,12 @@
 
 El objetivo principal de esta segunda entrega es realizar un proceso iterativo de diseño parcial y verificación de la arquitectura de distribuida basada en microservicios para un E-commerce, que se propuso en la primera entrega, mediante un enfoque práctico y estructurado que permita evaluar atributos de calidad clave como la seguridad y la escalabilidad.
 
----
 
 ## 1. Visión general
 La arquitectura propuesta para el sistema de e-commerce se basa en principios de **microservicios desacoplados**, altamente escalables y seguros. El diseño permite gestionar de manera independiente cada dominio de negocio: usuarios, pedidos, productos, inventario y pagos, con comunicación eficiente a través de protocolos adecuados, como HTTP para interacciones tradicionales y MQTT para los eventos relacionados con el servicio de pagos.
 
 El flujo completo desde el cliente hasta el procesamiento de pagos se maneja de forma **modular**, mejorando la resiliencia, seguridad, escalabilidad y mantenibilidad del sistema.
 
----
 
 ## 2. Arquitectura del sistema 
 
@@ -52,7 +50,7 @@ En este apartado del documento, se presenta una breve descripción de cada uno d
   - `Authentication Enforcement`: gestión centralizada de autenticación.
   - `Input Validation`: inspección y validación de solicitudes entrantes.
   - `Authorization`: control de acceso a recursos protegidos.
----
+
 
 #### 4.1.2. **Balanceador de Carga** (`ecommerce_lb`)
 
@@ -61,7 +59,6 @@ En este apartado del documento, se presenta una breve descripción de cada uno d
 - **Tácticas de seguridad**:
   - `Failover`: redireccionamiento automático en caso de caída de instancia.
 
----
 
 #### 4.1.3. **Microservicio de Usuarios**  
 - Instancias: `ecommerce_be_usr` y `ecommerce_be_usr_replica`
@@ -71,20 +68,18 @@ En este apartado del documento, se presenta una breve descripción de cada uno d
 - **Tácticas de seguridad**:
   - `Secure Communication`: canal seguro (HTTPS) para la transmisión de datos sensibles.
 
----
 
 #### 4.1.4. **Base de Datos de Usuarios** (`ecommerce_be_usr_db`)
 
 - **Tácticas de seguridad**:
   - `Access Control`: solo microservicios autorizados pueden conectarse.
 
----
 
 Al analizar el flujo arquitectónico elegido en la primera entrega, se observa que el sistema carece de un mecanismo de control de frecuencia, es decir, no existen límites definidos para el uso de los recursos o el número de solicitudes permitidas en un periodo de tiempo. Esta ausencia deja al sistema vulnerable a ataques de Denegación de Servicio (DoS), donde un atacante podría saturar los servicios mediante solicitudes excesivas, comprometiendo tanto la disponibilidad como la estabilidad del sistema. 
 
 Por lo tanto, se simula un ataque de Denegación de Servicio (DoS) sobre el flujo seleccionado del sistema. En este escenario, se modela una situación en la que el sistema recibe N solicitudes concurrentes, sin contar con mecanismos de protección. Cada solicitud sigue una ruta aleatoria desde el frontend hasta la base de datos, exponiendo así las debilidades de la arquitectura ante cargas excesivas y mostrando la necesidad de implementar tácticas de seguridad.
 
-Con base en la simulación, corrida se aprecia, que al exponer al sistema a una gran cantidad de peticiones, la mayoría de estas fallan, por ejemplo, al simular 1000 solicitudes simultáneas, fallaron 754 (75,4%) y exitosas, fueron (32.6 %), con esto se evidencia la necesidad, de aplicar una táctica de seguridad con el objetivo, de que el sistema, sea capaz de soportar, grandes cantidades de solicitudes concurrentes. Lo descrito, se confirma con la siguiente gráfica: 
+Con base en la simulación, corrida se aprecia, que al exponer al sistema a una gran cantidad de peticiones, la mayoría de estas fallan, por ejemplo, al simular 1000 solicitudes simultáneas, fallaron 754 (75,4%) y 246 exitosas, fueron (32.6 %), con esto se evidencia la necesidad, de aplicar una táctica de seguridad con el objetivo, de que el sistema, sea capaz de soportar, grandes cantidades de solicitudes concurrentes. Lo descrito, se confirma con la siguiente gráfica: 
 
 
 ![Texto alternativo de la imagen](imagenes/Sin_rate_limit.png)
@@ -109,4 +104,26 @@ En la simulación se lanzaron 1000 solicitudes concurrentes,  y se obtuvieron lo
 
 ![Texto alternativo de la imagen](imagenes/TransaccionesRateLimit.png)
 
----
+En la gráfica de "Transacciones con Rate Limiting (Iteración 2)", se aprecia que al aplicar la táctica arquitectónica de Rate Limiting, se aprecia que 30 solicitudes, fueron exitosas y el resto debe esperar o será descartado si no hay capacidad. De esat forma, se evita que el sistema colapse en caso de que reciba un gran número de peticiones concurrentes. 
+
+
+### 5.2 Flujo Arquitectónico Simulado
+
+1. Una solicitud ingresa al sistema por el **frontend**.
+2. Llega al **API Gateway**, donde se aplica la táctica de **Rate Limiting**.
+3. Si la solicitud **se aprueba**, se enruta hacia los **microservicios** y, finalmente, hacia una **base de datos**.
+4. Si **no se aprueba** (por sobrepasar el límite), la solicitud se **rechaza inmediatamente**.
+
+
+### 5.3 Impacto Arquitectónico
+
+La inclusión del **Rate Limiting** como táctica aporta varias mejoras notables:
+
+✅ **Robustez** frente a amenazas externas.  
+✅ **Aislamiento y protección** de servicios internos.  
+✅ **Desacoplamiento** de responsabilidades entre gateway y backend.  
+✅ Mayor **resiliencia** ante tráfico irregular o malicioso.
+
+Desde el punto de vista del diseño arquitectónico, esta iteración no solo **mitiga un riesgo** identificado previamente, sino que introduce un **patrón emergente de defensa perimetral**, reforzando el principio de **"defense in depth"**.
+
+
