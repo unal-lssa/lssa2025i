@@ -33,4 +33,49 @@ Para realizar el proceso de verificación de los atributos de seguridad y escala
 ![Texto alternativo de la imagen](FlujoSimplificado.png)
 
 
-## Iteración 1 
+## 4. Iteración 1 
+
+La arquitectura seleccionada corresponde a un fragmento clave del e-Commerce. En el flujo elegido se aplican principios de **arquitectura de microservicios** con énfasis en los atributos de calidad de:
+
+- **Escalabilidad**: Capacidad de adaptarse a aumentos en la carga de trabajo de forma eficiente.
+- **Seguridad**: Protección frente a accesos no autorizados y ataques comunes, garantizando confidencialidad, integridad y disponibilidad.
+
+### 4.1 Componentes y tácticas asociadas
+
+En este apartado del documento, se presenta una breve descripción de cada uno de los componentes del flujo elegido arquitéctonico seleccionado para desarrollar la iteración uno y se enfonca la descripción de cada componente, en lo que esta relacionado con el atributo de calidad de seguridad. 
+
+#### 4.1.1. **API Gateway** (`ecommerce_ag_us`)
+
+- **Responsabilidad**: Es el punto de entrada al sistema. Filtra, enruta y valida solicitudes provenientes del cliente.
+
+- **Tácticas de seguridad**:
+  - `Authentication Enforcement`: gestión centralizada de autenticación.
+  - `Input Validation`: inspección y validación de solicitudes entrantes.
+  - `Authorization`: control de acceso a recursos protegidos.
+---
+
+#### 4.1.2. **Balanceador de Carga** (`ecommerce_lb`)
+
+- **Responsabilidad**: Distribuye solicitudes entrantes de forma equitativa entre las instancias del microservicio de usuarios.
+
+- **Tácticas de seguridad**:
+  - `Failover`: redireccionamiento automático en caso de caída de instancia.
+
+---
+
+#### 4.1.3. **Microservicio de Usuarios**  
+- Instancias: `ecommerce_be_usr` y `ecommerce_be_usr_replica`
+
+- **Responsabilidad**: Gestionar operaciones de usuarios (registro, login, modificación de datos, etc.).
+
+- **Tácticas de seguridad**:
+  - `Secure Communication`: canal seguro (HTTPS) para la transmisión de datos sensibles.
+
+---
+
+#### 4.1.4. **Base de Datos de Usuarios** (`ecommerce_be_usr_db`)
+
+- **Tácticas de seguridad**:
+  - `Access Control`: solo microservicios autorizados pueden conectarse.
+
+---
