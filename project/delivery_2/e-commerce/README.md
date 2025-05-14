@@ -57,7 +57,7 @@ En este apartado del documento, se presenta una breve descripción de cada uno d
   - `Authorization`: control de acceso a recursos protegidos.
 
 - **Tácticas de escalabilidad**:
-  - `Service Routing`: enrutamiento inteligente a servicios que pueden escalar de forma independiente.
+  - `Service Routing`: enrutamiento a servicios que pueden escalar de forma independiente.
 
 
 ---
@@ -68,10 +68,6 @@ En este apartado del documento, se presenta una breve descripción de cada uno d
 
 - **Tácticas de seguridad**:
   - `Failover`: redireccionamiento automático en caso de caída de instancia.
-
-- **Tácticas de escalabilidad**:
-  - `Load Balancing`: distribución dinámica de carga entre instancias para evitar cuellos de botella.
-
 ---
 
 #### 4.1.3. **Microservicio de Usuarios**  
@@ -91,9 +87,6 @@ En este apartado del documento, se presenta una breve descripción de cada uno d
 
 - **Tácticas de seguridad**:
   - `Access Control`: solo microservicios autorizados pueden conectarse.
-
-- **Tácticas de escalabilidad**:
-  - `Read Replicas`: permitir múltiples réplicas de solo lectura para balancear consultas.
 
 Al analizar el flujo arquitectónico elegido en la primera entrega, se observa que el sistema carece de un mecanismo de control de frecuencia, es decir, no existen límites definidos para el uso de los recursos o el número de solicitudes permitidas en un periodo de tiempo. Esta ausencia deja al sistema vulnerable a ataques de Denegación de Servicio (DoS), donde un atacante podría saturar los servicios mediante solicitudes excesivas, comprometiendo tanto la disponibilidad como la estabilidad del sistema. 
 
@@ -155,3 +148,15 @@ La inclusión del **Rate Limiting** como táctica aporta varias mejoras notables
 Desde el punto de vista del diseño arquitectónico, esta iteración no solo **mitiga un riesgo** identificado previamente, sino que introduce un **patrón emergente de defensa perimetral**, reforzando el principio de **"defense in depth"**.
 
 ## 6. Iteración 3
+
+En esta iteración se simuló un entorno donde el sistema fue sometido a una carga elevada de solicitudes concurrentes (por ejemplo, peticiones HTTP, trabajos de procesamiento de datos, eventos, etc.) sin ningún mecanismo automático de escalado (horizontal o vertical). A medida que ciertos componentes alcanzan sus límites de capacidad, comienzan a **rechazar solicitudes**, generando **cuellos de botella**, **degradación del servicio** y eventualmente **fallos sistémicos**.
+
+Esto expone una arquitectura **sin capacidad de resiliencia** y, más importante aún, **sin tácticas arquitectónicas de escalabilidad implementadas**, lo que se traduce en un **sistema cero porciento resiliente** frente a aumentos repentinos de demanda.
+
+### 6.1. Objetivos de la Simulación
+
+- Identificar **puntos críticos** de la arquitectura bajo alta demanda.
+- Validar que la ausencia de escalamiento provoca una **degradación no controlada del servicio**.
+- Demostrar la importancia de incluir **tácticas de escalabilidad** en el diseño desde las etapas tempranas.
+
+### 6.2 Resultados de la simulación
