@@ -145,7 +145,7 @@ Esto expone una arquitectura **sin capacidad de resiliencia** y, más importante
 
 ### 6.2 Resultados de la simulación
 
-Se simularon 2.000 transacciones, de las cuales 1.818 fallaron (90,9 %) y solo 182 fueron exitosas (9,1 %). Esto evidencia que, al no contar con una estrategia de escalabilidad, el sistema no puede manejar una carga excesiva de solicitudes, provocando inevitablemente un alto porcentaje de fallos. En la imagen, que se presenta seguidamente, se confirma lo mencionado. 
+Se simularon 2.000 transacciones, de las cuales 1818 fallaron (90,9 %) y solo 182 fueron exitosas (9,1 %). Esto evidencia que, al no contar con una estrategia de escalabilidad, el sistema no puede manejar una carga excesiva de solicitudes, provocando inevitablemente un alto porcentaje de fallos. En la imagen, que se presenta seguidamente, se confirma lo mencionado. 
 
 ![Texto alternativo de la imagen](imagenes/Transacciones3.png)
 
@@ -167,4 +167,14 @@ Tras identificar el problema de saturación en el sistema, se opta por implement
 
 - Observar si los componentes se escalan automáticamente, ajustando dinámicamente su capacidad.
 
-### 6.2 Resultados de la simulación
+### 7.2 Resultados de la simulación
+
+Se simularon 2.000 transacciones, de las cuales 1996 fueron exitosas (99,8 %) y solo 4 fueron fallidas (0,2%). Esto evidencia que, el incluir una táctica arquitectónica, como el escalado hace que el sistema, sea mucho más resiliente. En la imagen que se muestra a continuación, se confirma lo descrito. 
+
+![Texto alternativo de la imagen](imagenes/Escalabilidad4.png)
+
+Adicionalmente, también se revisaron los resultados obtenidos de las fallas por componente, donde se aprecia que en el microservicio de órdenes, fallaron 2 solicitudes, en el de usuarios uno y en el de productos 1. Lo que muestra la resilencia del sistema, gracias a la táctica de escalado. 
+
+![Texto alternativo de la imagen](imagenes/EscalabilidadC.png)
+
+Entonces, dado el alto porcentaje de transacciones exitosas (99,8 %) se evidencia, la importancia de aplicar tácticas como el auto-escaling, con el fin de garantizar el correcto funcionamiento del sistema.
