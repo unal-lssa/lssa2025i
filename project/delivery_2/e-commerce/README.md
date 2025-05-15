@@ -42,7 +42,7 @@ La arquitectura seleccionada corresponde a un fragmento clave para el correcto f
 - **Escalabilidad**: Capacidad de adaptarse a aumentos en la carga de trabajo de forma eficiente.
 - **Seguridad**: Protección frente a accesos no autorizados y ataques comunes, garantizando confidencialidad, integridad y disponibilidad.
 
-# 4.1 Componentes y tácticas asociadas
+### 4.1 Componentes y tácticas asociadas
 
 En este apartado del documento, se presenta una breve descripción de cada uno de los componentes del flujo arquitectónico elegido para desarrollar la iteración uno. 
 
