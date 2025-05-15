@@ -44,49 +44,33 @@ La arquitectura seleccionada corresponde a un fragmento clave para el correcto f
 
 # 4.1 Componentes y tácticas asociadas
 
-En este apartado del documento, se presenta una breve descripción de cada uno de los componentes del flujo arquitectónico elegido para desarrollar la iteración uno. La descripción de cada componente se enfoca en lo que está relacionado con los atributos de calidad de **seguridad** y **escalabilidad**.
+En este apartado del documento, se presenta una breve descripción de cada uno de los componentes del flujo arquitectónico elegido para desarrollar la iteración uno. 
 
+#### 4.1.1. Frontend (`ecommerce_fe`)
+
+- Aplicación web que ofrece la **interfaz gráfica** al usuario.
+- Se encarga de mostrar productos, gestionar carritos, pagos y confirmar órdenes.
+- **No contiene lógica de negocio crítica**; actúa como intermediario enviando solicitudes al **API Gateway**.
+- Se comunica exclusivamente mediante **HTTP** con el API Gateway.
+
+#### 4.1.2. **API Gateway** (`ecommerce_ag_us`)
+
+- Es el punto de entrada al sistema. Filtra, enruta y valida solicitudes provenientes del cliente.
 ---
 
-#### 4.1.1. **API Gateway** (`ecommerce_ag_us`)
+#### 4.1.3. **Balanceador de Carga** (`ecommerce_lb`)
 
-- **Responsabilidad**: Es el punto de entrada al sistema. Filtra, enruta y valida solicitudes provenientes del cliente.
-
-- **Tácticas de seguridad**:
-  - `Authentication Enforcement`: gestión centralizada de autenticación.
-  - `Authorization`: control de acceso a recursos protegidos.
-
-- **Tácticas de escalabilidad**:
-  - `Service Routing`: enrutamiento a servicios que pueden escalar de forma independiente.
-
-
+-  Distribuye solicitudes entrantes de forma equitativa entre las instancias del microservicio de usuarios.
 ---
 
-#### 4.1.2. **Balanceador de Carga** (`ecommerce_lb`)
+#### 4.1.4. **Microservicio de Usuarios**  
 
-- **Responsabilidad**: Distribuye solicitudes entrantes de forma equitativa entre las instancias del microservicio de usuarios.
-
-- **Tácticas de seguridad**:
-  - `Failover`: redireccionamiento automático en caso de caída de instancia.
+- Gestionar operaciones de usuarios (registro, login, modificación de datos, etc.).
 ---
 
-#### 4.1.3. **Microservicio de Usuarios**  
-- Instancias: `ecommerce_be_usr`
+#### 4.1.5. **Base de Datos de Usuarios** (`ecommerce_be_usr_db`)
 
-- **Responsabilidad**: Gestionar operaciones de usuarios (registro, login, modificación de datos, etc.).
-
-- **Tácticas de seguridad**:
-  - `Secure Communication`: canal seguro (HTTPS) para la transmisión de datos sensibles.
-
-- **Tácticas de escalabilidad**:
-  - `Service Replication`: posibilidad de levantar múltiples instancias del servicio para manejar mayor carga.
-
----
-
-#### 4.1.4. **Base de Datos de Usuarios** (`ecommerce_be_usr_db`)
-
-- **Tácticas de seguridad**:
-  - `Access Control`: solo microservicios autorizados pueden conectarse.
+-  Almancenar los datos de usuarios.
 
 Al analizar el flujo arquitectónico elegido en la primera entrega, se observa que el sistema carece de un mecanismo de control de frecuencia, es decir, no existen límites definidos para el uso de los recursos o el número de solicitudes permitidas en un periodo de tiempo. Esta ausencia deja al sistema vulnerable a ataques de Denegación de Servicio (DoS), donde un atacante podría saturar los servicios mediante solicitudes excesivas, comprometiendo tanto la disponibilidad como la estabilidad del sistema. 
 
@@ -160,3 +144,12 @@ Esto expone una arquitectura **sin capacidad de resiliencia** y, más importante
 - Demostrar la importancia de incluir **tácticas de escalabilidad** en el diseño desde las etapas tempranas.
 
 ### 6.2 Resultados de la simulación
+
+Se simularon 2.000 transacciones, de las cuales 1.818 fallaron (90,9 %) y solo 182 fueron exitosas (9,1 %). Esto evidencia que, al no contar con una estrategia de escalabilidad, el sistema no puede manejar una carga excesiva de solicitudes, provocando inevitablemente un alto porcentaje de fallos. En la imagen, que se presenta seguidamente, se confirma lo mencionado. 
+
+![Texto alternativo de la imagen](imagenes/Transacciones3.png)
+
+Adicionalmente, también se revisaron los resultados obtenidos de las fallas por componente 
+
+Fallos por componente (Sobrecarga sin escalabilidad):
+Counter({'ecommerce_fe': 1131, 'ecommerce_ag_us': 655, 'ecommerce_lb': 32})
