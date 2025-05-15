@@ -149,7 +149,8 @@ Se simularon 2.000 transacciones, de las cuales 1.818 fallaron (90,9 %) y solo
 
 ![Texto alternativo de la imagen](imagenes/Transacciones3.png)
 
-Adicionalmente, también se revisaron los resultados obtenidos de las fallas por componente 
+Adicionalmente, también se revisaron los resultados obtenidos de las fallas por componente, donde se aprecia que en el fronted, fallaron 1131 (56.55%), en el microservicio de usarios 655 (32.75 %) y en el balanceador de carga 32 (1,6%). En la imagen que se muestra a continuación, se confirma lo descrito. 
 
-Fallos por componente (Sobrecarga sin escalabilidad):
-Counter({'ecommerce_fe': 1131, 'ecommerce_ag_us': 655, 'ecommerce_lb': 32})
+![Texto alternativo de la imagen](imagenes/Componentes3.png)
+
+Entonces, dado el alto porcentaje de transacciones fallidas (90,9 %) se ve la necesidad de aplicar una táctica de escalado arquitectónica, con el fin de que el sistema, funcione sin inconvenientes cuando sea sometido al altas cargas de trabajo. 
