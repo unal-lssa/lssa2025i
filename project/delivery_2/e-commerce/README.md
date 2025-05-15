@@ -154,3 +154,17 @@ Adicionalmente, también se revisaron los resultados obtenidos de las fallas por
 ![Texto alternativo de la imagen](imagenes/Componentes3.png)
 
 Entonces, dado el alto porcentaje de transacciones fallidas (90,9 %) se ve la necesidad de aplicar una táctica de escalado arquitectónica, con el fin de que el sistema, funcione sin inconvenientes cuando sea sometido al altas cargas de trabajo. 
+
+## 7. Iteración 4
+
+Tras identificar el problema de saturación en el sistema, se opta por implementar una táctica de **autoescalado** para los componentes backend. Esta estrategia permite que, ante un aumento en la carga, se creen automáticamente nuevas réplicas de los componentes comprometidos. Estas réplicas son gestionadas por el **balanceador de carga**, que distribuye el tráfico de manera uniforme entre ellas. De este modo, el sistema mejora su **capacidad de respuesta**, manteniendo una **alta disponibilidad** y reforzando su **resiliencia operativa** ante variaciones en la demanda.
+
+### 7.1. Objetivos de la simulación
+
+### Objetivos de la Simulación con Autoescalado
+
+- Medir cómo los componentes backend manejan cargas concurrentes y cómo el autoescalado contribuye a mantener el rendimiento.
+
+- Observar si los componentes se escalan automáticamente, ajustando dinámicamente su capacidad.
+
+### 6.2 Resultados de la simulación
