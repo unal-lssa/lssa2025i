@@ -15,7 +15,9 @@ jobs:
 
       - name: Validate push deadline
         run: |
+
           deadline_date="2025-05-17"
+
           deadline_time="23:59"
 
           if [[ "$current_date" > "$deadline_date" ]] || 
